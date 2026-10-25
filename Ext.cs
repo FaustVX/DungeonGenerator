@@ -19,11 +19,10 @@ static class Ext
 
     extension(AnsiConsole)
     {
-        public static void Write(Tile.Tile tile)
+        public static void Write(Tile.TileTemplate template)
         {
-            AnsiConsole.Cursor.SetPosition(tile.X, tile.Y);
-            AnsiConsole.Background = tile.Template.Background;
-            AnsiConsole.Write(tile.Template.Symbol);
+            AnsiConsole.Background = template.Background;
+            AnsiConsole.Write(template.Symbol);
         }
     }
 

@@ -85,7 +85,7 @@ public class BSP : IGenerator, BSP.INode
 
         var dir = (stackalloc SplitDirection[1]);
         rng.GetItems([
-            ..otherDirection is {} other ? [other] : ReadOnlySpan<SplitDirection>.Empty,
+            // ..otherDirection is {} other ? [other] : ReadOnlySpan<SplitDirection>.Empty,
             ..w ? [SplitDirection.Horizontal] : ReadOnlySpan<SplitDirection>.Empty,
             ..h ? [SplitDirection.Vertical] : ReadOnlySpan<SplitDirection>.Empty
         ], dir);
@@ -109,12 +109,26 @@ public class BSP : IGenerator, BSP.INode
 
     public TileTemplate GetTile(int x, int y)
     {
-        throw new NotImplementedException();
+        switch (_splitDirection)
+        {
+            case SplitDirection.Horizontal:
+                if (x < _splitDistance)
+                    return First.GetTile(x, y);
+                return Second.GetTile(x - _splitDistance, y);
+            case SplitDirection.Vertical:
+                if (y < _splitDistance)
+                    return First.GetTile(x, y);
+                return Second.GetTile(x, y - _splitDistance);
+            default:
+                throw new UnreachableException();
+        }
     }
 
     public interface INode
     {
         public BSP? Parent { get; }
+        public int Width { get; }
+        public int Height { get; }
         public TileTemplate GetTile(int x, int y);
     }
 
@@ -128,7 +142,9 @@ public class BSP : IGenerator, BSP.INode
     {
         public TileTemplate GetTile(int x, int y)
         {
-            throw new NotImplementedException();
+            if (x == 0 || y == 0 || x == Width - 1 || y == Height - 1)
+                return TileTemplate.Wall;
+            return TileTemplate.Ground;
         }
     }
 }

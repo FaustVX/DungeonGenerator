@@ -31,14 +31,14 @@ public class BSP : IGenerator, BSP.INode
             case (SplitDirection.Horizontal, var otherDir, var size):
                 _splitDirection = SplitDirection.Horizontal;
                 _splitDistance = size;
-                First = new BSP(size, height, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this, otherDir);
-                Second = new BSP(width - size, height, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this, otherDir);
+                First = size <= maxRoomSize.w ? new Room(this, size, height) : new BSP(size, height, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this, otherDir);
+                Second = width - size <= maxRoomSize.w ? new Room(this, width - size, height) : new BSP(width - size, height, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this, otherDir);
                 break;
             case (SplitDirection.Vertical, var otherDir, var size):
                 _splitDirection = SplitDirection.Vertical;
                 _splitDistance = size;
-                First = new BSP(width, size, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this, otherDir);
-                Second = new BSP(width, height - size, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this, otherDir);
+                First = size <= maxRoomSize.h ? new Room(this, width, size) : new BSP(width, size, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this, otherDir);
+                Second = height - size <= maxRoomSize.h ? new Room(this, width, height - size) : new BSP(width, height - size, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this, otherDir);
                 break;
             default:
                 throw new UnreachableException();
@@ -62,28 +62,26 @@ public class BSP : IGenerator, BSP.INode
             case (SplitDirection.Horizontal, var otherDir, var size):
                 _splitDirection = SplitDirection.Horizontal;
                 _splitDistance = size;
-                First = new BSP(size, height, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this, otherDir);
-                Second = new BSP(width - size, height, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this, otherDir);
+                First = size <= maxRoomSize.w ? new Room(this, size, height) : new BSP(size, height, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this, otherDir);
+                Second = width - size <= maxRoomSize.w ? new Room(this, width - size, height) : new BSP(width - size, height, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this, otherDir);
                 break;
             case (SplitDirection.Vertical, var otherDir, var size):
                 _splitDirection = SplitDirection.Vertical;
                 _splitDistance = size;
-                First = new BSP(width, size, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this, otherDir);
-                Second = new BSP(width, height - size, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this, otherDir);
+                First = size <= maxRoomSize.h ? new Room(this, width, size) : new BSP(width, size, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this, otherDir);
+                Second = height - size <= maxRoomSize.h ? new Room(this, width, height - size) : new BSP(width, height - size, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this, otherDir);
                 break;
             default:
-                First = new Room() { Parent = this };
-                Second = new Room() { Parent = this };
-                break;
+                throw new UnreachableException();
         };
     }
 
-    static (SplitDirection dir, SplitDirection? other, int size)? GetSplitDirection(Random rng, int width, int height, (int w, int h) minRoomSize, (int w, int h) maxRoomSize, SplitDirection? otherDirection)
+    static (SplitDirection dir, SplitDirection? other, int size) GetSplitDirection(Random rng, int width, int height, (int w, int h) minRoomSize, (int w, int h) maxRoomSize, SplitDirection? otherDirection)
     {
         var w = CanSplit(minRoomSize.w, width, maxRoomSize.w, rng);
         var h = CanSplit(minRoomSize.h, height, maxRoomSize.h, rng);
         if (!w && !h)
-            return null;
+            throw new UnreachableException();
 
         var dir = (stackalloc SplitDirection[1]);
         rng.GetItems([
@@ -126,9 +124,8 @@ public class BSP : IGenerator, BSP.INode
         Vertical,
     }
 
-    private sealed class Room : INode
+    private sealed record class Room(BSP Parent, int Width, int Height) : INode
     {
-        public required BSP Parent { get; init; }
         public TileTemplate GetTile(int x, int y)
         {
             throw new NotImplementedException();

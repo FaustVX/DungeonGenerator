@@ -5,5 +5,5 @@
 - TAGS:
 
 ## Description
-- [Binary Space Partitioning](https://roguebasin.com/index.php/Basic_BSP_Dungeon_generation)
-- [Brogue](https://www.rockpapershotgun.com/how-do-roguelikes-generate-levels)
+- [Binary Space Partitioning](tasks/20261025-164140-bsp/TASK.md)
+- [Brogue](tasks/20261025-164207-brogue/TASK.md)

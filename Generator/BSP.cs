@@ -13,39 +13,11 @@ public class BSP : IGenerator, BSP.INode
     public INode First { get; }
     public INode Second { get; }
 
-    public BSP(int width, int height, (int w, int h) minRoomSize, (int w, int h) maxRoomSize, double fullSizedRoomPercent, int seed)
-    {
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(width);
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(height);
-        ArgumentOutOfRangeException.ThrowIfNotInBetween(minRoomSize.w, 0, maxRoomSize.w);
-        ArgumentOutOfRangeException.ThrowIfNotInBetween(minRoomSize.h, 0, maxRoomSize.h);
-        ArgumentOutOfRangeException.ThrowIfNotInBetween(maxRoomSize.w, minRoomSize.w, width);
-        ArgumentOutOfRangeException.ThrowIfNotInBetween(maxRoomSize.h, minRoomSize.h, height);
-        ArgumentOutOfRangeException.ThrowIfNegative(fullSizedRoomPercent);
-        Width = width;
-        Height = height;
-        Parent = null;
-        var rng = new Random(seed);
-        switch (GetSplitDirection(rng, width, height, minRoomSize, maxRoomSize, null))
-        {
-            case (SplitDirection.Horizontal, var otherDir, var size):
-                _splitDirection = SplitDirection.Horizontal;
-                _splitDistance = size;
-                First = size <= maxRoomSize.w ? new Room(this, size, height) : new BSP(size, height, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this, otherDir);
-                Second = width - size <= maxRoomSize.w ? new Room(this, width - size, height) : new BSP(width - size, height, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this, otherDir);
-                break;
-            case (SplitDirection.Vertical, var otherDir, var size):
-                _splitDirection = SplitDirection.Vertical;
-                _splitDistance = size;
-                First = size <= maxRoomSize.h ? new Room(this, width, size) : new BSP(width, size, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this, otherDir);
-                Second = height - size <= maxRoomSize.h ? new Room(this, width, height - size) : new BSP(width, height - size, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this, otherDir);
-                break;
-            default:
-                throw new UnreachableException();
-        };
-    }
+    public BSP(int width, int height, (int w, int h) minRoomSize, (int w, int h) maxRoomSize, double fullSizedRoomPercent, RngOrSeed random)
+    : this(width, height, minRoomSize, maxRoomSize, fullSizedRoomPercent, random.Random, null, null)
+    { }
 
-    private BSP(int width, int height, (int w, int h) minRoomSize, (int w, int h) maxRoomSize, double fullSizedRoomPercent, Random rng, BSP parent, SplitDirection? otherDirection)
+    private BSP(int width, int height, (int w, int h) minRoomSize, (int w, int h) maxRoomSize, double fullSizedRoomPercent, Random rng, BSP? parent, SplitDirection? otherDirection)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(width);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(height);

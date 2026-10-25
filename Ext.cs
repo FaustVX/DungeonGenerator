@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using Spectre.Console;
 
@@ -33,5 +34,19 @@ static class Ext
 
         public T NextItem<T>(IReadOnlyList<T> values)
         => values[rng.Next(values.Count)];
+    }
+
+    extension<T>((T, T))
+    where T : IAdditionOperators<T, T, T>
+    {
+        public static (T, T) operator +((T, T) lhs, (T, T) rhs)
+        => (lhs.Item1 + rhs.Item1, lhs.Item2 + rhs.Item2);
+    }
+
+    extension<T>((T, T))
+    where T : ISubtractionOperators<T, T, T>
+    {
+        public static (T, T) operator -((T, T) lhs, (T, T) rhs)
+        => (lhs.Item1 - rhs.Item1, lhs.Item2 - rhs.Item2);
     }
 }

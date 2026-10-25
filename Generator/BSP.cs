@@ -9,6 +9,7 @@ public class BSP : IGenerator, BSP.INode
     public int Height { get; }
     private readonly int _splitDistance;
     private readonly SplitDirection _splitDirection;
+    private readonly List<Room> _rooms = [];
     public BSP? Parent { get; }
     public INode First { get; }
     public INode Second { get; }
@@ -98,10 +99,69 @@ public class BSP : IGenerator, BSP.INode
 
     public interface INode
     {
+        public BSP Root
+        {
+            get
+            {
+                if (Parent is null)
+                    return (BSP)this;
+                return ((INode)Parent).Root;
+            }
+        }
+        public int Depth
+        {
+            get
+            {
+                if (Parent is null)
+                    return 0;
+                return ((INode)Parent).Depth + 1;
+            }
+        }
         public BSP? Parent { get; }
         public int Width { get; }
         public int Height { get; }
         public TileTemplate GetTile(int x, int y);
+
+        public BSP MostCommonNode(INode other)
+        {
+            var set = new HashSet<BSP>(capacity: Depth);
+            for (var node = this; node is not null; node = node.Parent)
+                if (node is BSP bsp)
+                    set.Add(bsp);
+            for (var node = other; node is not null; node = node.Parent)
+                if (set.Contains((BSP)node))
+                    return (BSP)node;
+            throw new UnreachableException();
+        }
+
+        public (int x, int y) GetGlobalOrigin()
+        {
+            if (Parent is not null)
+            {
+                var (x, y) = ((INode)Parent!).GetGlobalOrigin();
+                if (Parent.Second == this)
+                    switch (Parent?._splitDirection)
+                    {
+                        case SplitDirection.Horizontal:
+                            x += Parent._splitDistance;
+                            break;
+                        case SplitDirection.Vertical:
+                            y += Parent._splitDistance;
+                            break;
+                    }
+                return (x, y);
+            }
+            return (0, 0);
+        }
+
+        public (int x, int y) GetPosRelativeTo(INode other, int x, int y)
+        {
+            // tasks/20261024-225707-multiple-generators/tasks/20261025-164140-bsp/RelativePos.excalidraw
+            if (other == this)
+                return (x, y);
+
+            return (x, y) + GetGlobalOrigin() - other.GetGlobalOrigin();
+        }
     }
 
     private enum SplitDirection
@@ -110,13 +170,69 @@ public class BSP : IGenerator, BSP.INode
         Vertical,
     }
 
-    private sealed record class Room(BSP Parent, int Width, int Height) : INode
+    private sealed record class Room : INode
     {
+        public Room(BSP parent, int width, int height)
+        {
+            Parent = parent;
+            Width = width;
+            Height = height;
+            ((INode)this).Root._rooms.Add(this);
+        }
+
+        public BSP Parent { get; }
+        public int Width { get; }
+        public int Height { get; }
+
         public TileTemplate GetTile(int x, int y)
         {
             if (x == 0 || y == 0 || x == Width - 1 || y == Height - 1)
                 return TileTemplate.Wall;
             return TileTemplate.Ground;
+        }
+
+        public Room? LeftRoom(int pos)
+        {
+            foreach (var room in ((INode)this).Root._rooms)
+            {
+                var (x, y) = ((INode)this).GetPosRelativeTo(room, 0, pos);
+                if (x == room.Width && y >= 0 && y < room.Height)
+                    return room;
+            }
+            return null;
+        }
+
+        public Room? RightRoom(int pos)
+        {
+            foreach (var room in ((INode)this).Root._rooms)
+            {
+                var (x, y) = ((INode)this).GetPosRelativeTo(room, Width, pos);
+                if (x == 0 && y >= 0 && y < room.Height)
+                    return room;
+            }
+            return null;
+        }
+
+        public Room? UpRoom(int pos)
+        {
+            foreach (var room in ((INode)this).Root._rooms)
+            {
+                var (x, y) = ((INode)this).GetPosRelativeTo(room, pos, 0);
+                if (y == room.Height && x >= 0 && x < room.Width)
+                    return room;
+            }
+            return null;
+        }
+
+        public Room? DownRoom(int pos)
+        {
+            foreach (var room in ((INode)this).Root._rooms)
+            {
+                var (x, y) = ((INode)this).GetPosRelativeTo(room, pos, Height);
+                if (y == 0 && x >= 0 && x < room.Width)
+                    return room;
+            }
+            return null;
         }
     }
 }

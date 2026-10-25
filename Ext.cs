@@ -30,5 +30,8 @@ static class Ext
     {
         public bool NextBool(double probality = .5)
         => rng.NextDouble() < probality;
+
+        public T NextItem<T>(IReadOnlyList<T> values)
+        => values[rng.Next(values.Count)];
     }
 }

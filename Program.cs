@@ -1,12 +1,10 @@
 ﻿using DungeonGenerator;
-using DungeonGenerator.Tile;
-using DungeonGenerator.Generator;
 using Spectre.Console;
 
-var gen = new BSP(80, 25, (3,3), (5, 5), 0, 1234);
-for (int y = 0; y < gen.Height; y++)
+var game = new Game(1234);
+for (int y = 0; y < game.Height; y++)
 {
-    for (int x = 0; x < gen.Width; x++)
-        AnsiConsole.Write(gen.GetTile(x, y));
+    for (int x = 0; x < game.Width; x++)
+        AnsiConsole.Write(game.CurrentLevel[x, y].Template);
     Console.WriteLine();
 }

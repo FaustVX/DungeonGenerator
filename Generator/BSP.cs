@@ -20,29 +20,24 @@ public class BSP : BSPNode, IGenerator
 
     private BSP(int width, int height, (int w, int h) minRoomSize, (int w, int h) maxRoomSize, double fullSizedRoomPercent, Random rng, BSP? parent, SplitDirectionEnum? otherDirection)
     {
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(width);
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(height);
-        ArgumentOutOfRangeException.ThrowIfNotInBetween(minRoomSize.w, 0, maxRoomSize.w);
-        ArgumentOutOfRangeException.ThrowIfNotInBetween(minRoomSize.h, 0, maxRoomSize.h);
-        ArgumentOutOfRangeException.ThrowIfNotInBetween(maxRoomSize.w, minRoomSize.w, width);
-        ArgumentOutOfRangeException.ThrowIfNotInBetween(maxRoomSize.h, minRoomSize.h, height);
-        ArgumentOutOfRangeException.ThrowIfNegative(fullSizedRoomPercent);
         Width = width;
         Height = height;
         Parent = parent;
+        CheckWidthHeight(minRoomSize, maxRoomSize);
+        ArgumentOutOfRangeException.ThrowIfNegative(fullSizedRoomPercent);
         switch (GetSplitDirection(rng, width, height, minRoomSize, maxRoomSize, otherDirection))
         {
             case (SplitDirectionEnum.Horizontal, var otherDir, var size):
                 SplitDirection = SplitDirectionEnum.Horizontal;
                 SplitDistance = size;
-                First = size <= maxRoomSize.w ? new Room(this, size, height) : new BSP(size, height, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this, otherDir);
-                Second = width - size <= maxRoomSize.w ? new Room(this, width - size, height) : new BSP(width - size, height, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this, otherDir);
+                First = size <= maxRoomSize.w ? new Room(size, height, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this) : new BSP(size, height, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this, otherDir);
+                Second = width - size <= maxRoomSize.w ? new Room(width - size, height, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this) : new BSP(width - size, height, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this, otherDir);
                 break;
             case (SplitDirectionEnum.Vertical, var otherDir, var size):
                 SplitDirection = SplitDirectionEnum.Vertical;
                 SplitDistance = size;
-                First = size <= maxRoomSize.h ? new Room(this, width, size) : new BSP(width, size, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this, otherDir);
-                Second = height - size <= maxRoomSize.h ? new Room(this, width, height - size) : new BSP(width, height - size, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this, otherDir);
+                First = size <= maxRoomSize.h ? new Room(width, size, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this) : new BSP(width, size, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this, otherDir);
+                Second = height - size <= maxRoomSize.h ? new Room(width, height - size, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this) : new BSP(width, height - size, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this, otherDir);
                 break;
             default:
                 throw new UnreachableException();
@@ -107,11 +102,13 @@ public class BSP : BSPNode, IGenerator
 
     public sealed class Room : BSPNode
     {
-        public Room(BSP parent, int width, int height)
+        public Room(int width, int height, (int w, int h) minRoomSize, (int w, int h) maxRoomSize, double fullSizedRoomPercent, Random rng, BSP parent)
         {
-            Parent = parent;
             Width = width;
             Height = height;
+            Parent = parent;
+            CheckWidthHeight(minRoomSize, maxRoomSize);
+            ArgumentOutOfRangeException.ThrowIfNegative(fullSizedRoomPercent);
             Root.Rooms.Add(this);
         }
 
@@ -202,6 +199,16 @@ public abstract class BSPNode
     public abstract int Width { get; }
     public abstract int Height { get; }
     public abstract TileTemplate GetTile(int x, int y);
+
+    protected void CheckWidthHeight((int w, int h) minRoomSize, (int w, int h) maxRoomSize)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(Width);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(Height);
+        ArgumentOutOfRangeException.ThrowIfNotInBetween(minRoomSize.w, 0, maxRoomSize.w);
+        ArgumentOutOfRangeException.ThrowIfNotInBetween(minRoomSize.h, 0, maxRoomSize.h);
+        ArgumentOutOfRangeException.ThrowIfNotInBetween(maxRoomSize.w, minRoomSize.w, Width);
+        ArgumentOutOfRangeException.ThrowIfNotInBetween(maxRoomSize.h, minRoomSize.h, Height);
+    }
 
     public BSP MostCommonNode(BSPNode other)
     {

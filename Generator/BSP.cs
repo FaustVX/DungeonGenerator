@@ -7,7 +7,7 @@ public class BSP : BSPNode, IGenerator
 {
     public override int Width { get; }
     public override int Height { get; }
-    private readonly List<Room> _rooms = [];
+    public List<Room> Rooms { get; } = [];
     public override BSP? Parent { get; }
     public BSPNode First { get; }
     public BSPNode Second { get; }
@@ -103,14 +103,14 @@ public class BSP : BSPNode, IGenerator
         Vertical,
     }
 
-    private sealed class Room : BSPNode
+    public sealed class Room : BSPNode
     {
         public Room(BSP parent, int width, int height)
         {
             Parent = parent;
             Width = width;
             Height = height;
-            Root._rooms.Add(this);
+            Root.Rooms.Add(this);
         }
 
         public override BSP Parent { get; }
@@ -126,7 +126,7 @@ public class BSP : BSPNode, IGenerator
 
         public Room? LeftRoom(int pos)
         {
-            foreach (var room in Root._rooms)
+            foreach (var room in Root.Rooms)
             {
                 var (x, y) = GetPosRelativeTo(room, 0, pos);
                 if (x == room.Width && y >= 0 && y < room.Height)
@@ -137,7 +137,7 @@ public class BSP : BSPNode, IGenerator
 
         public Room? RightRoom(int pos)
         {
-            foreach (var room in Root._rooms)
+            foreach (var room in Root.Rooms)
             {
                 var (x, y) = GetPosRelativeTo(room, Width, pos);
                 if (x == 0 && y >= 0 && y < room.Height)
@@ -148,7 +148,7 @@ public class BSP : BSPNode, IGenerator
 
         public Room? UpRoom(int pos)
         {
-            foreach (var room in Root._rooms)
+            foreach (var room in Root.Rooms)
             {
                 var (x, y) = GetPosRelativeTo(room, pos, 0);
                 if (y == room.Height && x >= 0 && x < room.Width)
@@ -159,7 +159,7 @@ public class BSP : BSPNode, IGenerator
 
         public Room? DownRoom(int pos)
         {
-            foreach (var room in Root._rooms)
+            foreach (var room in Root.Rooms)
             {
                 var (x, y) = GetPosRelativeTo(room, pos, Height);
                 if (y == 0 && x >= 0 && x < room.Width)
@@ -234,5 +234,37 @@ public abstract class BSPNode
             return (x, y);
 
         return (x, y) + GetGlobalOrigin() - other.GetGlobalOrigin();
+    }
+
+    public BSP.Room GetRoomAtPos(int x, int y)
+    {
+        (x, y) = GetGlobalOrigin() + (x, y);
+        var node = Root;
+        while (true)
+            switch (node.SplitDirection)
+            {
+                case BSP.SplitDirectionEnum.Horizontal:
+                    switch (x < node.SplitDistance ? node.First : node.Second)
+                    {
+                        case BSP.Room room:
+                            return room;
+                        case BSP bsp:
+                            node = bsp;
+                            break;
+                    }
+                    break;
+                case BSP.SplitDirectionEnum.Vertical:
+                    switch (y < node.SplitDistance ? node.First : node.Second)
+                    {
+                        case BSP.Room room:
+                            return room;
+                        case BSP bsp:
+                            node = bsp;
+                            break;
+                    }
+                    break;
+                default:
+                    throw new UnreachableException();
+        }
     }
 }

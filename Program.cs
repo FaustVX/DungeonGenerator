@@ -6,7 +6,7 @@ var alternateScreen = false;
 
 try
 {
-    var game = new Game(1234);
+    var game = new Game(100, 20, 01234);
     for (int y = 0; y < game.Height; y++)
     {
         for (int x = 0; x < game.Width; x++)

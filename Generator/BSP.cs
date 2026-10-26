@@ -107,9 +107,25 @@ public class BSP : BSPNode, IGenerator
             Width = width;
             Height = height;
             Parent = parent;
-            CheckWidthHeight(minRoomSize, maxRoomSize);
-            ArgumentOutOfRangeException.ThrowIfNegative(fullSizedRoomPercent);
             Root.Rooms.Add(this);
+            var isFullSizedRoom = rng.NextBool(fullSizedRoomPercent);
+            if (minRoomSize.w < width - 2 && !isFullSizedRoom)
+            {
+                width = rng.Next(minRoomSize.w, width - 2);
+                LeftWallWidth = rng.Next(1, Width - width);
+                RightWallWidth = Width - width - LeftWallWidth;
+            }
+            else
+                LeftWallWidth = RightWallWidth = 1;
+
+            if (minRoomSize.h < height - 2 && !isFullSizedRoom)
+            {
+                height = rng.Next(minRoomSize.h, height - 2);
+                TopWallWidth = rng.Next(1, Height - height);
+                BottomWallWidth = Height - height - TopWallWidth;
+            }
+            else
+                TopWallWidth = BottomWallWidth = 1;
         }
 
         public override BSP Parent { get; }
@@ -124,7 +140,7 @@ public class BSP : BSPNode, IGenerator
         {
             ArgumentOutOfRangeException.ThrowIfNotInBetween(x, 0, Width - 1);
             ArgumentOutOfRangeException.ThrowIfNotInBetween(y, 0, Height - 1);
-            if (x < LeftWallWidth || y < TopWallWidth || x >= Width - LeftWallWidth || y >= Height - BottomWallWidth)
+            if (x < LeftWallWidth || y < TopWallWidth || x >= Width - RightWallWidth || y >= Height - BottomWallWidth)
                 return TileTemplate.Wall;
             return TileTemplate.Ground;
         }

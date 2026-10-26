@@ -7,18 +7,18 @@ public class BSP : BSPNode, IGenerator
 {
     public override int Width { get; }
     public override int Height { get; }
-    public List<Room> Rooms { get; } = [];
+    public List<BSPRoom> Rooms { get; } = [];
     public override BSP? Parent { get; }
     public BSPNode First { get; }
     public BSPNode Second { get; }
     public int SplitDistance { get; }
-    public SplitDirectionEnum SplitDirection { get; }
+    public BSPSplitDirection SplitDirection { get; }
 
     public BSP(int width, int height, (int w, int h) minRoomSize, (int w, int h) maxRoomSize, double fullSizedRoomPercent, RngOrSeed random)
     : this(width, height, minRoomSize, maxRoomSize, fullSizedRoomPercent, random.Random, null, null)
     { }
 
-    private BSP(int width, int height, (int w, int h) minRoomSize, (int w, int h) maxRoomSize, double fullSizedRoomPercent, Random rng, BSP? parent, SplitDirectionEnum? otherDirection)
+    private BSP(int width, int height, (int w, int h) minRoomSize, (int w, int h) maxRoomSize, double fullSizedRoomPercent, Random rng, BSP? parent, BSPSplitDirection? otherDirection)
     {
         Width = width;
         Height = height;
@@ -27,41 +27,41 @@ public class BSP : BSPNode, IGenerator
         ArgumentOutOfRangeException.ThrowIfNegative(fullSizedRoomPercent);
         switch (GetSplitDirection(rng, width, height, minRoomSize, maxRoomSize, otherDirection))
         {
-            case (SplitDirectionEnum.Horizontal, var otherDir, var size):
-                SplitDirection = SplitDirectionEnum.Horizontal;
+            case (BSPSplitDirection.Horizontal, var otherDir, var size):
+                SplitDirection = BSPSplitDirection.Horizontal;
                 SplitDistance = size;
-                First = size <= maxRoomSize.w ? new Room(size, height, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this) : new BSP(size, height, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this, otherDir);
-                Second = width - size <= maxRoomSize.w ? new Room(width - size, height, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this) : new BSP(width - size, height, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this, otherDir);
+                First = size <= maxRoomSize.w ? new BSPRoom(size, height, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this) : new BSP(size, height, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this, otherDir);
+                Second = width - size <= maxRoomSize.w ? new BSPRoom(width - size, height, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this) : new BSP(width - size, height, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this, otherDir);
                 break;
-            case (SplitDirectionEnum.Vertical, var otherDir, var size):
-                SplitDirection = SplitDirectionEnum.Vertical;
+            case (BSPSplitDirection.Vertical, var otherDir, var size):
+                SplitDirection = BSPSplitDirection.Vertical;
                 SplitDistance = size;
-                First = size <= maxRoomSize.h ? new Room(width, size, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this) : new BSP(width, size, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this, otherDir);
-                Second = height - size <= maxRoomSize.h ? new Room(width, height - size, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this) : new BSP(width, height - size, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this, otherDir);
+                First = size <= maxRoomSize.h ? new BSPRoom(width, size, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this) : new BSP(width, size, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this, otherDir);
+                Second = height - size <= maxRoomSize.h ? new BSPRoom(width, height - size, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this) : new BSP(width, height - size, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this, otherDir);
                 break;
             default:
                 throw new UnreachableException();
         };
     }
 
-    static (SplitDirectionEnum dir, SplitDirectionEnum? other, int size) GetSplitDirection(Random rng, int width, int height, (int w, int h) minRoomSize, (int w, int h) maxRoomSize, SplitDirectionEnum? otherDirection)
+    static (BSPSplitDirection dir, BSPSplitDirection? other, int size) GetSplitDirection(Random rng, int width, int height, (int w, int h) minRoomSize, (int w, int h) maxRoomSize, BSPSplitDirection? otherDirection)
     {
         var w = CanSplit(minRoomSize.w, width, maxRoomSize.w, rng);
         var h = CanSplit(minRoomSize.h, height, maxRoomSize.h, rng);
         if (!w && !h)
             throw new UnreachableException();
 
-        var dir = (stackalloc SplitDirectionEnum[1]);
+        var dir = (stackalloc BSPSplitDirection[1]);
         rng.GetItems([
             // ..otherDirection is {} other ? [other] : ReadOnlySpan<SplitDirection>.Empty,
-            ..w ? [SplitDirectionEnum.Horizontal] : ReadOnlySpan<SplitDirectionEnum>.Empty,
-            ..h ? [SplitDirectionEnum.Vertical] : ReadOnlySpan<SplitDirectionEnum>.Empty
+            ..w ? [BSPSplitDirection.Horizontal] : ReadOnlySpan<BSPSplitDirection>.Empty,
+            ..h ? [BSPSplitDirection.Vertical] : ReadOnlySpan<BSPSplitDirection>.Empty
         ], dir);
 
         return dir[0] switch
         {
-            SplitDirectionEnum.Horizontal => (SplitDirectionEnum.Horizontal, h ? SplitDirectionEnum.Vertical : null, rng.Next(minRoomSize.w, width - minRoomSize.w)),
-            SplitDirectionEnum.Vertical => (SplitDirectionEnum.Vertical, w ? SplitDirectionEnum.Horizontal : null, rng.Next(minRoomSize.h, height - minRoomSize.h)),
+            BSPSplitDirection.Horizontal => (BSPSplitDirection.Horizontal, h ? BSPSplitDirection.Vertical : null, rng.Next(minRoomSize.w, width - minRoomSize.w)),
+            BSPSplitDirection.Vertical => (BSPSplitDirection.Vertical, w ? BSPSplitDirection.Horizontal : null, rng.Next(minRoomSize.h, height - minRoomSize.h)),
             _ => throw new UnreachableException(),
         };
 
@@ -81,11 +81,11 @@ public class BSP : BSPNode, IGenerator
         ArgumentOutOfRangeException.ThrowIfNotInBetween(y, 0, Height - 1);
         switch (SplitDirection)
         {
-            case SplitDirectionEnum.Horizontal:
+            case BSPSplitDirection.Horizontal:
                 if (x < SplitDistance)
                     return First.GetTile(x, y);
                 return Second.GetTile(x - SplitDistance, y);
-            case SplitDirectionEnum.Vertical:
+            case BSPSplitDirection.Vertical:
                 if (y < SplitDistance)
                     return First.GetTile(x, y);
                 return Second.GetTile(x, y - SplitDistance);
@@ -93,101 +93,101 @@ public class BSP : BSPNode, IGenerator
                 throw new UnreachableException();
         }
     }
+}
 
-    public enum SplitDirectionEnum
+public enum BSPSplitDirection
+{
+    Horizontal,
+    Vertical,
+}
+
+public sealed class BSPRoom : BSPNode
+{
+    public BSPRoom(int width, int height, (int w, int h) minRoomSize, (int w, int h) maxRoomSize, double fullSizedRoomPercent, Random rng, BSP parent)
     {
-        Horizontal,
-        Vertical,
+        Width = width;
+        Height = height;
+        Parent = parent;
+        Root.Rooms.Add(this);
+        var isFullSizedRoom = rng.NextBool(fullSizedRoomPercent);
+        if (minRoomSize.w < width - 2 && !isFullSizedRoom)
+        {
+            width = rng.Next(minRoomSize.w, width - 2);
+            LeftWallWidth = rng.Next(1, Width - width);
+            RightWallWidth = Width - width - LeftWallWidth;
+        }
+        else
+            LeftWallWidth = RightWallWidth = 1;
+
+        if (minRoomSize.h < height - 2 && !isFullSizedRoom)
+        {
+            height = rng.Next(minRoomSize.h, height - 2);
+            TopWallWidth = rng.Next(1, Height - height);
+            BottomWallWidth = Height - height - TopWallWidth;
+        }
+        else
+            TopWallWidth = BottomWallWidth = 1;
     }
 
-    public sealed class Room : BSPNode
+    public override BSP Parent { get; }
+    public override int Width { get; }
+    public override int Height { get; }
+    public int TopWallWidth { get; } = 1;
+    public int BottomWallWidth { get; } = 1;
+    public int LeftWallWidth { get; } = 1;
+    public int RightWallWidth { get; } = 1;
+
+    public override TileTemplate GetTile(int x, int y)
     {
-        public Room(int width, int height, (int w, int h) minRoomSize, (int w, int h) maxRoomSize, double fullSizedRoomPercent, Random rng, BSP parent)
+        ArgumentOutOfRangeException.ThrowIfNotInBetween(x, 0, Width - 1);
+        ArgumentOutOfRangeException.ThrowIfNotInBetween(y, 0, Height - 1);
+        if (x < LeftWallWidth || y < TopWallWidth || x >= Width - RightWallWidth || y >= Height - BottomWallWidth)
+            return TileTemplate.Wall;
+        return TileTemplate.Ground;
+    }
+
+    public BSPRoom? LeftRoom(int y)
+    {
+        foreach (var room in Root.Rooms)
         {
-            Width = width;
-            Height = height;
-            Parent = parent;
-            Root.Rooms.Add(this);
-            var isFullSizedRoom = rng.NextBool(fullSizedRoomPercent);
-            if (minRoomSize.w < width - 2 && !isFullSizedRoom)
-            {
-                width = rng.Next(minRoomSize.w, width - 2);
-                LeftWallWidth = rng.Next(1, Width - width);
-                RightWallWidth = Width - width - LeftWallWidth;
-            }
-            else
-                LeftWallWidth = RightWallWidth = 1;
-
-            if (minRoomSize.h < height - 2 && !isFullSizedRoom)
-            {
-                height = rng.Next(minRoomSize.h, height - 2);
-                TopWallWidth = rng.Next(1, Height - height);
-                BottomWallWidth = Height - height - TopWallWidth;
-            }
-            else
-                TopWallWidth = BottomWallWidth = 1;
+            (var x, y) = GetPosRelativeTo(room, 0, y);
+            if (x == room.Width && y >= 0 && y < room.Height)
+                return room;
         }
+        return null;
+    }
 
-        public override BSP Parent { get; }
-        public override int Width { get; }
-        public override int Height { get; }
-        public int TopWallWidth { get; } = 1;
-        public int BottomWallWidth { get; } = 1;
-        public int LeftWallWidth { get; } = 1;
-        public int RightWallWidth { get; } = 1;
-
-        public override TileTemplate GetTile(int x, int y)
+    public BSPRoom? RightRoom(int y)
+    {
+        foreach (var room in Root.Rooms)
         {
-            ArgumentOutOfRangeException.ThrowIfNotInBetween(x, 0, Width - 1);
-            ArgumentOutOfRangeException.ThrowIfNotInBetween(y, 0, Height - 1);
-            if (x < LeftWallWidth || y < TopWallWidth || x >= Width - RightWallWidth || y >= Height - BottomWallWidth)
-                return TileTemplate.Wall;
-            return TileTemplate.Ground;
+            (var x, y) = GetPosRelativeTo(room, Width, y);
+            if (x == 0 && y >= 0 && y < room.Height)
+                return room;
         }
+        return null;
+    }
 
-        public Room? LeftRoom(int y)
+    public BSPRoom? UpRoom(int x)
+    {
+        foreach (var room in Root.Rooms)
         {
-            foreach (var room in Root.Rooms)
-            {
-                (var x, y) = GetPosRelativeTo(room, 0, y);
-                if (x == room.Width && y >= 0 && y < room.Height)
-                    return room;
-            }
-            return null;
+            (x, var y) = GetPosRelativeTo(room, x, 0);
+            if (y == room.Height && x >= 0 && x < room.Width)
+                return room;
         }
+        return null;
+    }
 
-        public Room? RightRoom(int y)
+    public BSPRoom? DownRoom(int x)
+    {
+        foreach (var room in Root.Rooms)
         {
-            foreach (var room in Root.Rooms)
-            {
-                (var x, y) = GetPosRelativeTo(room, Width, y);
-                if (x == 0 && y >= 0 && y < room.Height)
-                    return room;
-            }
-            return null;
+            (x, var y) = GetPosRelativeTo(room, x, Height);
+            if (y == 0 && x >= 0 && x < room.Width)
+                return room;
         }
-
-        public Room? UpRoom(int x)
-        {
-            foreach (var room in Root.Rooms)
-            {
-                (x, var y) = GetPosRelativeTo(room, x, 0);
-                if (y == room.Height && x >= 0 && x < room.Width)
-                    return room;
-            }
-            return null;
-        }
-
-        public Room? DownRoom(int x)
-        {
-            foreach (var room in Root.Rooms)
-            {
-                (x, var y) = GetPosRelativeTo(room, x, Height);
-                if (y == 0 && x >= 0 && x < room.Width)
-                    return room;
-            }
-            return null;
-        }
+        return null;
     }
 }
 
@@ -246,10 +246,10 @@ public abstract class BSPNode
             if (Parent.Second == this)
                 switch (Parent?.SplitDirection)
                 {
-                    case BSP.SplitDirectionEnum.Horizontal:
+                    case BSPSplitDirection.Horizontal:
                         x += Parent.SplitDistance;
                         break;
-                    case BSP.SplitDirectionEnum.Vertical:
+                    case BSPSplitDirection.Vertical:
                         y += Parent.SplitDistance;
                         break;
                 }
@@ -267,27 +267,27 @@ public abstract class BSPNode
         return (x, y) + GetGlobalOrigin() - other.GetGlobalOrigin();
     }
 
-    public BSP.Room GetRoomAtPos(int x, int y)
+    public BSPRoom GetRoomAtPos(int x, int y)
     {
         (x, y) = GetGlobalOrigin() + (x, y);
         var node = Root;
         while (true)
             switch (node.SplitDirection)
             {
-                case BSP.SplitDirectionEnum.Horizontal:
+                case BSPSplitDirection.Horizontal:
                     switch (x < node.SplitDistance ? node.First : node.Second)
                     {
-                        case BSP.Room room:
+                        case BSPRoom room:
                             return room;
                         case BSP bsp:
                             node = bsp;
                             break;
                     }
                     break;
-                case BSP.SplitDirectionEnum.Vertical:
+                case BSPSplitDirection.Vertical:
                     switch (y < node.SplitDistance ? node.First : node.Second)
                     {
-                        case BSP.Room room:
+                        case BSPRoom room:
                             return room;
                         case BSP bsp:
                             node = bsp;

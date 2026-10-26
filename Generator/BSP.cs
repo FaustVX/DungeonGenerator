@@ -124,44 +124,44 @@ public class BSP : BSPNode, IGenerator
             return TileTemplate.Ground;
         }
 
-        public Room? LeftRoom(int pos)
+        public Room? LeftRoom(int y)
         {
             foreach (var room in Root.Rooms)
             {
-                var (x, y) = GetPosRelativeTo(room, 0, pos);
+                (var x, y) = GetPosRelativeTo(room, 0, y);
                 if (x == room.Width && y >= 0 && y < room.Height)
                     return room;
             }
             return null;
         }
 
-        public Room? RightRoom(int pos)
+        public Room? RightRoom(int y)
         {
             foreach (var room in Root.Rooms)
             {
-                var (x, y) = GetPosRelativeTo(room, Width, pos);
+                (var x, y) = GetPosRelativeTo(room, Width, y);
                 if (x == 0 && y >= 0 && y < room.Height)
                     return room;
             }
             return null;
         }
 
-        public Room? UpRoom(int pos)
+        public Room? UpRoom(int x)
         {
             foreach (var room in Root.Rooms)
             {
-                var (x, y) = GetPosRelativeTo(room, pos, 0);
+                (x, var y) = GetPosRelativeTo(room, x, 0);
                 if (y == room.Height && x >= 0 && x < room.Width)
                     return room;
             }
             return null;
         }
 
-        public Room? DownRoom(int pos)
+        public Room? DownRoom(int x)
         {
             foreach (var room in Root.Rooms)
             {
-                var (x, y) = GetPosRelativeTo(room, pos, Height);
+                (x, var y) = GetPosRelativeTo(room, x, Height);
                 if (y == 0 && x >= 0 && x < room.Width)
                     return room;
             }

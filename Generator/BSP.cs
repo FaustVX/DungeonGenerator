@@ -82,6 +82,8 @@ public class BSP : BSPNode, IGenerator
 
     public override TileTemplate GetTile(int x, int y)
     {
+        ArgumentOutOfRangeException.ThrowIfNotInBetween(x, 0, Width - 1);
+        ArgumentOutOfRangeException.ThrowIfNotInBetween(y, 0, Height - 1);
         switch (SplitDirection)
         {
             case SplitDirectionEnum.Horizontal:
@@ -116,10 +118,16 @@ public class BSP : BSPNode, IGenerator
         public override BSP Parent { get; }
         public override int Width { get; }
         public override int Height { get; }
+        public int TopWallWidth { get; } = 1;
+        public int BottomWallWidth { get; } = 1;
+        public int LeftWallWidth { get; } = 1;
+        public int RightWallWidth { get; } = 1;
 
         public override TileTemplate GetTile(int x, int y)
         {
-            if (x == 0 || y == 0 || x == Width - 1 || y == Height - 1)
+            ArgumentOutOfRangeException.ThrowIfNotInBetween(x, 0, Width - 1);
+            ArgumentOutOfRangeException.ThrowIfNotInBetween(y, 0, Height - 1);
+            if (x < LeftWallWidth || y < TopWallWidth || x >= Width - LeftWallWidth || y >= Height - BottomWallWidth)
                 return TileTemplate.Wall;
             return TileTemplate.Ground;
         }

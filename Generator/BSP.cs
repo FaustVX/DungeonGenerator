@@ -13,6 +13,10 @@ public class BSP : BSPNode, IGenerator
     public BSPNode Second { get; }
     public int SplitDistance { get; }
     public BSPSplitDirection SplitDirection { get; }
+    public BSPCorridor Corridor { get; }
+
+    public BSP? OtherBSP
+    => (BSP?)OtherSide;
 
     public BSP(int width, int height, (int w, int h) minRoomSize, (int w, int h) maxRoomSize, double fullSizedRoomPercent, RngOrSeed random)
     : this(width, height, minRoomSize, maxRoomSize, fullSizedRoomPercent, random.Random, null, null)
@@ -42,6 +46,12 @@ public class BSP : BSPNode, IGenerator
             default:
                 throw new UnreachableException();
         };
+        Corridor = new(this, 2, rng.Next(2, SplitDirection switch
+        {
+            BSPSplitDirection.Horizontal => Height,
+            BSPSplitDirection.Vertical => Width,
+            _ => throw new UnreachableException(),
+        } - 1));
     }
 
     static (BSPSplitDirection dir, BSPSplitDirection? other, int size) GetSplitDirection(Random rng, int width, int height, (int w, int h) minRoomSize, (int w, int h) maxRoomSize, BSPSplitDirection? otherDirection)
@@ -79,6 +89,8 @@ public class BSP : BSPNode, IGenerator
     {
         ArgumentOutOfRangeException.ThrowIfNotInBetween(x, 0, Width - 1);
         ArgumentOutOfRangeException.ThrowIfNotInBetween(y, 0, Height - 1);
+        if (IsInCorridor(this, Corridor, x, y))
+            return Corridor.GetTile(0, 0);
         switch (SplitDirection)
         {
             case BSPSplitDirection.Horizontal:
@@ -91,6 +103,12 @@ public class BSP : BSPNode, IGenerator
                 return Second.GetTile(x, y - SplitDistance);
             default:
                 throw new UnreachableException();
+        }
+
+        static bool IsInCorridor(BSP bsp, BSPCorridor corridor, int x, int y)
+        {
+            (x, y) = bsp.GetPosRelativeTo(corridor, x, y);
+            return 0 <= x && x < corridor.Width && 0 <= y && y < corridor.Height;
         }
     }
 }
@@ -189,6 +207,20 @@ public sealed class BSPRoom : BSPNode
         }
         return null;
     }
+
+    public BSPRoom OtherRoom
+    => (BSPRoom) OtherSide!;
+}
+
+public sealed class BSPCorridor(BSP parent, int width, int position) : BSPNode
+{
+    public override BSP Parent { get; } = parent;
+    public override int Width { get; } = width;
+    public override int Height { get; } = width;
+    public int Position { get; } = position;
+
+    public override TileTemplate GetTile(int x, int y)
+    => TileTemplate.Ground;
 }
 
 public abstract class BSPNode
@@ -215,6 +247,9 @@ public abstract class BSPNode
     public abstract int Width { get; }
     public abstract int Height { get; }
     public abstract TileTemplate GetTile(int x, int y);
+
+    public BSPNode? OtherSide
+    => Parent?.First != this ? Parent?.First : Parent?.Second;
 
     protected void CheckWidthHeight((int w, int h) minRoomSize, (int w, int h) maxRoomSize)
     {
@@ -253,9 +288,17 @@ public abstract class BSPNode
                         y += Parent.SplitDistance;
                         break;
                 }
-            return (x, y);
+            return this is BSPCorridor corridor ? GetCorridorPos(corridor, x, y) : (x, y);
         }
         return (0, 0);
+
+        static (int, int) GetCorridorPos(BSPCorridor corridor, int x, int y)
+        => corridor.Parent.SplitDirection switch
+        {
+            BSPSplitDirection.Horizontal => (x + corridor.Parent.SplitDistance - 1, y + corridor.Position - 1),
+            BSPSplitDirection.Vertical => (x + corridor.Position - 1, y + corridor.Parent.SplitDistance - 1),
+            _ => throw new UnreachableException(),
+        };
     }
 
     public (int x, int y) GetPosRelativeTo(BSPNode other, int x, int y)

@@ -2,10 +2,10 @@ namespace DungeonGenerator.Generator;
 
 public interface IGenerator
 {
-    public delegate IGenerator Ctor(int width, int height, RngOrSeed rng);
+    public delegate IGenerator Ctor(int width, int height, RngOrSeed rng, Level level);
     public static IReadOnlyList<Ctor> Generators { get; } = [
-        (width, height, seed) => new BSP(width, height, (5, 5), (10, 10), 1, seed),
-        (width, height, seed) => new BSP(width, height, (10, 10), (15, 15), 1, seed),
+        (width, height, seed, level) => new BSP(width, height, (5, 5), (10, 10), 1, seed, level),
+        (width, height, seed, level) => new BSP(width, height, (10, 10), (15, 15), 1, seed, level),
     ];
 
     public Tile.TileTemplate GetTile(int x, int y);

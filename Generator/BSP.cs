@@ -9,6 +9,7 @@ public class BSP : BSPNode, IGenerator
     public override int Height { get; }
     public List<BSPRoom> Rooms { get; } = [];
     public override BSP? Parent { get; }
+    public Level Level { get; }
     public BSPNode First { get; }
     public BSPNode Second { get; }
     public int SplitDistance { get; }
@@ -18,15 +19,19 @@ public class BSP : BSPNode, IGenerator
     public BSP? OtherBSP
     => (BSP?)OtherSide;
 
-    public BSP(int width, int height, (int w, int h) minRoomSize, (int w, int h) maxRoomSize, double fullSizedRoomPercent, RngOrSeed random)
-    : this(width, height, minRoomSize, maxRoomSize, fullSizedRoomPercent, random.Random, null, null)
-    { }
+    public BSP(int width, int height, (int w, int h) minRoomSize, (int w, int h) maxRoomSize, double fullSizedRoomPercent, RngOrSeed random, Level level)
+    : this(width, height, minRoomSize, maxRoomSize, fullSizedRoomPercent, random.Random, null, null, level)
+    {
+        Rooms[0].GenerateEntrance(random.Random);
+        Rooms[^1].GenerateExit(random.Random);
+    }
 
-    private BSP(int width, int height, (int w, int h) minRoomSize, (int w, int h) maxRoomSize, double fullSizedRoomPercent, Random rng, BSP? parent, BSPSplitDirection? otherDirection)
+    private BSP(int width, int height, (int w, int h) minRoomSize, (int w, int h) maxRoomSize, double fullSizedRoomPercent, Random rng, BSP? parent, BSPSplitDirection? otherDirection, Level level)
     {
         Width = width;
         Height = height;
         Parent = parent;
+        Level = level;
         CheckWidthHeight(minRoomSize, maxRoomSize);
         ArgumentOutOfRangeException.ThrowIfNegative(fullSizedRoomPercent);
         switch (GetSplitDirection(rng, width, height, minRoomSize, maxRoomSize, otherDirection))
@@ -34,14 +39,14 @@ public class BSP : BSPNode, IGenerator
             case (BSPSplitDirection.Horizontal, var otherDir, var size):
                 SplitDirection = BSPSplitDirection.Horizontal;
                 SplitDistance = size;
-                First = size <= maxRoomSize.w ? new BSPRoom(size, height, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this) : new BSP(size, height, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this, otherDir);
-                Second = width - size <= maxRoomSize.w ? new BSPRoom(width - size, height, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this) : new BSP(width - size, height, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this, otherDir);
+                First = size <= maxRoomSize.w ? new BSPRoom(size, height, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this) : new BSP(size, height, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this, otherDir, level);
+                Second = width - size <= maxRoomSize.w ? new BSPRoom(width - size, height, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this) : new BSP(width - size, height, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this, otherDir, level);
                 break;
             case (BSPSplitDirection.Vertical, var otherDir, var size):
                 SplitDirection = BSPSplitDirection.Vertical;
                 SplitDistance = size;
-                First = size <= maxRoomSize.h ? new BSPRoom(width, size, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this) : new BSP(width, size, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this, otherDir);
-                Second = height - size <= maxRoomSize.h ? new BSPRoom(width, height - size, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this) : new BSP(width, height - size, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this, otherDir);
+                First = size <= maxRoomSize.h ? new BSPRoom(width, size, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this) : new BSP(width, size, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this, otherDir, level);
+                Second = height - size <= maxRoomSize.h ? new BSPRoom(width, height - size, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this) : new BSP(width, height - size, minRoomSize, maxRoomSize, fullSizedRoomPercent, rng, this, otherDir, level);
                 break;
             default:
                 throw new UnreachableException();
@@ -154,11 +159,14 @@ public sealed class BSPRoom : BSPNode
     public int BottomWallWidth { get; } = 1;
     public int LeftWallWidth { get; } = 1;
     public int RightWallWidth { get; } = 1;
+    private readonly List<Feature> _features = [];
 
     public override TileTemplate GetTile(int x, int y)
     {
         ArgumentOutOfRangeException.ThrowIfNotInBetween(x, 0, Width - 1);
         ArgumentOutOfRangeException.ThrowIfNotInBetween(y, 0, Height - 1);
+        if (_features.Find(f => f.X <= x && x < f.X + f.Width && f.Y <= y && y < f.Y + f.Height) is Feature f)
+            return f.Template;
         if (x < LeftWallWidth || y < TopWallWidth || x >= Width - RightWallWidth || y >= Height - BottomWallWidth)
             return TileTemplate.Wall;
         return TileTemplate.Ground;
@@ -210,6 +218,22 @@ public sealed class BSPRoom : BSPNode
 
     public BSPRoom OtherRoom
     => (BSPRoom) OtherSide!;
+
+    public void GenerateEntrance(Random rng)
+    {
+        _features.Add(new(rng.Next(LeftWallWidth, Width - (LeftWallWidth + RightWallWidth) + LeftWallWidth),
+            rng.Next(TopWallWidth, Height - (TopWallWidth + BottomWallWidth) + TopWallWidth),
+            1, 1, new UpstairTemplate(Parent.Level.Depth > 0)));
+    }
+
+    public void GenerateExit(Random rng)
+    {
+        _features.Add(new(rng.Next(LeftWallWidth, Width - (LeftWallWidth + RightWallWidth) + LeftWallWidth),
+            rng.Next(TopWallWidth, Height - (TopWallWidth + BottomWallWidth) + TopWallWidth),
+            1, 1, TileTemplate.Downstair));
+    }
+
+    private sealed record class Feature(int X, int Y, int Width, int Height, TileTemplate Template);
 }
 
 public sealed class BSPCorridor(BSP parent, int width, int position) : BSPNode

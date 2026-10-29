@@ -22,6 +22,7 @@ public sealed class Game
         Seed = seed;
         var (x, y) = CurrentLevel.MainTiles[Level.MainTile.Entrance];
         player = new(x, y);
+        CurrentLevel.Update();
     }
 
     private bool Move(int x, int y)
@@ -39,6 +40,7 @@ public sealed class Game
             (x, y) = CurrentLevel.MainTiles[Level.MainTile.Exit];
         }
         (player.X, player.Y) = (x, y);
+        CurrentLevel.Update();
         return true;
     }
 

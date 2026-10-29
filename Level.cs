@@ -5,7 +5,7 @@ namespace DungeonGenerator;
 
 public sealed class Level
 {
-    private readonly Tile.Tile[,] _tiles;
+    private readonly TileTemplate[,] _tiles;
     public Dictionary<MainTile, (int x, int y)> MainTiles { get; } = [];
     public int Depth { get; }
 
@@ -13,12 +13,12 @@ public sealed class Level
     {
         Depth = depth;
         var generator = Random.Shared.NextItem(IGenerator.Generators)(game.Width, game.Height, game.Seed + depth, this);
-        _tiles = new Tile.Tile[game.Width, game.Height];
+        _tiles = new TileTemplate[game.Width, game.Height];
         for (int x = 0; x < game.Width; x++)
             for (int y = 0; y < game.Height; y++)
             {
                 var template = generator.GetTile(x, y);
-                _tiles[x, y] = new(x, y, template, true);
+                _tiles[x, y] = template;
                 if (template is UpstairTemplate)
                     if (MainTiles.ContainsKey(MainTile.Entrance))
                         throw new Exception();
@@ -36,8 +36,8 @@ public sealed class Level
 
     public Tile.Tile this[int x, int y]
     {
-        get => _tiles[x, y];
-        set => _tiles[x, y] = value with { X = x, Y = y };
+        get => new(x, y, _tiles[x, y], false);
+        set => _tiles[x, y] = value.Template;
     }
 
     public enum MainTile

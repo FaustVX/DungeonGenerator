@@ -14,17 +14,7 @@ try
         for (int y = 0; y < game.Height; y++)
         {
             for (int x = 0; x < game.Width; x++)
-            {
-                var template = game.CurrentLevel[x, y].Template;
-                if ((game.Player.X, game.Player.Y) == (x, y))
-                {
-                    (AnsiConsole.Background, AnsiConsole.Foreground) = (template.Background, game.Player.Color);
-                    AnsiConsole.Write(game.Player.Symbol);
-                    AnsiConsole.Reset();
-                }
-                else
-                    AnsiConsole.Write(template);
-            }
+                WriteTile(game, x, y);
             Console.WriteLine();
         }
         switch (Console.ReadKey(intercept: true))
@@ -61,4 +51,19 @@ finally
         AnsiConsole.Console.WriteAnsi(w => w.ExitAltScreen());
     }
     Console.CursorVisible = true;
+}
+
+static void WriteTile(Game game, int x, int y)
+{
+    var tile = game.CurrentLevel[x, y];
+    var c = tile.Template.Symbol;
+    var back = tile.Template.Background;
+    var fore = tile.Template.Foreground;
+    if ((x, y) == (game.Player.X, game.Player.Y))
+    {
+        c = game.Player.Symbol;
+        fore = game.Player.Color;
+    }
+    (AnsiConsole.Background, AnsiConsole.Foreground) = (back, fore);
+    AnsiConsole.Write(c);
 }

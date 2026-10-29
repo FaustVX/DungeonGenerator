@@ -10,7 +10,10 @@ public interface ICreature
     public abstract Color Color { get; }
 }
 
-public interface IPlayer : ICreature;
+public interface IPlayer : ICreature
+{
+    public abstract double ViewDistance { get; }
+}
 
 public record class Creature(int X, int Y, char Symbol, Color Color) : ICreature
 {
@@ -18,4 +21,7 @@ public record class Creature(int X, int Y, char Symbol, Color Color) : ICreature
     public int Y { get; set; } = Y;
 }
 
-public record class Player(int X, int Y) : Creature(X, Y, '@', Color.Aqua), IPlayer;
+public record class Player(int X, int Y) : Creature(X, Y, '@', Color.Aqua), IPlayer
+{
+    public double ViewDistance { get; } = 5.5;
+}

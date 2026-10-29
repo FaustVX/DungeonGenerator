@@ -50,6 +50,18 @@ static class Ext
         => (lhs.Item1 - rhs.Item1, lhs.Item2 - rhs.Item2);
     }
 
+    extension((int x, int y) pos)
+    {
+        public int DistanceSquared(int x, int y)
+        {
+            var (dx, dy) = (x - pos.x, y - pos.y);
+            return dx * dx + dy * dy;
+        }
+
+        public double Distance(int x, int y)
+        => Math.Sqrt(DistanceSquared(pos, x, y));
+    }
+
     public static IEnumerable<(int x, int y)> Line(int x0, int y0, int x1, int y1)
     {
         var dx = Math.Abs(x1 - x0);

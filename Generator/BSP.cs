@@ -52,31 +52,43 @@ public class BSP : BSPNode, IGenerator
                 throw new UnreachableException();
         };
         do
-            Corridor = new(this, 2, rng.Next(2, SplitDirection switch
+            Corridor = new(this, 1, rng.Next(2, SplitDirection switch
             {
                 BSPSplitDirection.Horizontal => Height,
                 BSPSplitDirection.Vertical => Width,
                 _ => throw new UnreachableException(),
             } - 1));
-        while (!CheckCorridorAccess(this, Corridor));
+        while (!CheckCorridorAccess(Corridor));
 
-        static bool CheckCorridorAccess(BSP @this, BSPCorridor corridor)
+        static bool CheckCorridorAccess(BSPCorridor corridor)
         {
-            var hPos = (stackalloc (int x, int y)[4] {(-1, 0), (-1, 1), (corridor.Width, 0), (corridor.Width, 1)});
-            var vPos = (stackalloc (int x, int y)[4] {(0, -1), (1, -1), (0, corridor.Height), (1, corridor.Height)});
-            foreach (var pos in @this.SplitDirection == BSPSplitDirection.Horizontal ? hPos : vPos)
+            switch (corridor.Parent.SplitDirection)
             {
-                var (x, y) = corridor.GetPosRelativeTo(@this, pos.x, pos.y);
-                if (!@this.GetTile(x, y).IsWalkable)
+                case BSPSplitDirection.Horizontal:
+                {
+                    var (x, y) = corridor.GetPosRelativeTo(corridor.Parent, 0, 0);
+                    if (corridor.Parent.GetTile(x - 1, y).IsWalkable || corridor.Parent.GetTile(x, y - 1).IsWalkable || corridor.Parent.GetTile(x, y + 1).IsWalkable)
+                    {
+                        (x, y) = corridor.GetPosRelativeTo(corridor.Parent, corridor.Width - 1, 0);
+                        if (corridor.Parent.GetTile(x + 1, y).IsWalkable || corridor.Parent.GetTile(x, y - 1).IsWalkable || corridor.Parent.GetTile(x, y + 1).IsWalkable)
+                            return true;
+                    }
                     return false;
-            }
-            foreach (var pos in @this.SplitDirection == BSPSplitDirection.Horizontal ? vPos : hPos)
-            {
-                var (x, y) = corridor.GetPosRelativeTo(@this, pos.x, pos.y);
-                if (@this.GetTile(x, y).IsWalkable)
+                }
+                case BSPSplitDirection.Vertical:
+                {
+                    var (x, y) = corridor.GetPosRelativeTo(corridor.Parent, 0, 0);
+                    if (corridor.Parent.GetTile(x, y - 1).IsWalkable || corridor.Parent.GetTile(x - 1, y).IsWalkable || corridor.Parent.GetTile(x + 1, y).IsWalkable)
+                    {
+                        (x, y) = corridor.GetPosRelativeTo(corridor.Parent, 0, corridor.Height - 1);
+                        if (corridor.Parent.GetTile(x, y + 1).IsWalkable || corridor.Parent.GetTile(x - 1, y).IsWalkable || corridor.Parent.GetTile(x + 1, y).IsWalkable)
+                            return true;
+                    }
                     return false;
+                }
+                default:
+                    throw new UnreachableException();
             }
-            return true;
         }
     }
 
@@ -257,12 +269,33 @@ public sealed class BSPRoom : BSPNode
     private sealed record class Feature(int X, int Y, int Width, int Height, TileTemplate Template);
 }
 
-public sealed class BSPCorridor(BSP parent, int width, int position) : BSPNode
+public sealed class BSPCorridor : BSPNode
 {
-    public override BSP Parent { get; } = parent;
-    public override int Width { get; } = width;
-    public override int Height { get; } = width;
-    public int Position { get; } = position;
+    public override BSP Parent { get; }
+    public override int Width { get; }
+    public override int Height { get; }
+    public int Position { get; }
+    public int LengthOffset { get; }
+
+    public BSPCorridor(BSP parent, int width, int position)
+    {
+        Parent = parent;
+        Width = width;
+        Height = width;
+        Position = position;
+        LengthOffset = 1;
+        switch (parent.SplitDirection)
+        {
+            case BSPSplitDirection.Horizontal:
+                Width = 2;
+                break;
+            case BSPSplitDirection.Vertical:
+                Height = 2;
+                break;
+            default:
+                throw new UnreachableException();
+        }
+    }
 
     public override TileTemplate GetTile(int x, int y)
     => TileTemplate.Ground;
@@ -332,6 +365,8 @@ public abstract class BSPNode
                     case BSPSplitDirection.Vertical:
                         y += Parent.SplitDistance;
                         break;
+                    default:
+                        throw new UnreachableException();
                 }
             return this is BSPCorridor corridor ? GetCorridorPos(corridor, x, y) : (x, y);
         }

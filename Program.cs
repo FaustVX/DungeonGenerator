@@ -10,7 +10,7 @@ try
     var game = new Game(100, 20, 01234);
     while (true)
     {
-        var header = $"Depth:{game.Depth}";
+        var header = $"{game.Steps}:{game.Depth}";
         Console.SetCursorPosition(game.Width - header.Length, 1);
         Console.WriteLine(header);
         for (int y = 0; y < game.Height; y++)

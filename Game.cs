@@ -9,7 +9,7 @@ public sealed class Game
     public int Height { get; }
     private readonly DefaultableList<Level> _levels;
     private readonly Player player;
-
+    public long Steps { get; private set; }
     public int Depth { get; private set; } = 0;
     public Level CurrentLevel => _levels[Depth];
     public int Seed { get; }
@@ -29,6 +29,7 @@ public sealed class Game
     {
         if (!CurrentLevel[x, y].Template.IsWalkable)
             return false;
+        Steps++;
         if (CurrentLevel[x, y].Template == TileTemplate.Downstair)
         {
             Depth++;

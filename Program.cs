@@ -65,7 +65,12 @@ static void WriteTile(Game game, int x, int y)
         fore = game.Player.Color;
     }
     if (!tile.IsVisible)
-        fore = fore.Blend(Color.Black, .75f);
+        if (tile.HasBeenSeen)
+            fore = fore.Blend(Color.Black, .75f);
+        else
+            fore = Color.Black;
+    if (fore == back)
+        c = '█';
     (AnsiConsole.Background, AnsiConsole.Foreground) = (back, fore);
     AnsiConsole.Write(c);
 }

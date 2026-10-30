@@ -23,5 +23,5 @@ public record class Creature(int X, int Y, char Symbol, Color Color) : ICreature
 
 public record class Player(int X, int Y) : Creature(X, Y, '@', Color.Aqua), IPlayer
 {
-    public double ViewDistance { get; } = 5.5;
+    public double ViewDistance { get; } = 2.5;
 }

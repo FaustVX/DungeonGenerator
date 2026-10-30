@@ -51,12 +51,33 @@ public class BSP : BSPNode, IGenerator
             default:
                 throw new UnreachableException();
         };
-        Corridor = new(this, 2, rng.Next(2, SplitDirection switch
+        do
+            Corridor = new(this, 2, rng.Next(2, SplitDirection switch
+            {
+                BSPSplitDirection.Horizontal => Height,
+                BSPSplitDirection.Vertical => Width,
+                _ => throw new UnreachableException(),
+            } - 1));
+        while (!CheckCorridorAccess(this, Corridor));
+
+        static bool CheckCorridorAccess(BSP @this, BSPCorridor corridor)
         {
-            BSPSplitDirection.Horizontal => Height,
-            BSPSplitDirection.Vertical => Width,
-            _ => throw new UnreachableException(),
-        } - 1));
+            var hPos = (stackalloc (int x, int y)[4] {(-1, 0), (-1, 1), (corridor.Width, 0), (corridor.Width, 1)});
+            var vPos = (stackalloc (int x, int y)[4] {(0, -1), (1, -1), (0, corridor.Height), (1, corridor.Height)});
+            foreach (var pos in @this.SplitDirection == BSPSplitDirection.Horizontal ? hPos : vPos)
+            {
+                var (x, y) = corridor.GetPosRelativeTo(@this, pos.x, pos.y);
+                if (!@this.GetTile(x, y).IsWalkable)
+                    return false;
+            }
+            foreach (var pos in @this.SplitDirection == BSPSplitDirection.Horizontal ? vPos : hPos)
+            {
+                var (x, y) = corridor.GetPosRelativeTo(@this, pos.x, pos.y);
+                if (@this.GetTile(x, y).IsWalkable)
+                    return false;
+            }
+            return true;
+        }
     }
 
     static (BSPSplitDirection dir, BSPSplitDirection? other, int size) GetSplitDirection(Random rng, int width, int height, (int w, int h) minRoomSize, (int w, int h) maxRoomSize, BSPSplitDirection? otherDirection)

@@ -4,6 +4,15 @@ using Spectre.Console;
 var alternateScreen = false;
 Console.CursorVisible = false;
 AnsiConsole.Console.WriteAnsi(w => w.EnterAltScreen().CursorHome()); alternateScreen = true;
+Console.CancelKeyPress += (s, e) =>
+{
+    if (alternateScreen)
+    {
+        AnsiConsole.Console.WriteAnsi(w => w.ExitAltScreen());
+        alternateScreen = false;
+    }
+    Console.CursorVisible = true;
+};
 
 try
 {

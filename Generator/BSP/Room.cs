@@ -12,7 +12,7 @@ public sealed class Room : Node
         var isFullSizedRoom = rng.NextBool(fullSizedRoomPercent);
         if (minRoomSize.w < width - 2 && !isFullSizedRoom)
         {
-            width = rng.Next(minRoomSize.w, width - 2);
+            width = rng.Next(Math.Max(minRoomSize.w, width / 2 - 1), width - 2);
             LeftWallWidth = rng.Next(1, Width - width);
             RightWallWidth = Width - width - LeftWallWidth;
         }
@@ -21,7 +21,7 @@ public sealed class Room : Node
 
         if (minRoomSize.h < height - 2 && !isFullSizedRoom)
         {
-            height = rng.Next(minRoomSize.h, height - 2);
+            height = rng.Next(Math.Max(minRoomSize.h, height / 2 - 1), height - 2);
             TopWallWidth = rng.Next(1, Height - height);
             BottomWallWidth = Height - height - TopWallWidth;
         }

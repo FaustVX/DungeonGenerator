@@ -58,7 +58,9 @@ public abstract class Node
         if (Parent is null)
             return (0, 0);
         var (x, y) = Parent.GetGlobalOrigin();
-        if (Parent.Second == this)
+        if (this is Corridor corridor)
+            return GetPosInCorridor(corridor, x, y);
+        if (Parent.First != null && Parent.First != this)
             switch (Parent?.SplitDirection)
             {
                 case SplitDirection.Horizontal:
@@ -70,13 +72,13 @@ public abstract class Node
                 default:
                     throw new UnreachableException();
             }
-        return this is Corridor corridor ? GetPosInCorridor(corridor, x, y) : (x, y);
+        return (x, y);
 
         static (int x, int y) GetPosInCorridor(Corridor corridor, int x, int y)
         => corridor.Parent.SplitDirection switch
         {
-            SplitDirection.Horizontal => (x + corridor.Parent.SplitDistance - corridor.LengthOffset, y + corridor.Position - 1),
-            SplitDirection.Vertical => (x + corridor.Position - 1, y + corridor.Parent.SplitDistance - corridor.LengthOffset),
+            SplitDirection.Horizontal => (x + corridor.Parent.SplitDistance - corridor.LengthOffset, y + corridor.Position),
+            SplitDirection.Vertical => (x + corridor.Position, y + corridor.Parent.SplitDistance - corridor.LengthOffset),
             _ => throw new UnreachableException(),
         };
     }
@@ -121,4 +123,40 @@ public abstract class Node
                     throw new UnreachableException();
         }
     }
+
+    public int TopMostWalkable()
+    => this switch
+    {
+        Room r => r.TopWallWidth,
+        Generator g => Math.Min(g.First.GetPosRelativeTo(this, 0, g.First.TopMostWalkable()).y,
+                            g.Second.GetPosRelativeTo(this, 0, g.Second.TopMostWalkable()).y),
+        _ => throw new UnreachableException(),
+    };
+
+    public int BottomMostWalkable()
+    => this switch
+    {
+        Room r => r.Height - r.BottomWallWidth - 1,
+        Generator g => Math.Max(g.First.GetPosRelativeTo(this, 0, g.First.BottomMostWalkable()).y,
+                            g.Second.GetPosRelativeTo(this, 0, g.Second.BottomMostWalkable()).y),
+        _ => throw new UnreachableException(),
+    };
+
+    public int LeftMostWalkable()
+    => this switch
+    {
+        Room r => r.LeftWallWidth,
+        Generator g => Math.Min(g.First.GetPosRelativeTo(this, g.First.LeftMostWalkable(), 0).x,
+                            g.Second.GetPosRelativeTo(this, g.Second.LeftMostWalkable(), 0).x),
+        _ => throw new UnreachableException(),
+    };
+
+    public int RightMostWalkable()
+    => this switch
+    {
+        Room r => r.Width - r.RightWallWidth - 1,
+        Generator g => Math.Max(g.First.GetPosRelativeTo(this, g.First.RightMostWalkable(), 0).x,
+                            g.Second.GetPosRelativeTo(this, g.Second.RightMostWalkable(), 0).x),
+        _ => throw new UnreachableException(),
+    };
 }

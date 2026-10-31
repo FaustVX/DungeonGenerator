@@ -27,27 +27,27 @@ public sealed class Corridor : Node
                 Position = rng.Next(top, bot + 1); // +1 because maxValue is exclusive but it should be included
                 break;
             }
-            case (SplitDirection.Horizontal, Room left, Generator):
+            case (SplitDirection.Horizontal, Room left, Generator right):
             {
                 Width = 2;
-                var top = Math.Max(1, left.TopWallWidth - 1);
-                var bot = Math.Min(parent.Height - 2, left.Height - left.BottomWallWidth);
+                var top = Math.Max(1, left.TopWallWidth - 1, right.TopMostWalkable() - 1);
+                var bot = Math.Min(parent.Height - 2, left.Height - left.BottomWallWidth, right.BottomMostWalkable() + 1);
                 Position = rng.Next(top, bot + 1); // +1 because maxValue is exclusive but it should be included
                 break;
             }
-            case (SplitDirection.Horizontal, Generator, Room right):
+            case (SplitDirection.Horizontal, Generator left, Room right):
             {
                 Width = 2;
-                var top = Math.Max(1, right.TopWallWidth - 1);
-                var bot = Math.Min(parent.Height - 2, right.Height - right.BottomWallWidth);
+                var top = Math.Max(1, left.TopMostWalkable() - 1, right.TopWallWidth - 1);
+                var bot = Math.Min(parent.Height - 2, left.BottomMostWalkable() + 1, right.Height - right.BottomWallWidth);
                 Position = rng.Next(top, bot + 1); // +1 because maxValue is exclusive but it should be included
                 break;
             }
-            case (SplitDirection.Horizontal, Generator, Generator):
+            case (SplitDirection.Horizontal, Generator left, Generator right):
             {
                 Width = 2;
-                var top = 1;
-                var bot = parent.Height - 2;
+                var top = Math.Max(1, left.TopMostWalkable() - 1, right.TopMostWalkable() - 1);
+                var bot = Math.Min(parent.Height - 2, left.BottomMostWalkable() + 1, right.BottomMostWalkable() + 1);
                 Position = rng.Next(top, bot + 1); // +1 because maxValue is exclusive but it should be included
                 break;
             }
@@ -59,27 +59,27 @@ public sealed class Corridor : Node
                 Position = rng.Next(left, right + 1); // +1 because maxValue is exclusive but it should be included
                 break;
             }
-            case (SplitDirection.Vertical, Room top, Generator):
+            case (SplitDirection.Vertical, Room top, Generator bot):
             {
                 Height = 2;
-                var left = Math.Max(1, top.LeftWallWidth - 1);
-                var right = Math.Min(parent.Width - 2, top.Width - top.RightWallWidth);
+                var left = Math.Max(1, top.LeftWallWidth - 1, bot.LeftMostWalkable() - 1);
+                var right = Math.Min(parent.Width - 2, top.Width - top.RightWallWidth, bot.RightMostWalkable() + 1);
                 Position = rng.Next(left, right + 1); // +1 because maxValue is exclusive but it should be included
                 break;
             }
-            case (SplitDirection.Vertical, Generator, Room bottom):
+            case (SplitDirection.Vertical, Generator top, Room bottom):
             {
                 Height = 2;
-                var left = Math.Max(1, bottom.LeftWallWidth - 1);
-                var right = Math.Min(parent.Width - 2, bottom.Width - bottom.RightWallWidth);
+                var left = Math.Max(1, top.LeftMostWalkable() - 1, bottom.LeftWallWidth - 1);
+                var right = Math.Min(parent.Width - 2, top.RightMostWalkable() + 1, bottom.Width - bottom.RightWallWidth);
                 Position = rng.Next(left, right + 1); // +1 because maxValue is exclusive but it should be included
                 break;
             }
-            case (SplitDirection.Vertical, Generator, Generator):
+            case (SplitDirection.Vertical, Generator top, Generator bot):
             {
                 Height = 2;
-                var left = 1;
-                var right = parent.Width - 2;
+                var left = Math.Max(1, top.LeftMostWalkable() - 1, bot.LeftMostWalkable() - 1);
+                var right = Math.Min(parent.Width - 2, top.RightMostWalkable() + 1, bot.RightMostWalkable() + 1);
                 Position = rng.Next(left, right + 1); // +1 because maxValue is exclusive but it should be included
                 break;
             }
@@ -92,7 +92,7 @@ public sealed class Corridor : Node
             case SplitDirection.Horizontal:
             {
                 var (x, y) = GetPosRelativeTo(Parent, 1, 0);
-                while (!(Parent.GetTile(x - 1, y).IsWalkable || Parent.GetTile(x, y - 1).IsWalkable || Parent.GetTile(x, y + 1).IsWalkable))
+                while (!(Parent.GetTile(x + 1, y).IsWalkable || Parent.GetTile(x, y - 1).IsWalkable || Parent.GetTile(x, y + 1).IsWalkable))
                 {
                     x++;
                     Width++;
@@ -110,7 +110,7 @@ public sealed class Corridor : Node
             case SplitDirection.Vertical:
             {
                 var (x, y) = GetPosRelativeTo(Parent, 0, 1);
-                while (!(Parent.GetTile(x, y - 1).IsWalkable || Parent.GetTile(x - 1, y).IsWalkable || Parent.GetTile(x + 1, y).IsWalkable))
+                while (!(Parent.GetTile(x, y + 1).IsWalkable || Parent.GetTile(x - 1, y).IsWalkable || Parent.GetTile(x + 1, y).IsWalkable))
                 {
                     y++;
                     Height++;

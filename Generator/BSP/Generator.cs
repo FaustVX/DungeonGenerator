@@ -13,12 +13,14 @@ public class Generator : Node, IGenerator
         {
             Generator g => g.Rooms,
             Room r => [r],
+            null => [],
             _ => throw new UnreachableException(),
         },
         ..Second switch
         {
             Generator g => g.Rooms,
             Room r => [r],
+            null => [],
             _ => throw new UnreachableException(),
         },
     ];

@@ -1,4 +1,6 @@
-﻿using DungeonGenerator;
+﻿using System.Diagnostics;
+using DungeonGenerator;
+using DungeonGenerator.Tile;
 using Spectre.Console;
 
 var alternateScreen = false;
@@ -45,6 +47,18 @@ try
             case { Key: ConsoleKey.Enter or ConsoleKey.Spacebar }:
                 game.Activate();
                 break;
+#if DEBUG
+            case { Key: ConsoleKey.T, Modifiers: ConsoleModifiers.Control }
+            when game.CurrentLevel[game.Player.X, game.Player.Y].Template is IStairTemplate { Direction: var dir }:
+                (game.Player.X, game.Player.Y) = game.CurrentLevel.MainTiles[dir switch
+                {
+                    IStairTemplate.StairDirection.Up => Level.MainTile.Exit,
+                    IStairTemplate.StairDirection.Down => Level.MainTile.Entrance,
+                    _ => throw new UnreachableException(),
+                }];
+                game.CurrentLevel.Update();
+                break;
+#endif
         }
     }
 }

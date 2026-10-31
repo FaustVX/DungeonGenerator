@@ -62,6 +62,14 @@ static class Ext
         => Math.Sqrt(DistanceSquared(pos, x, y));
     }
 
+    extension(Math)
+    {
+        public static T Max<T>(params ReadOnlySpan<T> values)
+        => values.Max()!;
+        public static T Min<T>(params ReadOnlySpan<T> values)
+        => values.Min()!;
+    }
+
     public static IEnumerable<(int x, int y)> Line(int x0, int y0, int x1, int y1)
     {
         var dx = Math.Abs(x1 - x0);

@@ -51,45 +51,7 @@ public class BSP : BSPNode, IGenerator
             default:
                 throw new UnreachableException();
         };
-        do
-            Corridor = new(this, 1, rng.Next(2, SplitDirection switch
-            {
-                BSPSplitDirection.Horizontal => Height,
-                BSPSplitDirection.Vertical => Width,
-                _ => throw new UnreachableException(),
-            } - 1));
-        while (!CheckCorridorAccess(Corridor));
-
-        static bool CheckCorridorAccess(BSPCorridor corridor)
-        {
-            switch (corridor.Parent.SplitDirection)
-            {
-                case BSPSplitDirection.Horizontal:
-                {
-                    var (x, y) = corridor.GetPosRelativeTo(corridor.Parent, 0, 0);
-                    if (corridor.Parent.GetTile(x - 1, y).IsWalkable || corridor.Parent.GetTile(x, y - 1).IsWalkable || corridor.Parent.GetTile(x, y + 1).IsWalkable)
-                    {
-                        (x, y) = corridor.GetPosRelativeTo(corridor.Parent, corridor.Width - 1, 0);
-                        if (corridor.Parent.GetTile(x + 1, y).IsWalkable || corridor.Parent.GetTile(x, y - 1).IsWalkable || corridor.Parent.GetTile(x, y + 1).IsWalkable)
-                            return true;
-                    }
-                    return false;
-                }
-                case BSPSplitDirection.Vertical:
-                {
-                    var (x, y) = corridor.GetPosRelativeTo(corridor.Parent, 0, 0);
-                    if (corridor.Parent.GetTile(x, y - 1).IsWalkable || corridor.Parent.GetTile(x - 1, y).IsWalkable || corridor.Parent.GetTile(x + 1, y).IsWalkable)
-                    {
-                        (x, y) = corridor.GetPosRelativeTo(corridor.Parent, 0, corridor.Height - 1);
-                        if (corridor.Parent.GetTile(x, y + 1).IsWalkable || corridor.Parent.GetTile(x - 1, y).IsWalkable || corridor.Parent.GetTile(x + 1, y).IsWalkable)
-                            return true;
-                    }
-                    return false;
-                }
-                default:
-                    throw new UnreachableException();
-            }
-        }
+        Corridor = new(this, rng);
     }
 
     static (BSPSplitDirection dir, BSPSplitDirection? other, int size) GetSplitDirection(Random rng, int width, int height, (int w, int h) minRoomSize, (int w, int h) maxRoomSize, BSPSplitDirection? otherDirection)
@@ -145,6 +107,8 @@ public class BSP : BSPNode, IGenerator
 
         static bool IsInCorridor(BSP bsp, BSPCorridor corridor, int x, int y)
         {
+            if (corridor is null)
+                return false;
             (x, y) = bsp.GetPosRelativeTo(corridor, x, y);
             return 0 <= x && x < corridor.Width && 0 <= y && y < corridor.Height;
         }
@@ -277,21 +241,120 @@ public sealed class BSPCorridor : BSPNode
     public int Position { get; }
     public int LengthOffset { get; }
 
-    public BSPCorridor(BSP parent, int width, int position)
+    public BSPCorridor(BSP parent, Random rng)
     {
         Parent = parent;
-        Width = width;
-        Height = width;
-        Position = position;
+        Width = 1;
+        Height = 1;
         LengthOffset = 1;
+        switch (parent.SplitDirection, parent.First, parent.Second)
+        {
+            case (BSPSplitDirection.Horizontal, BSPRoom left, BSPRoom right):
+            {
+                Width = 2;
+                var top = Math.Max(1, left.TopWallWidth - 1, right.TopWallWidth - 1);
+                var bot = Math.Min(parent.Height - 2, left.Height - left.BottomWallWidth, right.Height - right.BottomWallWidth);
+                Position = rng.Next(top, bot + 1); // +1 because maxValue is exclusive but it should be included
+                break;
+            }
+            case (BSPSplitDirection.Horizontal, BSPRoom left, BSP):
+            {
+                Width = 2;
+                var top = Math.Max(1, left.TopWallWidth - 1);
+                var bot = Math.Min(parent.Height - 2, left.Height - left.BottomWallWidth);
+                Position = rng.Next(top, bot + 1); // +1 because maxValue is exclusive but it should be included
+                break;
+            }
+            case (BSPSplitDirection.Horizontal, BSP, BSPRoom right):
+            {
+                Width = 2;
+                var top = Math.Max(1, right.TopWallWidth - 1);
+                var bot = Math.Min(parent.Height - 2, right.Height - right.BottomWallWidth);
+                Position = rng.Next(top, bot + 1); // +1 because maxValue is exclusive but it should be included
+                break;
+            }
+            case (BSPSplitDirection.Horizontal, BSP, BSP):
+            {
+                Width = 2;
+                var top = 1;
+                var bot = parent.Height - 2;
+                Position = rng.Next(top, bot + 1); // +1 because maxValue is exclusive but it should be included
+                break;
+            }
+            case (BSPSplitDirection.Vertical, BSPRoom top, BSPRoom bottom):
+            {
+                Height = 2;
+                var left = Math.Max(1, top.LeftWallWidth - 1, bottom.LeftWallWidth - 1);
+                var right = Math.Min(parent.Width - 2, top.Width - top.RightWallWidth, bottom.Width - bottom.RightWallWidth);
+                Position = rng.Next(left, right + 1); // +1 because maxValue is exclusive but it should be included
+                break;
+            }
+            case (BSPSplitDirection.Vertical, BSPRoom top, BSP):
+            {
+                Height = 2;
+                var left = Math.Max(1, top.LeftWallWidth - 1);
+                var right = Math.Min(parent.Width - 2, top.Width - top.RightWallWidth);
+                Position = rng.Next(left, right + 1); // +1 because maxValue is exclusive but it should be included
+                break;
+            }
+            case (BSPSplitDirection.Vertical, BSP, BSPRoom bottom):
+            {
+                Height = 2;
+                var left = Math.Max(1, bottom.LeftWallWidth - 1);
+                var right = Math.Min(parent.Width - 2, bottom.Width - bottom.RightWallWidth);
+                Position = rng.Next(left, right + 1); // +1 because maxValue is exclusive but it should be included
+                break;
+            }
+            case (BSPSplitDirection.Vertical, BSP, BSP):
+            {
+                Height = 2;
+                var left = 1;
+                var right = parent.Width - 2;
+                Position = rng.Next(left, right + 1); // +1 because maxValue is exclusive but it should be included
+                break;
+            }
+            default:
+                throw new UnreachableException();
+        }
+
         switch (parent.SplitDirection)
         {
             case BSPSplitDirection.Horizontal:
-                Width = 2;
+            {
+                var (x, y) = GetPosRelativeTo(Parent, 1, 0);
+                while (!(Parent.GetTile(x - 1, y).IsWalkable || Parent.GetTile(x, y - 1).IsWalkable || Parent.GetTile(x, y + 1).IsWalkable))
+                {
+                    x++;
+                    Width++;
+                }
+                // 0, 0 after the other end because the origin won't change
+                (x, y) = GetPosRelativeTo(Parent, 0, 0);
+                while (!(Parent.GetTile(x - 1, y).IsWalkable || Parent.GetTile(x, y - 1).IsWalkable || Parent.GetTile(x, y + 1).IsWalkable))
+                {
+                    x--;
+                    Width++;
+                    LengthOffset++;
+                }
                 break;
+            }
             case BSPSplitDirection.Vertical:
-                Height = 2;
+            {
+                var (x, y) = GetPosRelativeTo(Parent, 0, 1);
+                while (!(Parent.GetTile(x, y - 1).IsWalkable || Parent.GetTile(x - 1, y).IsWalkable || Parent.GetTile(x + 1, y).IsWalkable))
+                {
+                    y++;
+                    Height++;
+                }
+                // 0, 0 after the other end because the origin won't change
+                (x, y) = GetPosRelativeTo(Parent, 0, 0);
+                while (!(Parent.GetTile(x, y - 1).IsWalkable || Parent.GetTile(x - 1, y).IsWalkable || Parent.GetTile(x + 1, y).IsWalkable))
+                {
+                    y--;
+                    Height++;
+                    LengthOffset++;
+                }
                 break;
+            }
             default:
                 throw new UnreachableException();
         }
@@ -368,15 +431,15 @@ public abstract class BSPNode
                     default:
                         throw new UnreachableException();
                 }
-            return this is BSPCorridor corridor ? GetCorridorPos(corridor, x, y) : (x, y);
+            return this is BSPCorridor corridor ? GetPosInCorridor(corridor, x, y) : (x, y);
         }
         return (0, 0);
 
-        static (int, int) GetCorridorPos(BSPCorridor corridor, int x, int y)
+        static (int x, int y) GetPosInCorridor(BSPCorridor corridor, int x, int y)
         => corridor.Parent.SplitDirection switch
         {
-            BSPSplitDirection.Horizontal => (x + corridor.Parent.SplitDistance - 1, y + corridor.Position - 1),
-            BSPSplitDirection.Vertical => (x + corridor.Position - 1, y + corridor.Parent.SplitDistance - 1),
+            BSPSplitDirection.Horizontal => (x + corridor.Parent.SplitDistance - corridor.LengthOffset, y + corridor.Position - 1),
+            BSPSplitDirection.Vertical => (x + corridor.Position - 1, y + corridor.Parent.SplitDistance - corridor.LengthOffset),
             _ => throw new UnreachableException(),
         };
     }

@@ -55,24 +55,22 @@ public abstract class Node
 
     public (int x, int y) GetGlobalOrigin()
     {
-        if (Parent is not null)
-        {
-            var (x, y) = Parent.GetGlobalOrigin();
-            if (Parent.Second == this)
-                switch (Parent?.SplitDirection)
-                {
-                    case SplitDirection.Horizontal:
-                        x += Parent.SplitDistance;
-                        break;
-                    case SplitDirection.Vertical:
-                        y += Parent.SplitDistance;
-                        break;
-                    default:
-                        throw new UnreachableException();
-                }
-            return this is Corridor corridor ? GetPosInCorridor(corridor, x, y) : (x, y);
-        }
-        return (0, 0);
+        if (Parent is null)
+            return (0, 0);
+        var (x, y) = Parent.GetGlobalOrigin();
+        if (Parent.Second == this)
+            switch (Parent?.SplitDirection)
+            {
+                case SplitDirection.Horizontal:
+                    x += Parent.SplitDistance;
+                    break;
+                case SplitDirection.Vertical:
+                    y += Parent.SplitDistance;
+                    break;
+                default:
+                    throw new UnreachableException();
+            }
+        return this is Corridor corridor ? GetPosInCorridor(corridor, x, y) : (x, y);
 
         static (int x, int y) GetPosInCorridor(Corridor corridor, int x, int y)
         => corridor.Parent.SplitDirection switch

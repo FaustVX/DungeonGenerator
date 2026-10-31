@@ -100,14 +100,14 @@ public sealed class Room : Node
     {
         _features.Add(new(rng.Next(LeftWallWidth, Width - (LeftWallWidth + RightWallWidth) + LeftWallWidth),
             rng.Next(TopWallWidth, Height - (TopWallWidth + BottomWallWidth) + TopWallWidth),
-            1, 1, new UpstairTemplate(Parent.Level.Depth > 0)));
+            1, 1, TileTemplate.UpStair(Parent.Level.Depth > 0)));
     }
 
     public void GenerateExit(Random rng)
     {
         _features.Add(new(rng.Next(LeftWallWidth, Width - (LeftWallWidth + RightWallWidth) + LeftWallWidth),
             rng.Next(TopWallWidth, Height - (TopWallWidth + BottomWallWidth) + TopWallWidth),
-            1, 1, TileTemplate.Downstair));
+            1, 1, TileTemplate.DownStair(true)));
     }
 
     private sealed record class Feature(int X, int Y, int Width, int Height, TileTemplate Template);

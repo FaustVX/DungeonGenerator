@@ -8,12 +8,11 @@ public sealed class Game
     public int Width { get; }
     public int Height { get; }
     private readonly DefaultableList<Level> _levels;
-    private readonly Player player;
-    public long Steps { get; private set; }
-    public int Depth { get; private set; } = 0;
+    public long Steps { get; set; }
+    public int Depth { get; set; } = 0;
     public Level CurrentLevel => _levels[Depth];
     public int Seed { get; }
-    public IPlayer Player => player;
+    public Player Player { get; }
     public Game(int width, int height, int seed)
     {
         _levels = [with(() => new(this, Depth), capacity: 8)];
@@ -21,7 +20,7 @@ public sealed class Game
         Height = height;
         Seed = seed;
         var (x, y) = CurrentLevel.MainTiles[Level.MainTile.Entrance];
-        player = new(x, y);
+        Player = new(x, y);
         CurrentLevel.Update();
     }
 
@@ -30,51 +29,25 @@ public sealed class Game
         if (!CurrentLevel[x, y].Template.IsWalkable)
             return false;
         Steps++;
-        if (CurrentLevel[x, y].Template == TileTemplate.Downstair)
-        {
-            Depth++;
-            (x, y) = CurrentLevel.MainTiles[Level.MainTile.Entrance];
-        }
-        else if (CurrentLevel[x, y].Template is UpstairTemplate(Enabled: true))
-        {
-            Depth--;
-            (x, y) = CurrentLevel.MainTiles[Level.MainTile.Exit];
-        }
-        (player.X, player.Y) = (x, y);
+        (Player.X, Player.Y) = (x, y);
+        if (CurrentLevel[x, y].Template is IActivableTemplate { ActivateOnWalkOn: true } tile)
+            return tile.Activate(this);
         CurrentLevel.Update();
         return true;
     }
 
     public bool MoveUp()
-    => Move(player.X, player.Y - 1);
+    => Move(Player.X, Player.Y - 1);
 
     public bool MoveDown()
-    => Move(player.X, player.Y + 1);
+    => Move(Player.X, Player.Y + 1);
 
     public bool MoveLeft()
-    => Move(player.X - 1, player.Y);
+    => Move(Player.X - 1, Player.Y);
 
     public bool MoveRight()
-    => Move(player.X + 1, player.Y);
+    => Move(Player.X + 1, Player.Y);
 
     public bool Activate()
-    {
-        var (x, y) = (player.X, player.Y);
-        if (CurrentLevel[x, y].Template == TileTemplate.Downstair)
-        {
-            Depth++;
-            (x, y) = CurrentLevel.MainTiles[Level.MainTile.Entrance];
-        }
-        else if (CurrentLevel[x, y].Template is UpstairTemplate(Enabled: true))
-        {
-            Depth--;
-            (x, y) = CurrentLevel.MainTiles[Level.MainTile.Exit];
-        }
-        else
-            return false;
-        Steps++;
-        (player.X, player.Y) = (x, y);
-        CurrentLevel.Update();
-        return true;
-    }
+    => CurrentLevel[Player.X, Player.Y].Template is IActivableTemplate tile && tile.Activate(this);
 }

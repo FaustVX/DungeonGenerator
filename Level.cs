@@ -25,12 +25,12 @@ public sealed class Level
             {
                 var template = generator.GetTile(x, y);
                 _tiles[x, y] = template;
-                if (template is UpstairTemplate)
+                if (template is IStairTemplate { Direction: IStairTemplate.StairDirection.Up })
                     if (MainTiles.ContainsKey(MainTile.Entrance))
                         throw new Exception();
                     else
                         MainTiles.Add(MainTile.Entrance, (x, y));
-                else if (template == TileTemplate.Downstair)
+                else if (template is IStairTemplate { Direction: IStairTemplate.StairDirection.Down })
                     if (MainTiles.ContainsKey(MainTile.Exit))
                         throw new Exception();
                     else

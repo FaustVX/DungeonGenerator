@@ -42,6 +42,9 @@ try
             case { Key: ConsoleKey.DownArrow or ConsoleKey.NumPad2 }:
                 game.MoveDown();
                 break;
+            case { Key: ConsoleKey.Enter or ConsoleKey.Spacebar }:
+                game.Activate();
+                break;
         }
     }
 }

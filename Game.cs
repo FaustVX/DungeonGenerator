@@ -56,4 +56,25 @@ public sealed class Game
 
     public bool MoveRight()
     => Move(player.X + 1, player.Y);
+
+    public bool Activate()
+    {
+        var (x, y) = (player.X, player.Y);
+        if (CurrentLevel[x, y].Template == TileTemplate.Downstair)
+        {
+            Depth++;
+            (x, y) = CurrentLevel.MainTiles[Level.MainTile.Entrance];
+        }
+        else if (CurrentLevel[x, y].Template is UpstairTemplate(Enabled: true))
+        {
+            Depth--;
+            (x, y) = CurrentLevel.MainTiles[Level.MainTile.Exit];
+        }
+        else
+            return false;
+        Steps++;
+        (player.X, player.Y) = (x, y);
+        CurrentLevel.Update();
+        return true;
+    }
 }

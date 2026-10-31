@@ -62,7 +62,7 @@ try
         }
     }
 }
-catch (Exception ex)
+catch (Exception ex) when (!Debugger.IsAttached)
 {
     if (alternateScreen)
     {

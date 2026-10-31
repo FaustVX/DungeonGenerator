@@ -64,10 +64,12 @@ public sealed class Level
         {
             foreach (var pos in Ext.Line(player.X, player.Y, x, y))
             {
+                var distSqrt = pos.DistanceSquared(player.X, player.Y);
+                if (distSqrt > player.ViewDistance * player.ViewDistance)
+                    break;
                 visibleTiles.Add(pos);
                 alreadySeenTiles.Add(pos);
-                var distSqrt = pos.DistanceSquared(player.X, player.Y);
-                if (!tiles[pos.x, pos.y].IsTransparent || distSqrt > player.ViewDistance * player.ViewDistance)
+                if (!tiles[pos.x, pos.y].IsTransparent)
                     break;
             }
         }

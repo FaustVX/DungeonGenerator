@@ -9,7 +9,6 @@ public sealed class Room : Node
         Width = width;
         Height = height;
         Parent = parent;
-        Root.Rooms.Add(this);
         var isFullSizedRoom = rng.NextBool(fullSizedRoomPercent);
         if (minRoomSize.w < width - 2 && !isFullSizedRoom)
         {

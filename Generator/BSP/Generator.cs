@@ -7,7 +7,21 @@ public class Generator : Node, IGenerator
 {
     public override int Width { get; }
     public override int Height { get; }
-    public List<Room> Rooms { get; } = [];
+    public ReadOnlySpan<Room> Rooms
+    => (Room[])[
+        ..First switch
+        {
+            Generator g => g.Rooms,
+            Room r => [r],
+            _ => throw new UnreachableException(),
+        },
+        ..Second switch
+        {
+            Generator g => g.Rooms,
+            Room r => [r],
+            _ => throw new UnreachableException(),
+        },
+    ];
     public override Generator? Parent { get; }
     public Level Level { get; }
     public Node First { get; }

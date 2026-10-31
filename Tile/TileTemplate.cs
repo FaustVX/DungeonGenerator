@@ -44,7 +44,11 @@ public record class TileTemplate(char Symbol, bool IsWalkable, bool IsTransparen
         public bool Activate(Game game)
         {
             if (!Enabled)
+            {
+                game.CurrentLevel.Update();
                 return false;
+            }
+
             game.Steps++;
             game.Depth += Direction switch
             {

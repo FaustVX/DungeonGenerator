@@ -70,5 +70,30 @@ public sealed class Corridor : Node
     }
 
     public override TileTemplate GetTile(int x, int y)
-    => TileTemplate.Ground;
+    {
+        switch (Parent.SplitDirection)
+        {
+            case SplitDirection.Horizontal:
+                if (Width >= 7)
+                {
+                    if ((x, y) == (Width - 1, 0) || (x, y) is (0, 0))
+                        return TileTemplate.SmallTorch;
+                }
+                else if ((x, y) == (Width / 2, 0))
+                    return TileTemplate.SmallTorch;
+                break;
+            case SplitDirection.Vertical:
+                if (Height >= 7)
+                {
+                    if ((x, y) == (0, Height - 1) || (x, y) is (0, 0))
+                        return TileTemplate.SmallTorch;
+                }
+                else if ((x, y) == (0, Height / 2))
+                    return TileTemplate.SmallTorch;
+                break;
+            default:
+                throw new UnreachableException();
+        }
+        return TileTemplate.Ground;
+    }
 }

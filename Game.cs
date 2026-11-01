@@ -31,7 +31,7 @@ public sealed class Game
         Steps++;
         (Player.X, Player.Y) = (x, y);
         if (CurrentLevel[x, y].Template is IActivableTemplate { ActivateOnWalkOn: true } tile)
-            return tile.Activate(this);
+            return tile.Activate(this, x, y);
         CurrentLevel.Update();
         return true;
     }
@@ -49,5 +49,5 @@ public sealed class Game
     => Move(Player.X + 1, Player.Y);
 
     public bool Activate()
-    => CurrentLevel[Player.X, Player.Y].Template is IActivableTemplate tile && tile.Activate(this);
+    => CurrentLevel[Player.X, Player.Y].Template is IActivableTemplate tile && tile.Activate(this, Player.X, Player.Y);
 }

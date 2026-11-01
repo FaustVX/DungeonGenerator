@@ -31,6 +31,20 @@ public class Generator : Node, IGenerator
     public int SplitDistance { get; }
     public SplitDirection SplitDirection { get; }
     public Corridor Corridor { get; }
+    public ReadOnlySpan<Corridor> Corridors
+    => (Corridor[])[
+        Corridor,
+        ..First switch
+        {
+            Generator g => g.Corridors,
+            _ => [],
+        },
+        ..Second switch
+        {
+            Generator g => g.Corridors,
+            _ => [],
+        },
+    ];
 
     public Generator? OtherBSP
     => (Generator?)OtherSide;
@@ -106,8 +120,8 @@ public class Generator : Node, IGenerator
     {
         ArgumentOutOfRangeException.ThrowIfNotInBetween(x, 0, Width - 1);
         ArgumentOutOfRangeException.ThrowIfNotInBetween(y, 0, Height - 1);
-        if (IsInCorridor(this, Corridor, x, y))
-            return Corridor.GetTile(0, 0);
+        if (IsInCorridor(this, Corridor, ref x, ref y))
+            return Corridor.GetTile(x, y);
         switch (SplitDirection)
         {
             case SplitDirection.Horizontal:
@@ -122,12 +136,17 @@ public class Generator : Node, IGenerator
                 throw new UnreachableException();
         }
 
-        static bool IsInCorridor(Generator bsp, Corridor corridor, int x, int y)
+        static bool IsInCorridor(Generator bsp, Corridor corridor, ref int x, ref int y)
         {
             if (corridor is null)
                 return false;
-            (x, y) = bsp.GetPosRelativeTo(corridor, x, y);
-            return 0 <= x && x < corridor.Width && 0 <= y && y < corridor.Height;
+            var pos = bsp.GetPosRelativeTo(corridor, x, y);
+            if (0 <= pos.x && pos.x < corridor.Width && 0 <= pos.y && pos.y < corridor.Height)
+            {
+                (x, y) = pos;
+                return true;
+            }
+            return false;
         }
     }
 }

@@ -43,7 +43,15 @@ public sealed class Level
     public Tile.Tile this[int x, int y]
     {
         get => new(x, y, _tiles[x, y], _visibleTiles.Contains((x, y)), _alreadySeenTiles.Contains((x, y)));
-        set => _tiles[x, y] = value.Template;
+        set
+        {
+            _tiles[x, y] = value.Template;
+            if (value.IsVisible)
+            {
+                _visibleTiles.Add((x, y));
+                _alreadySeenTiles.Add((x, y));
+            }
+        }
     }
 
     public void Update()
@@ -59,6 +67,11 @@ public sealed class Level
             AddLineOfSight(Game.Player, 0, y, _tiles, _visibleTiles, _alreadySeenTiles);
             AddLineOfSight(Game.Player, Game.Width - 1, y, _tiles, _visibleTiles, _alreadySeenTiles);
         }
+
+        for (int x = 0; x < Game.Width; x++)
+            for (int y = 0; y < Game.Height; y++)
+                if (_tiles[x, y] is IUpdateableTemplate exec)
+                    exec.OnUpdate(Game, x, y);
 
         static void AddLineOfSight(IPlayer player, int x, int y, TileTemplate[,] tiles, HashSet<(int x, int y)> visibleTiles, HashSet<(int x, int y)> alreadySeenTiles)
         {

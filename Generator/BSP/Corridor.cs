@@ -17,80 +17,15 @@ public sealed class Corridor : Node
         Width = 1;
         Height = 1;
         LengthOffset = 1;
-        switch (parent.SplitDirection, parent.First, parent.Second)
-        {
-            case (SplitDirection.Horizontal, Room left, Room right):
-            {
-                Width = 2;
-                var top = Math.Max(1, left.TopWallWidth - 1, right.TopWallWidth - 1);
-                var bot = Math.Min(parent.Height - 2, left.Height - left.BottomWallWidth, right.Height - right.BottomWallWidth);
-                Position = rng.Next(top, bot + 1); // +1 because maxValue is exclusive but it should be included
-                break;
-            }
-            case (SplitDirection.Horizontal, Room left, Generator right):
-            {
-                Width = 2;
-                var top = Math.Max(1, left.TopWallWidth - 1, right.TopMostWalkable() - 1);
-                var bot = Math.Min(parent.Height - 2, left.Height - left.BottomWallWidth, right.BottomMostWalkable() + 1);
-                Position = rng.Next(top, bot + 1); // +1 because maxValue is exclusive but it should be included
-                break;
-            }
-            case (SplitDirection.Horizontal, Generator left, Room right):
-            {
-                Width = 2;
-                var top = Math.Max(1, left.TopMostWalkable() - 1, right.TopWallWidth - 1);
-                var bot = Math.Min(parent.Height - 2, left.BottomMostWalkable() + 1, right.Height - right.BottomWallWidth);
-                Position = rng.Next(top, bot + 1); // +1 because maxValue is exclusive but it should be included
-                break;
-            }
-            case (SplitDirection.Horizontal, Generator left, Generator right):
-            {
-                Width = 2;
-                var top = Math.Max(1, left.TopMostWalkable() - 1, right.TopMostWalkable() - 1);
-                var bot = Math.Min(parent.Height - 2, left.BottomMostWalkable() + 1, right.BottomMostWalkable() + 1);
-                Position = rng.Next(top, bot + 1); // +1 because maxValue is exclusive but it should be included
-                break;
-            }
-            case (SplitDirection.Vertical, Room top, Room bottom):
-            {
-                Height = 2;
-                var left = Math.Max(1, top.LeftWallWidth - 1, bottom.LeftWallWidth - 1);
-                var right = Math.Min(parent.Width - 2, top.Width - top.RightWallWidth, bottom.Width - bottom.RightWallWidth);
-                Position = rng.Next(left, right + 1); // +1 because maxValue is exclusive but it should be included
-                break;
-            }
-            case (SplitDirection.Vertical, Room top, Generator bot):
-            {
-                Height = 2;
-                var left = Math.Max(1, top.LeftWallWidth - 1, bot.LeftMostWalkable() - 1);
-                var right = Math.Min(parent.Width - 2, top.Width - top.RightWallWidth, bot.RightMostWalkable() + 1);
-                Position = rng.Next(left, right + 1); // +1 because maxValue is exclusive but it should be included
-                break;
-            }
-            case (SplitDirection.Vertical, Generator top, Room bottom):
-            {
-                Height = 2;
-                var left = Math.Max(1, top.LeftMostWalkable() - 1, bottom.LeftWallWidth - 1);
-                var right = Math.Min(parent.Width - 2, top.RightMostWalkable() + 1, bottom.Width - bottom.RightWallWidth);
-                Position = rng.Next(left, right + 1); // +1 because maxValue is exclusive but it should be included
-                break;
-            }
-            case (SplitDirection.Vertical, Generator top, Generator bot):
-            {
-                Height = 2;
-                var left = Math.Max(1, top.LeftMostWalkable() - 1, bot.LeftMostWalkable() - 1);
-                var right = Math.Min(parent.Width - 2, top.RightMostWalkable() + 1, bot.RightMostWalkable() + 1);
-                Position = rng.Next(left, right + 1); // +1 because maxValue is exclusive but it should be included
-                break;
-            }
-            default:
-                throw new UnreachableException();
-        }
 
         switch (parent.SplitDirection)
         {
             case SplitDirection.Horizontal:
             {
+                Width = 2;
+                var top = Math.Max(1, parent.First.TopMostWalkable() - 1, parent.Second.TopMostWalkable() - 1);
+                var bot = Math.Min(parent.Height - 2, parent.First.BottomMostWalkable() + 1, parent.Second.BottomMostWalkable() + 1);
+                Position = rng.Next(top, bot + 1); // +1 because maxValue is exclusive but it should be included
                 var (x, y) = GetPosRelativeTo(Parent, 1, 0);
                 while (!(Parent.GetTile(x + 1, y).IsWalkable || Parent.GetTile(x, y - 1).IsWalkable || Parent.GetTile(x, y + 1).IsWalkable))
                 {
@@ -109,6 +44,10 @@ public sealed class Corridor : Node
             }
             case SplitDirection.Vertical:
             {
+                Height = 2;
+                var left = Math.Max(1, parent.First.LeftMostWalkable() - 1, parent.Second.LeftMostWalkable() - 1);
+                var right = Math.Min(parent.Width - 2, parent.First.RightMostWalkable() + 1, parent.Second.RightMostWalkable() + 1);
+                Position = rng.Next(left, right + 1); // +1 because maxValue is exclusive but it should be included
                 var (x, y) = GetPosRelativeTo(Parent, 0, 1);
                 while (!(Parent.GetTile(x, y + 1).IsWalkable || Parent.GetTile(x - 1, y).IsWalkable || Parent.GetTile(x + 1, y).IsWalkable))
                 {

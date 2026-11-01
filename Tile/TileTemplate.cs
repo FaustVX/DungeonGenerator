@@ -72,6 +72,7 @@ public record class TileTemplate(char Symbol, bool IsWalkable, bool IsTransparen
                 IStairTemplate.StairDirection.Down =>Level.MainTile.Entrance,
                 _ => throw new UnreachableException(),
             }];
+            game.Player.Direction = DungeonGenerator.Direction.None;
             game.CurrentLevel.Update();
             return true;
         }

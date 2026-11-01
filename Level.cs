@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using DungeonGenerator.Generator;
 using DungeonGenerator.Helpers;
 using DungeonGenerator.Tile;
@@ -59,12 +60,47 @@ public sealed class Level
     {
         _visibleTiles.Clear();
         ShadowCaster.ComputeFieldOfViewWithShadowCasting(Game.Player.X, Game.Player.Y, Game.Player.ViewDistance,
-            (x, y) => !_tiles[x, y].IsTransparent,
-            (x, y) =>
+            (x, y) => !_tiles[x, y].IsTransparent, (x, y) =>
             {
                 _visibleTiles.Add((x, y));
                 _alreadySeenTiles.Add((x, y));
             });
+        if (Game.Player.Direction is not Direction.None)
+            ShadowCaster.ComputeFieldOfViewWithShadowCasting(Game.Player.X, Game.Player.Y, Game.Width + Game.Height,
+                (x, y) => !(_tiles[x, y].IsTransparent && Game.Player.Direction switch
+                    {
+                        Direction.Up => y <= Game.Player.Y,
+                        Direction.Down => y >= Game.Player.Y,
+                        Direction.Left => x <= Game.Player.X,
+                        Direction.Right => x >= Game.Player.X,
+                        _ => throw new UnreachableException(),
+                    }),
+                (x, y) =>
+                    {
+                        switch (Game.Player.Direction)
+                        {
+                            case Direction.Up:
+                                if (y > Game.Player.Y)
+                                    return;
+                                break;
+                            case Direction.Down:
+                                if (y < Game.Player.Y)
+                                    return;
+                                break;
+                            case Direction.Left:
+                                if (x > Game.Player.X)
+                                    return;
+                                break;
+                            case Direction.Right:
+                                if (x < Game.Player.X)
+                                    return;
+                                break;
+                            default:
+                                throw new UnreachableException();
+                        }
+                        _visibleTiles.Add((x, y));
+                        _alreadySeenTiles.Add((x, y));
+                    });
 
         for (int x = 0; x < Game.Width; x++)
             for (int y = 0; y < Game.Height; y++)

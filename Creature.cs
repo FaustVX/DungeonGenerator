@@ -13,6 +13,7 @@ public interface ICreature
 public interface IPlayer : ICreature
 {
     public abstract double ViewDistance { get; }
+    public abstract Direction Direction { get; }
 }
 
 public record class Creature(int X, int Y, char Symbol, Color Color) : ICreature
@@ -24,4 +25,15 @@ public record class Creature(int X, int Y, char Symbol, Color Color) : ICreature
 public record class Player(int X, int Y) : Creature(X, Y, '@', Color.Aqua), IPlayer
 {
     public double ViewDistance { get; } = 4;
+
+    public Direction Direction { get; set; }
+}
+
+public enum Direction
+{
+    None,
+    Up,
+    Down,
+    Left,
+    Right,
 }

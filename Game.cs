@@ -29,6 +29,16 @@ public sealed class Game
         if (!CurrentLevel[x, y].Template.IsWalkable)
             return false;
         Steps++;
+        if (y < Player.Y)
+            Player.Direction = Direction.Up;
+        else if (y > Player.Y)
+            Player.Direction = Direction.Down;
+        else if (x < Player.X)
+            Player.Direction = Direction.Left;
+        else if (x > Player.X)
+            Player.Direction = Direction.Right;
+        else
+            Player.Direction = Direction.None;
         (Player.X, Player.Y) = (x, y);
         if (CurrentLevel[x, y].Template is IActivableTemplate { ActivateOnWalkOn: true } tile)
             return tile.Activate(this, x, y);

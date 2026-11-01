@@ -38,8 +38,9 @@ public class Generator : Node, IGenerator
     public Generator(int width, int height, (int w, int h) minRoomSize, (int w, int h) maxRoomSize, double fullSizedRoomPercent, RngOrSeed random, Level level)
     : this(width, height, minRoomSize, maxRoomSize, fullSizedRoomPercent, random.Random, null, null, level)
     {
-        Rooms[0].GenerateEntrance(random.Random);
-        Rooms[^1].GenerateExit(random.Random);
+        var rng = random.Random;
+        Rooms[0].GenerateEntrance(rng);
+        Rooms[^1].GenerateExit(rng);
     }
 
     private Generator(int width, int height, (int w, int h) minRoomSize, (int w, int h) maxRoomSize, double fullSizedRoomPercent, Random rng, Generator? parent, SplitDirection? otherDirection, Level level)

@@ -5,6 +5,7 @@ using Spectre.Console;
 
 var alternateScreen = false;
 Console.CursorVisible = false;
+AnsiConsole.Console.WriteAnsi(w => w.ExitAltScreen()); // To clear the alternate screen if previously wrongly exited
 AnsiConsole.Console.WriteAnsi(w => w.EnterAltScreen().CursorHome()); alternateScreen = true;
 Console.CancelKeyPress += (s, e) =>
 {

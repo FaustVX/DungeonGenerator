@@ -33,19 +33,31 @@ try
         }
         switch (Console.ReadKey(intercept: true))
         {
-            case { Key: ConsoleKey.UpArrow or ConsoleKey.NumPad8 }:
-                game.MoveUp();
+            case { Key: ConsoleKey.D1 }:
+                _ = (game.MoveDown() && game.MoveLeft()) || (game.MoveLeft() && game.MoveDown());
                 break;
-            case { Key: ConsoleKey.LeftArrow or ConsoleKey.NumPad4 }:
-                game.MoveLeft();
-                break;
-            case { Key: ConsoleKey.RightArrow or ConsoleKey.NumPad6 }:
-                game.MoveRight();
-                break;
-            case { Key: ConsoleKey.DownArrow or ConsoleKey.NumPad2 }:
+            case { Key: ConsoleKey.DownArrow or ConsoleKey.D2 }:
                 game.MoveDown();
                 break;
-            case { Key: ConsoleKey.Enter or ConsoleKey.Spacebar }:
+            case { Key: ConsoleKey.D3 }:
+                _ = (game.MoveDown() && game.MoveRight()) || (game.MoveRight() && game.MoveDown());
+                break;
+            case { Key: ConsoleKey.LeftArrow or ConsoleKey.D4 }:
+                game.MoveLeft();
+                break;
+            case { Key: ConsoleKey.RightArrow or ConsoleKey.D6 }:
+                game.MoveRight();
+                break;
+            case { Key: ConsoleKey.D7 }:
+                _ = (game.MoveUp() && game.MoveLeft()) || (game.MoveLeft() && game.MoveUp());
+                break;
+            case { Key: ConsoleKey.UpArrow or ConsoleKey.D8 }:
+                game.MoveUp();
+                break;
+            case { Key: ConsoleKey.D9 }:
+                _ = (game.MoveUp() && game.MoveRight()) || (game.MoveRight() && game.MoveUp());
+                break;
+            case { Key: ConsoleKey.Enter or ConsoleKey.Spacebar or ConsoleKey.D5 }:
                 game.Activate();
                 break;
 #if DEBUG

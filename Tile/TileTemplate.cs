@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using DungeonGenerator.Helpers;
+using DungeonGenerator.Lib;
 using Spectre.Console;
 
 namespace DungeonGenerator.Tile;
@@ -29,18 +30,14 @@ public interface IUpdateableTemplate
 
 public record class TileTemplate(char Symbol, bool IsWalkable, bool IsTransparent, Color Background, Color Foreground)
 {
-    private static readonly TileTemplate _enabledDownStair = new StairTemplate(true, IStairTemplate.StairDirection.Down);
-    private static readonly TileTemplate _disabledDownStair = new StairTemplate(false, IStairTemplate.StairDirection.Down);
-    private static readonly TileTemplate _enabledUpStair = new StairTemplate(true, IStairTemplate.StairDirection.Up);
-    private static readonly TileTemplate _disabledUpStair = new StairTemplate(false, IStairTemplate.StairDirection.Up);
     // unicode symbols: https://en.wikipedia.org/wiki/Geometric%20Shapes%20(Unicode%20block)
     public static TileTemplate Wall { get; } = new('█', false, false, Color.Black, Color.White);
     public static TileTemplate Window { get; } = new('□', false, true, Color.Black, Color.White);
     public static TileTemplate Ground { get; } = new('･', true, true, Color.Black, Color.White);
-    public static TileTemplate SmallTorch { get; } = new TorchTemplate(3, true);
-    public static TileTemplate Torch { get; } = new TorchTemplate(10, true);
-    public static TileTemplate DownStair(bool enabled) => enabled ? _enabledDownStair : _disabledDownStair;
-    public static TileTemplate UpStair(bool enabled) => enabled ? _enabledUpStair : _disabledUpStair;
+    public static TileTemplate SmallTorch { get; } = TorchTemplate.Cache[(3, true)];
+    public static TileTemplate Torch { get; } = TorchTemplate.Cache[(10, true)];
+    public static TileTemplate DownStair(bool enabled) => StairTemplate.Cache[(enabled, IStairTemplate.StairDirection.Down)];
+    public static TileTemplate UpStair(bool enabled) => StairTemplate.Cache[(enabled, IStairTemplate.StairDirection.Up)];
 
     private record class StairTemplate(bool Enabled, IStairTemplate.StairDirection Direction)
     : TileTemplate(Direction switch
@@ -51,6 +48,7 @@ public record class TileTemplate(char Symbol, bool IsWalkable, bool IsTransparen
     }, true, true, Color.Black, Enabled ? Color.White : Color.Gray)
     , IStairTemplate
     {
+        public static DefaultableDictionary<(bool, IStairTemplate.StairDirection), StairTemplate> Cache { get; } = new DefaultableDictionary<(bool, IStairTemplate.StairDirection), StairTemplate>(capacity: 4, t => new(t.Item1, t.Item2));
         public bool ActivateOnWalkOn => true;
 
         public bool Activate(Game game, int x, int y)
@@ -81,6 +79,7 @@ public record class TileTemplate(char Symbol, bool IsWalkable, bool IsTransparen
 
     private record class TorchTemplate(double Range, bool Enabled) : TileTemplate('i', true, true, Color.Black, Enabled ? Color.White : Color.Gray), IUpdateableTemplate, IActivableTemplate
     {
+        public static DefaultableDictionary<(double, bool), TorchTemplate> Cache { get; } = new DefaultableDictionary<(double, bool), TorchTemplate>(t => new(t.Item1, t.Item2));
         public bool ActivateOnWalkOn => false;
 
         public void OnUpdate(Game game, int x, int y)
@@ -94,7 +93,7 @@ public record class TileTemplate(char Symbol, bool IsWalkable, bool IsTransparen
 
         public bool Activate(Game game, int x, int y)
         {
-            game.CurrentLevel[x, y] = game.CurrentLevel[x, y] with { Template = new TorchTemplate(Range, !Enabled) };
+            game.CurrentLevel[x, y] = game.CurrentLevel[x, y] with { Template = Cache[(Range, !Enabled)] };
             game.CurrentLevel.Update();
             return true;
         }

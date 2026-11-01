@@ -1,4 +1,5 @@
 using DungeonGenerator.Generator;
+using DungeonGenerator.Helpers;
 using DungeonGenerator.Tile;
 
 namespace DungeonGenerator;
@@ -57,35 +58,18 @@ public sealed class Level
     public void Update()
     {
         _visibleTiles.Clear();
-        for (int x = 0; x < Game.Width; x++)
-        {
-            AddLineOfSight(Game.Player, x, 0, _tiles, _visibleTiles, _alreadySeenTiles);
-            AddLineOfSight(Game.Player, x, Game.Height - 1, _tiles, _visibleTiles, _alreadySeenTiles);
-        }
-        for (int y = 0; y < Game.Height; y++)
-        {
-            AddLineOfSight(Game.Player, 0, y, _tiles, _visibleTiles, _alreadySeenTiles);
-            AddLineOfSight(Game.Player, Game.Width - 1, y, _tiles, _visibleTiles, _alreadySeenTiles);
-        }
+        ShadowCaster.ComputeFieldOfViewWithShadowCasting(Game.Player.X, Game.Player.Y, Game.Player.ViewDistance,
+            (x, y) => !_tiles[x, y].IsTransparent,
+            (x, y) =>
+            {
+                _visibleTiles.Add((x, y));
+                _alreadySeenTiles.Add((x, y));
+            });
 
         for (int x = 0; x < Game.Width; x++)
             for (int y = 0; y < Game.Height; y++)
                 if (_tiles[x, y] is IUpdateableTemplate exec)
                     exec.OnUpdate(Game, x, y);
-
-        static void AddLineOfSight(IPlayer player, int x, int y, TileTemplate[,] tiles, HashSet<(int x, int y)> visibleTiles, HashSet<(int x, int y)> alreadySeenTiles)
-        {
-            foreach (var pos in Ext.Line(player.X, player.Y, x, y))
-            {
-                var distSqrt = pos.DistanceSquared(player.X, player.Y);
-                if (distSqrt > player.ViewDistance * player.ViewDistance)
-                    break;
-                visibleTiles.Add(pos);
-                alreadySeenTiles.Add(pos);
-                if (!tiles[pos.x, pos.y].IsTransparent)
-                    break;
-            }
-        }
     }
 
     public enum MainTile

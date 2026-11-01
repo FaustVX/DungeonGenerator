@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using DungeonGenerator.Helpers;
 using Spectre.Console;
 
 namespace DungeonGenerator.Tile;
@@ -86,29 +87,9 @@ public record class TileTemplate(char Symbol, bool IsWalkable, bool IsTransparen
         {
             if (!Enabled)
                 return;
-            for (int i = 0; i < game.Width; i++)
-            {
-                AddLineOfSight((x, y), i, 0, Range, game.CurrentLevel);
-                AddLineOfSight((x, y), i, game.Height - 1, Range, game.CurrentLevel);
-            }
-            for (int j = 0; j < game.Height; j++)
-            {
-                AddLineOfSight((x, y), 0, j, Range, game.CurrentLevel);
-                AddLineOfSight((x, y), game.Width - 1, j, Range, game.CurrentLevel);
-            }
-        }
-
-        static void AddLineOfSight((int x, int y) torch, int x, int y, double range, Level level)
-        {
-            foreach (var pos in Ext.Line(torch.x, torch.y, x, y))
-            {
-                var distSqrt = pos.DistanceSquared(torch.x, torch.y);
-                if (distSqrt > range * range)
-                    break;
-                level[pos.x, pos.y] = level[pos.x, pos.y] with { IsVisible = true };
-                if (!level[pos.x, pos.y].Template.IsTransparent)
-                    break;
-            }
+            ShadowCaster.ComputeFieldOfViewWithShadowCasting(x, y, Range,
+                (x, y) => !game.CurrentLevel[x, y].Template.IsTransparent,
+                (x, y) => game.CurrentLevel[x, y] = game.CurrentLevel[x, y] with { IsVisible = true });
         }
 
         public bool Activate(Game game, int x, int y)

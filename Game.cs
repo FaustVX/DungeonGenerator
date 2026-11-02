@@ -1,3 +1,5 @@
+using DungeonGenerator.Creature;
+using DungeonGenerator.Helpers;
 using DungeonGenerator.Lib;
 using DungeonGenerator.Tile;
 

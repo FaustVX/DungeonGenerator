@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using DungeonGenerator.Creature;
 using DungeonGenerator.Generator;
 using DungeonGenerator.Helpers;
 using DungeonGenerator.Tile;

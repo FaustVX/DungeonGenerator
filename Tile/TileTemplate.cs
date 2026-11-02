@@ -103,13 +103,14 @@ public record class TileTemplate(char Symbol, bool IsWalkable, bool IsTransparen
             Actions = new Dictionary<string, IActionableTemplate.Action>()
             {
                 ["Turn " + (enabled ? "off" : "on")] = (game, x, y) => Activate(game, x, y),
-                ["Remove"] = Remove,
+                ["Pickup"] = Pickup,
             };
         }
 
-        private static void Remove(Game game, int x, int y)
+        private void Pickup(Game game, int x, int y)
         {
             game.CurrentLevel[x, y] = game.CurrentLevel[x, y] with { Template = Ground };
+            game.Player.Items[Item.SmallTorch.Instance]++;
             game.CurrentLevel.Update();
         }
 

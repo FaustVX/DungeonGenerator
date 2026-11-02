@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using DungeonGenerator;
+using DungeonGenerator.Item;
 using DungeonGenerator.Tile;
 using Spectre.Console;
 
@@ -57,7 +58,37 @@ try
             case { Key: ConsoleKey.D9 }:
                 _ = (game.MoveUp() && game.MoveRight()) || (game.MoveRight() && game.MoveUp());
                 break;
+            case { Key: ConsoleKey.E }:
+            {
+                if (game.Player.Items.Count <= 0)
+                    break;
+                var promptItem = new SelectionPrompt<KeyValuePair<Item, int>>()
+                .AddChoices(game.Player.Items)
+                .AddCancelResult(new KeyValuePair<Item, int>(default!, 0))
+                .EnableSearch()
+                .WrapAround()
+                .UseConverter(kvp => $"{kvp.Key.Name}: {kvp.Value}")
+                .Title("Inventory:");
+                var (item, qty) = AnsiConsole.Prompt(promptItem);
+                if (qty == 0)
+                {
+                    AnsiConsole.Cursor.Hide();
+                    break;
+                }
+
+                var promptAction = new SelectionPrompt<KeyValuePair<string, IActionableItem.Action>>()
+                .AddChoices([..item is IActionableItem i ? i.Actions : Enumerable.Empty<KeyValuePair<string, IActionableItem.Action>>(), IActionableItem.Delete, IActionableItem.Cancel])
+                .AddCancelResult(IActionableItem.Cancel)
+                .EnableSearch()
+                .WrapAround()
+                .UseConverter(kvp => kvp.Key)
+                .Title(item.Name);
+                AnsiConsole.Prompt(promptAction).Value(game, item);
+                AnsiConsole.Cursor.Hide();
+                break;
+            }
             case { Key: ConsoleKey.Enter } when game.CurrentLevel[game.Player.X, game.Player.Y].Template is IActionableTemplate { Actions: { } actions, MenuTitle: var title }:
+            {
                 var cancel = IActionableTemplate.Cancel;
                 var prompt = new SelectionPrompt<KeyValuePair<string, IActionableTemplate.Action>>()
                 .AddChoices(actions.Append(cancel))
@@ -69,6 +100,7 @@ try
                 AnsiConsole.Prompt(prompt).Value(game, game.Player.X, game.Player.Y);
                 AnsiConsole.Cursor.Hide();
                 break;
+            }
             case { Key: ConsoleKey.Enter or ConsoleKey.Spacebar or ConsoleKey.D5 }:
                 game.Activate();
                 break;

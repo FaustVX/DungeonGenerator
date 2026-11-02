@@ -115,7 +115,7 @@ public sealed class Room : Node
     {
         _features.Add(new(rng.Next(LeftWallWidth, Width - (LeftWallWidth + RightWallWidth) + LeftWallWidth),
             rng.Next(TopWallWidth, Height - (TopWallWidth + BottomWallWidth) + TopWallWidth),
-            1, 1, TileTemplate.Torch));
+            1, 1, TileTemplate.Torch()));
     }
 
     private sealed record class Feature(int X, int Y, int Width, int Height, TileTemplate Template);

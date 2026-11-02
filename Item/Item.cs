@@ -1,3 +1,5 @@
+using DungeonGenerator.Tile;
+
 namespace DungeonGenerator.Item;
 
 public abstract record class Item(string Name);
@@ -15,18 +17,33 @@ public interface IActionableItem
     }
 }
 
-public record class SmallTorch() : Item("Small Torch"), IActionableItem
+public abstract record class Torch(string Name, double Range, TileTemplate Template) : Item(Name), IActionableItem
 {
-    public static SmallTorch Instance => field ??= new();
-
     public IReadOnlyDictionary<string, IActionableItem.Action> Actions { get; } = new Dictionary<string, IActionableItem.Action>()
     {
         ["Place"] = Place,
+        ["Equip"] = Equip,
     };
+
+    private static void Equip(Game game, Item item)
+    {
+        if (item is Torch torch && game.Player.Torch is null)
+        {
+            game.Player.Torch = torch;
+            IActionableItem.DeleteAction(game, torch);
+            game.CurrentLevel.Update();
+        }
+    }
+
     private static void Place(Game game, Item item)
     {
-        game.CurrentLevel[game.Player.X, game.Player.Y] = game.CurrentLevel[game.Player.X, game.Player.Y] with { Template = Tile.TileTemplate.SmallTorch };
+        game.CurrentLevel[game.Player.X, game.Player.Y] = game.CurrentLevel[game.Player.X, game.Player.Y] with { Template = ((Torch)item).Template };
         IActionableItem.DeleteAction(game, item);
         game.CurrentLevel.Update();
     }
+}
+
+public record class SmallTorch() : Torch("Small Torch", 3, TileTemplate.SmallTorch())
+{
+    public static SmallTorch Instance => field ??= new();
 }

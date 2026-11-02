@@ -6,6 +6,7 @@ namespace DungeonGenerator.Generator.BSP;
 
 public sealed class Corridor : Node
 {
+    private readonly Random _rng;
     public override Generator Parent { get; }
     public override int Width { get; }
     public override int Height { get; }
@@ -15,6 +16,7 @@ public sealed class Corridor : Node
     public Corridor(Generator parent, Random rng)
     {
         Parent = parent;
+        _rng = rng;
         Width = 1;
         Height = 1;
         LengthOffset = 1;
@@ -78,19 +80,19 @@ public sealed class Corridor : Node
                 if (Width >= 7)
                 {
                     if ((x, y) == (Width - 1, 0) || (x, y) is (0, 0))
-                        return TileTemplate.SmallTorch;
+                        return TileTemplate.SmallTorch(_rng.NextBool(.25));
                 }
                 else if ((x, y) == (Width / 2, 0))
-                    return TileTemplate.SmallTorch;
+                    return TileTemplate.SmallTorch(_rng.NextBool(.25));
                 break;
             case SplitDirection.Vertical:
                 if (Height >= 7)
                 {
                     if ((x, y) == (0, Height - 1) || (x, y) is (0, 0))
-                        return TileTemplate.SmallTorch;
+                        return TileTemplate.SmallTorch(_rng.NextBool(.25));
                 }
                 else if ((x, y) == (0, Height / 2))
-                    return TileTemplate.SmallTorch;
+                    return TileTemplate.SmallTorch(_rng.NextBool(.25));
                 break;
             default:
                 throw new UnreachableException();

@@ -23,6 +23,12 @@ public interface IStairTemplate : IActivableTemplate
     }
 }
 
+public interface ITorchTemplate : IActivableTemplate
+{
+    public abstract double Range { get; }
+    public abstract bool Enabled { get; }
+}
+
 public interface IUpdateableTemplate
 {
     public abstract void OnUpdate(Game game, int x, int y);
@@ -42,8 +48,8 @@ public record class TileTemplate(char Symbol, bool IsWalkable, bool IsTransparen
     public static TileTemplate Wall { get; } = new('█', false, false, Color.Black, Color.White);
     public static TileTemplate Window { get; } = new('□', false, true, Color.Black, Color.White);
     public static TileTemplate Ground { get; } = new('･', true, true, Color.Black, Color.White);
-    public static TileTemplate SmallTorch { get; } = TorchTemplate.Cache[(3, true)];
-    public static TileTemplate Torch { get; } = TorchTemplate.Cache[(10, true)];
+    public static TileTemplate SmallTorch(bool enabled = true) => TorchTemplate.Cache[(3, enabled)];
+    public static TileTemplate Torch(bool enabled = true) => TorchTemplate.Cache[(10, enabled)];
     public static TileTemplate DownStair(bool enabled) => StairTemplate.Cache[(enabled, IStairTemplate.StairDirection.Down)];
     public static TileTemplate UpStair(bool enabled) => StairTemplate.Cache[(enabled, IStairTemplate.StairDirection.Up)];
 
@@ -86,7 +92,7 @@ public record class TileTemplate(char Symbol, bool IsWalkable, bool IsTransparen
         }
     }
 
-    private record class TorchTemplate : TileTemplate, IUpdateableTemplate, IActivableTemplate, IActionableTemplate
+    private record class TorchTemplate : TileTemplate, ITorchTemplate, IUpdateableTemplate, IActionableTemplate
     {
         public static DefaultableDictionary<(double, bool), TorchTemplate> Cache { get; } = new DefaultableDictionary<(double, bool), TorchTemplate>(t => new(t.Item1, t.Item2));
         public bool ActivateOnWalkOn => false;

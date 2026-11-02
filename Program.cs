@@ -57,6 +57,18 @@ try
             case { Key: ConsoleKey.D9 }:
                 _ = (game.MoveUp() && game.MoveRight()) || (game.MoveRight() && game.MoveUp());
                 break;
+            case { Key: ConsoleKey.Enter } when game.CurrentLevel[game.Player.X, game.Player.Y].Template is IActionableTemplate { Actions: { } actions, MenuTitle: var title }:
+                var cancel = IActionableTemplate.Cancel;
+                var prompt = new SelectionPrompt<KeyValuePair<string, IActionableTemplate.Action>>()
+                .AddChoices(actions.Append(cancel))
+                .EnableSearch()
+                .WrapAround()
+                .UseConverter(kvp => kvp.Key)
+                .Title($"{title}:")
+                .AddCancelResult(cancel);
+                AnsiConsole.Prompt(prompt).Value(game, game.Player.X, game.Player.Y);
+                AnsiConsole.Cursor.Hide();
+                break;
             case { Key: ConsoleKey.Enter or ConsoleKey.Spacebar or ConsoleKey.D5 }:
                 game.Activate();
                 break;

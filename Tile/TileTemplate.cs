@@ -28,6 +28,14 @@ public interface IUpdateableTemplate
     public abstract void OnUpdate(Game game, int x, int y);
 }
 
+public interface IActionableTemplate
+{
+    public delegate void Action(Game game, int x, int y);
+    public abstract IReadOnlyDictionary<string, Action> Actions { get; }
+    public abstract string MenuTitle { get; }
+    public static KeyValuePair<string, Action> Cancel { get; } = new("Cancel", delegate{});
+}
+
 public record class TileTemplate(char Symbol, bool IsWalkable, bool IsTransparent, Color Background, Color Foreground)
 {
     // unicode symbols: https://en.wikipedia.org/wiki/Geometric%20Shapes%20(Unicode%20block)
@@ -78,10 +86,32 @@ public record class TileTemplate(char Symbol, bool IsWalkable, bool IsTransparen
         }
     }
 
-    private record class TorchTemplate(double Range, bool Enabled) : TileTemplate('i', true, true, Color.Black, Enabled ? Color.White : Color.Gray), IUpdateableTemplate, IActivableTemplate
+    private record class TorchTemplate : TileTemplate, IUpdateableTemplate, IActivableTemplate, IActionableTemplate
     {
         public static DefaultableDictionary<(double, bool), TorchTemplate> Cache { get; } = new DefaultableDictionary<(double, bool), TorchTemplate>(t => new(t.Item1, t.Item2));
         public bool ActivateOnWalkOn => false;
+        public string MenuTitle => "Torch";
+        public IReadOnlyDictionary<string, IActionableTemplate.Action> Actions { get; }
+        public double Range { get; }
+        public bool Enabled { get; }
+
+        public TorchTemplate(double range, bool enabled)
+        : base('i', true, true, Color.Black, enabled ? Color.White : Color.Gray)
+        {
+            Range = range;
+            Enabled = enabled;
+            Actions = new Dictionary<string, IActionableTemplate.Action>()
+            {
+                ["Turn " + (enabled ? "off" : "on")] = (game, x, y) => Activate(game, x, y),
+                ["Remove"] = Remove,
+            };
+        }
+
+        private static void Remove(Game game, int x, int y)
+        {
+            game.CurrentLevel[x, y] = game.CurrentLevel[x, y] with { Template = Ground };
+            game.CurrentLevel.Update();
+        }
 
         public void OnUpdate(Game game, int x, int y)
         {

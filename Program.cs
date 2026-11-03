@@ -17,15 +17,7 @@ try
         : Random.Shared.Next());
     while (true)
     {
-        var header = $"{game.Steps}:{game.Depth}";
-        Console.SetCursorPosition(game.Width - header.Length, 1);
-        Console.WriteLine(header);
-        for (int y = 0; y < game.Height; y++)
-        {
-            for (int x = 0; x < game.Width; x++)
-                WriteTile(game, x, y);
-            Console.WriteLine();
-        }
+        DrawDungeon(game);
         switch (Console.ReadKey(intercept: true))
         {
             case { Key: ConsoleKey.D1 }:
@@ -64,6 +56,7 @@ try
                 .UseConverter(kvp => $"{kvp.Key.Name}: {kvp.Value}")
                 .Title("Inventory:");
                 var (item, qty) = AnsiConsole.Prompt(promptItem);
+                DrawDungeon(game);
                 if (qty == 0)
                 {
                     AnsiConsole.Cursor.Hide();
@@ -155,4 +148,19 @@ static void WriteTile(Game game, int x, int y)
         c = '█';
     (AnsiConsole.Background, AnsiConsole.Foreground) = (back, fore);
     AnsiConsole.Write(c);
+}
+
+static void DrawDungeon(Game game)
+{
+    var header = $"{game.Steps}:{game.Depth}";
+    Console.SetCursorPosition(AnsiConsole.Profile.Width - header.Length - 1, 1);
+    Console.WriteLine(header);
+    for (int y = 0; y < game.Height; y++)
+    {
+        AnsiConsole.Cursor.MoveRight(AnsiConsole.Profile.Width - game.Width - 1);
+        for (int x = 0; x < game.Width; x++)
+            WriteTile(game, x, y);
+        Console.WriteLine();
+    }
+    AnsiConsole.Cursor.SetPosition(0, 1);
 }

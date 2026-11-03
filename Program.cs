@@ -15,11 +15,17 @@ try
     var game = new Game(100, 20, args is [var arg0]
         ? int.TryParse(arg0, out var seed) ? seed: arg0.GetHashCode()
         : Random.Shared.Next());
-    while (true)
+    Run: while (true)
     {
         DrawDungeon(game);
         switch (Console.ReadKey(intercept: true))
         {
+            case { Key: ConsoleKey.Escape }:
+                var exit = AnsiConsole.Confirm("Quit", defaultValue: false);
+                Console.Clear();
+                if (exit)
+                    break Run;
+                break;
             case { Key: ConsoleKey.D1 }:
                 _ = (game.MoveDown() && game.MoveLeft()) || (game.MoveLeft() && game.MoveDown());
                 break;
@@ -121,7 +127,10 @@ void Exit(bool wait = false)
     if (alternateScreen)
     {
         if (wait)
+        {
+            AnsiConsole.Write("Press any key to exit");
             Console.ReadLine();
+        }
         AnsiConsole.Console.WriteAnsi(w => w.ExitAltScreen());
         alternateScreen = false;
     }

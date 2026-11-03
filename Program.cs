@@ -163,11 +163,9 @@ static void DrawDungeon(Game game)
 {
     var header = $"{game.Steps}:{game.Depth}";
     AnsiConsole.Cursor.MoveRight(AnsiConsole.Profile.Width - game.Width - 1);
-    for (int i = 0; i < game.Player.HP; i++)
-        Console.Write("❤️");
+    PrintStat(game.Player.HP, "❤️");
     Console.Write(' ');
-    for (int i = 0; i < game.Player.Shields; i++)
-        Console.Write("🛡");
+    PrintStat(game.Player.Shields, "🛡");
     Console.SetCursorPosition(AnsiConsole.Profile.Width - header.Length - 1, 1);
     Console.WriteLine(header);
     for (int y = 0; y < game.Height; y++)
@@ -178,4 +176,13 @@ static void DrawDungeon(Game game)
         Console.WriteLine();
     }
     AnsiConsole.Cursor.SetPosition(0, 1);
+
+    static void PrintStat(int stat, string text)
+    {
+        if (stat >= 10)
+            Console.Write($"{text} :{stat}");
+        else
+            for (int i = 0; i < stat; i++)
+                Console.Write(text);
+    }
 }

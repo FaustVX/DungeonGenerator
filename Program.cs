@@ -162,6 +162,12 @@ static void WriteTile(Game game, int x, int y)
 static void DrawDungeon(Game game)
 {
     var header = $"{game.Steps}:{game.Depth}";
+    AnsiConsole.Cursor.MoveRight(AnsiConsole.Profile.Width - game.Width - 1);
+    for (int i = 0; i < game.Player.HP; i++)
+        Console.Write("❤️");
+    Console.Write(' ');
+    for (int i = 0; i < game.Player.Shields; i++)
+        Console.Write("🛡");
     Console.SetCursorPosition(AnsiConsole.Profile.Width - header.Length - 1, 1);
     Console.WriteLine(header);
     for (int y = 0; y < game.Height; y++)

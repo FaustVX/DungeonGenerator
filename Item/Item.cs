@@ -37,6 +37,8 @@ public abstract record class Torch(string Name, double Range, TileTemplate Templ
 
     private static void Place(Game game, Item item)
     {
+        if (!game.CurrentLevel[game.Player.X, game.Player.Y].Template.IsReplaceable)
+            return;
         game.CurrentLevel[game.Player.X, game.Player.Y] = game.CurrentLevel[game.Player.X, game.Player.Y] with { Template = ((Torch)item).Template };
         IActionableItem.DeleteAction(game, item);
         game.CurrentLevel.Update();

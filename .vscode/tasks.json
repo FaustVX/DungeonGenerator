@@ -16,6 +16,10 @@
                 "kind": "build",
                 "isDefault": true
             },
+			"presentation": {
+				"reveal": "silent",
+				"close": true,
+			},
         },
         {
             "label": "publish",

@@ -12,7 +12,9 @@ Console.CancelKeyPress += (s, e) => Exit();
 
 try
 {
-    var game = new Game(100, 20, 01234);
+    var game = new Game(100, 20, args is [var arg0]
+        ? int.TryParse(arg0, out var seed) ? seed: arg0.GetHashCode()
+        : Random.Shared.Next());
     while (true)
     {
         var header = $"{game.Steps}:{game.Depth}";

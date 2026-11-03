@@ -8,15 +8,7 @@ var alternateScreen = false;
 Console.CursorVisible = false;
 AnsiConsole.Console.WriteAnsi(w => w.ExitAltScreen()); // To clear the alternate screen if previously wrongly exited
 AnsiConsole.Console.WriteAnsi(w => w.EnterAltScreen().CursorHome()); alternateScreen = true;
-Console.CancelKeyPress += (s, e) =>
-{
-    if (alternateScreen)
-    {
-        AnsiConsole.Console.WriteAnsi(w => w.ExitAltScreen());
-        alternateScreen = false;
-    }
-    Console.CursorVisible = true;
-};
+Console.CancelKeyPress += (s, e) => Exit();
 
 try
 {
@@ -121,21 +113,24 @@ try
 }
 catch (Exception ex) when (!Debugger.IsAttached)
 {
-    if (alternateScreen)
-    {
-        AnsiConsole.Console.WriteAnsi(w => w.ExitAltScreen());
-        alternateScreen = false;
-    }
+    Exit();
     AnsiConsole.WriteException(ex);
 }
 finally
 {
+    Exit(wait: true);
+}
+
+void Exit(bool wait = false)
+{
     if (alternateScreen)
     {
-        Console.ReadLine();
+        if (wait)
+            Console.ReadLine();
         AnsiConsole.Console.WriteAnsi(w => w.ExitAltScreen());
+        alternateScreen = false;
     }
-    Console.CursorVisible = true;
+    AnsiConsole.Cursor.Show();
 }
 
 static void WriteTile(Game game, int x, int y)

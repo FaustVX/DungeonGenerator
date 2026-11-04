@@ -1,12 +1,19 @@
 namespace DungeonGenerator.Lib;
 
-public class DefaultableDictionary<TKey, TValue>(int capacity, Func<TKey, TValue> create) : Dictionary<TKey, TValue>(capacity), IDictionary<TKey, TValue>, IReadOnlyDictionary<TKey, TValue>
+public class DefaultableDictionary<TKey, TValue> : Dictionary<TKey, TValue>, IDictionary<TKey, TValue>, IReadOnlyDictionary<TKey, TValue>
     where TKey : notnull
 {
-    private readonly Func<TKey, TValue> _defaultValue = create;
+    private readonly Func<TKey, TValue> _defaultValue;
+
+    public DefaultableDictionary(int capacity, Func<TKey, TValue> create) : base(capacity)
+    => _defaultValue = create;
 
     public DefaultableDictionary(Func<TKey, TValue> create)
-        : this(4, create) {}
+    => _defaultValue = create;
+
+    public DefaultableDictionary(IDictionary<TKey, TValue> dictionary, Func<TKey, TValue> create)
+    : base(dictionary)
+    => _defaultValue = create;
 
     public new TValue this[TKey key]
     {

@@ -1,5 +1,7 @@
+using System.Collections.Frozen;
 using DungeonGenerator.Generator;
 using DungeonGenerator.Helpers;
+using DungeonGenerator.Lib;
 using DungeonGenerator.Tile;
 
 namespace DungeonGenerator;
@@ -9,6 +11,7 @@ public sealed class Level
     private readonly TileTemplate[,] _tiles;
     private readonly HashSet<(int x, int y)> _visibleTiles;
     private readonly HashSet<(int x, int y)> _alreadySeenTiles;
+    private readonly DefaultableDictionary<(int x, int y), DefaultableDictionary<Item.Item, int>> _items = [with(capacity: 0, _ => [with(capacity:0, _ => 0)])];
     public Dictionary<MainTile, (int x, int y)> MainTiles { get; } = [];
     public Game Game { get; }
     public int Depth { get; }
@@ -43,7 +46,7 @@ public sealed class Level
 
     public Tile.Tile this[int x, int y]
     {
-        get => new(x, y, _tiles[x, y], _visibleTiles.Contains((x, y)), _alreadySeenTiles.Contains((x, y)));
+        get => new(x, y, _tiles[x, y], _visibleTiles.Contains((x, y)) && _items.TryGetValue((x, y), out var stack) ? stack : FrozenDictionary<Item.Item, int>.Empty, _visibleTiles.Contains((x, y)), _alreadySeenTiles.Contains((x, y)));
         set
         {
             _tiles[x, y] = value.Template;
@@ -52,7 +55,24 @@ public sealed class Level
                 _visibleTiles.Add((x, y));
                 _alreadySeenTiles.Add((x, y));
             }
+            if (value.IsVisible)
+                if (value.Items is IDictionary<Item.Item, int> { Count: > 0 } items)
+                    _items[(x, y)] = new(items, _ => 0);
+                else if (value.Items is { Count: 0 })
+                    _items.Remove((x, y));
         }
+    }
+
+    public void DropItem(int x, int y, Item.Item item, int qty)
+    {
+        _items[(x, y)][item] += qty;
+    }
+
+    public int PickupItem(int x, int y, Item.Item item)
+    {
+        var qty = _items[(x, y)][item];
+        _items[(x, y)].Remove(item);
+        return qty;
     }
 
     public void Update()

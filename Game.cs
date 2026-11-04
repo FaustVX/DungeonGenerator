@@ -42,7 +42,7 @@ public sealed class Game
         else
             Player.Direction = Direction.None;
         (Player.X, Player.Y) = (x, y);
-        if (CurrentLevel[x, y].Template is IActivableTemplate { ActivateOnWalkOn: true } tile)
+        if (CurrentLevel[x, y] is { Items.Count: 0, Template: IActivableTemplate { ActivateOnWalkOn: true } tile })
             return tile.Activate(this, x, y);
         CurrentLevel.Update();
         return true;

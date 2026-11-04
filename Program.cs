@@ -70,7 +70,35 @@ try
                 }
 
                 var promptAction = new SelectionPrompt<KeyValuePair<string, IActionableItem.Action>>()
-                .AddChoices([..item is IActionableItem i ? i.Actions : Enumerable.Empty<KeyValuePair<string, IActionableItem.Action>>(), IActionableItem.Delete, IActionableItem.Cancel])
+                .AddChoices([..item is IActionableItem i ? i.Actions : Enumerable.Empty<KeyValuePair<string, IActionableItem.Action>>(), IActionableItem.Drop1, IActionableItem.DropAll, IActionableItem.Delete, IActionableItem.Cancel])
+                .AddCancelResult(IActionableItem.Cancel)
+                .EnableSearch()
+                .WrapAround()
+                .UseConverter(kvp => kvp.Key)
+                .Title(item.Name);
+                AnsiConsole.Prompt(promptAction).Value(game, item);
+                AnsiConsole.Cursor.Hide();
+                break;
+            }
+            case { Key: ConsoleKey.Enter } when game.CurrentLevel[game.Player.X, game.Player.Y] is { Items: { Count: > 0 } items }:
+            {
+                var promptItem = new SelectionPrompt<KeyValuePair<Item, int>>()
+                .AddChoices(items)
+                .AddCancelResult(new KeyValuePair<Item, int>(default!, 0))
+                .EnableSearch()
+                .WrapAround()
+                .UseConverter(kvp => $"{kvp.Key.Name}: {kvp.Value}")
+                .Title("Ground:");
+                var (item, qty) = AnsiConsole.Prompt(promptItem);
+                DrawDungeon(game);
+                if (qty == 0)
+                {
+                    AnsiConsole.Cursor.Hide();
+                    break;
+                }
+
+                var promptAction = new SelectionPrompt<KeyValuePair<string, IActionableItem.Action>>()
+                .AddChoices([IActionableItem.Pickup, IActionableItem.Cancel])
                 .AddCancelResult(IActionableItem.Cancel)
                 .EnableSearch()
                 .WrapAround()
@@ -143,11 +171,22 @@ static void WriteTile(Game game, int x, int y)
     var c = tile.Template.Symbol;
     var back = tile.Template.Background;
     var fore = tile.Template.Foreground;
+
     if ((x, y) == (game.Player.X, game.Player.Y))
     {
         c = game.Player.Symbol;
         fore = game.Player.Color;
     }
+    else if (tile.Items.Count >= 1)
+        if (tile.Items.Count == 1)
+        {
+            var item = tile.Items.First().Key;
+            c = item.Symbol;
+            fore = item.Color;
+        }
+        else
+            c = '+';
+
     if (!tile.IsVisible)
         if (tile.HasBeenSeen)
             fore = fore.Blend(Color.Black, .75f);

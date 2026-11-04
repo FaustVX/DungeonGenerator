@@ -205,21 +205,35 @@ static void WriteTile(Game game, int x, int y)
 
 static void DrawDungeon(Game game)
 {
-    var header = $"{game.Steps}:{game.Depth}";
-    AnsiConsole.Cursor.MoveRight(AnsiConsole.Profile.Width - game.Width - 1);
+    Console.SetCursorPosition(AnsiConsole.Profile.Width - game.Width - 1, 0);
+    Console.Write('│');
     PrintStat(game.Player.HP, "❤️");
     Console.Write(' ');
     PrintStat(game.Player.Shields, "🛡");
-    Console.SetCursorPosition(AnsiConsole.Profile.Width - header.Length - 1, 1);
+    var header = $"{game.Steps}:{game.Depth}";
+    Console.SetCursorPosition(AnsiConsole.Profile.Width - header.Length, 0);
     Console.WriteLine(header);
+    Console.SetCursorPosition(AnsiConsole.Profile.Width - game.Width - 1, 1);
+    Console.Write('├');
+    for (int x = 0; x < game.Width; x++)
+        Console.Write('─');
+    Console.WriteLine();
     for (int y = 0; y < game.Height; y++)
     {
         AnsiConsole.Cursor.MoveRight(AnsiConsole.Profile.Width - game.Width - 1);
+        Console.Write('│');
         for (int x = 0; x < game.Width; x++)
             WriteTile(game, x, y);
         Console.WriteLine();
+        AnsiConsole.Reset();
     }
-    AnsiConsole.Cursor.SetPosition(0, 1);
+    AnsiConsole.Reset();
+    AnsiConsole.Cursor.MoveRight(AnsiConsole.Profile.Width - game.Width - 1);
+    Console.Write('└');
+    for (int x = 0; x < game.Width; x++)
+        Console.Write('─');
+
+    Console.SetCursorPosition(0, 1);
 
     static void PrintStat(int stat, string text)
     {

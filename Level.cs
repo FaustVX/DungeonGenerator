@@ -55,18 +55,11 @@ public sealed class Level
                 _visibleTiles.Add((x, y));
                 _alreadySeenTiles.Add((x, y));
             }
-            if (value.IsVisible)
-                if (value.Items is IDictionary<Item.Item, int> { Count: > 0 } items)
-                    _items[(x, y)] = new(items, _ => 0);
-                else if (value.Items is { Count: 0 })
-                    _items.Remove((x, y));
         }
     }
 
     public void DropItem(int x, int y, Item.Item item, int qty)
-    {
-        _items[(x, y)][item] += qty;
-    }
+    => _items[(x, y)][item] += qty;
 
     public int PickupItem(int x, int y, Item.Item item)
     {

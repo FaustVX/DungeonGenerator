@@ -171,6 +171,7 @@ static void WriteTile(Game game, int x, int y)
     var c = tile.Template.Symbol;
     var back = tile.Template.Background;
     var fore = tile.Template.Foreground;
+    var deco = Decoration.None;
 
     if ((x, y) == (game.Player.X, game.Player.Y))
     {
@@ -178,6 +179,8 @@ static void WriteTile(Game game, int x, int y)
         fore = game.Player.Color;
     }
     else if (tile.Items.Count >= 1)
+    {
+        deco = Decoration.Bold | Decoration.Italic;
         if (tile.Items.Count == 1)
         {
             var item = tile.Items.First().Key;
@@ -186,6 +189,7 @@ static void WriteTile(Game game, int x, int y)
         }
         else
             c = '+';
+    }
 
     if (!tile.IsVisible)
         if (tile.HasBeenSeen)
@@ -194,8 +198,9 @@ static void WriteTile(Game game, int x, int y)
             fore = Color.Black;
     if (fore == back)
         c = '█';
-    (AnsiConsole.Background, AnsiConsole.Foreground) = (back, fore);
+    (AnsiConsole.Background, AnsiConsole.Foreground, AnsiConsole.Decoration) = (back, fore, deco);
     AnsiConsole.Write(c);
+    AnsiConsole.Decoration = Decoration.None;
 }
 
 static void DrawDungeon(Game game)

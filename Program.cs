@@ -1,8 +1,11 @@
 ﻿using System.Diagnostics;
 using DungeonGenerator;
+using DungeonGenerator.Helpers;
 using DungeonGenerator.Item;
 using DungeonGenerator.Tile;
 using Spectre.Console;
+
+MouseSupport(true);
 
 var alternateScreen = false;
 Console.CursorVisible = false;
@@ -12,45 +15,55 @@ Console.CancelKeyPress += (s, e) => Exit();
 
 try
 {
+    var mousePos = (x: 0, y: 0);
     var game = new Game(100, 20, args is [var arg0]
         ? int.TryParse(arg0, out var seed) ? seed: arg0.GetHashCode()
         : Random.Shared.Next());
     Run: while (true)
     {
-        DrawDungeon(game);
-        switch (Console.ReadKey(intercept: true))
+        var lookingAt = LookingAt(game, mousePos.x, mousePos.y);
+        DrawDungeon(game, lookingAt);
+        switch (AnsiConsole.Console.Input.ReadKeyOrMouse())
         {
-            case { Key: ConsoleKey.Escape }:
+            case ConsoleKeyInfo { Key: ConsoleKey.Escape }:
+                MouseSupport(false);
                 var exit = AnsiConsole.Confirm("Quit", defaultValue: false);
                 Console.Clear();
                 if (exit)
                     break Run;
+                MouseSupport(true);
                 break;
-            case { Key: ConsoleKey.D1 }:
+            case ConsoleRead.MouseEvent { PressedOrMovement: true, Button: ConsoleRead.MouseButton.Movement } mouse:
+            {
+                if (mouse.X - (Console.WindowWidth - game.Width) is var x and >= 0 && mouse.Y - 2 is var y and >= 0 && y < game.Height )
+                    mousePos = (x, y);
+                break;
+            }
+            case ConsoleKeyInfo { Key: ConsoleKey.D1 }:
                 _ = (game.MoveDown() && game.MoveLeft()) || (game.MoveLeft() && game.MoveDown());
                 break;
-            case { Key: ConsoleKey.DownArrow or ConsoleKey.D2 }:
+            case ConsoleKeyInfo { Key: ConsoleKey.DownArrow or ConsoleKey.D2 }:
                 game.MoveDown();
                 break;
-            case { Key: ConsoleKey.D3 }:
+            case ConsoleKeyInfo { Key: ConsoleKey.D3 }:
                 _ = (game.MoveDown() && game.MoveRight()) || (game.MoveRight() && game.MoveDown());
                 break;
-            case { Key: ConsoleKey.LeftArrow or ConsoleKey.D4 }:
+            case ConsoleKeyInfo { Key: ConsoleKey.LeftArrow or ConsoleKey.D4 }:
                 game.MoveLeft();
                 break;
-            case { Key: ConsoleKey.RightArrow or ConsoleKey.D6 }:
+            case ConsoleKeyInfo { Key: ConsoleKey.RightArrow or ConsoleKey.D6 }:
                 game.MoveRight();
                 break;
-            case { Key: ConsoleKey.D7 }:
+            case ConsoleKeyInfo { Key: ConsoleKey.D7 }:
                 _ = (game.MoveUp() && game.MoveLeft()) || (game.MoveLeft() && game.MoveUp());
                 break;
-            case { Key: ConsoleKey.UpArrow or ConsoleKey.D8 }:
+            case ConsoleKeyInfo { Key: ConsoleKey.UpArrow or ConsoleKey.D8 }:
                 game.MoveUp();
                 break;
-            case { Key: ConsoleKey.D9 }:
+            case ConsoleKeyInfo { Key: ConsoleKey.D9 }:
                 _ = (game.MoveUp() && game.MoveRight()) || (game.MoveRight() && game.MoveUp());
                 break;
-            case { Key: ConsoleKey.E }:
+            case ConsoleKeyInfo { Key: ConsoleKey.E }:
             {
                 if (game.Player.Items.Count <= 0)
                     break;
@@ -62,7 +75,7 @@ try
                 .UseConverter(kvp => $"{kvp.Key.Name}: {kvp.Value}")
                 .Title("Inventory:");
                 var (item, qty) = AnsiConsole.Prompt(promptItem);
-                DrawDungeon(game);
+                DrawDungeon(game, lookingAt);
                 if (qty == 0)
                 {
                     AnsiConsole.Cursor.Hide();
@@ -80,53 +93,53 @@ try
                 AnsiConsole.Cursor.Hide();
                 break;
             }
-            case { Key: ConsoleKey.Enter } when game.CurrentLevel[game.Player.X, game.Player.Y] is { Items: { Count: > 0 } items }:
-            {
-                var promptItem = new SelectionPrompt<KeyValuePair<Item, int>>()
-                .AddChoices(items)
-                .AddCancelResult(new KeyValuePair<Item, int>(default!, 0))
-                .EnableSearch()
-                .WrapAround()
-                .UseConverter(kvp => $"{kvp.Key.Name}: {kvp.Value}")
-                .Title("Ground:");
-                var (item, qty) = AnsiConsole.Prompt(promptItem);
-                DrawDungeon(game);
-                if (qty == 0)
+            case ConsoleKeyInfo { Key: ConsoleKey.Enter }:
+                if (game.CurrentLevel[game.Player.X, game.Player.Y] is { Items: { Count: > 0 } items })
                 {
-                    AnsiConsole.Cursor.Hide();
-                    break;
-                }
+                    var promptItem = new SelectionPrompt<KeyValuePair<Item, int>>()
+                    .AddChoices(items)
+                    .AddCancelResult(new KeyValuePair<Item, int>(default!, 0))
+                    .EnableSearch()
+                    .WrapAround()
+                    .UseConverter(kvp => $"{kvp.Key.Name}: {kvp.Value}")
+                    .Title("Ground:");
+                    var (item, qty) = AnsiConsole.Prompt(promptItem);
+                    DrawDungeon(game, lookingAt);
+                    if (qty == 0)
+                    {
+                        AnsiConsole.Cursor.Hide();
+                        break;
+                    }
 
-                var promptAction = new SelectionPrompt<KeyValuePair<string, IActionableItem.Action>>()
-                .AddChoices([IActionableItem.Pickup, IActionableItem.Cancel])
-                .AddCancelResult(IActionableItem.Cancel)
-                .EnableSearch()
-                .WrapAround()
-                .UseConverter(kvp => kvp.Key)
-                .Title(item.Name);
-                AnsiConsole.Prompt(promptAction).Value(game, item);
-                AnsiConsole.Cursor.Hide();
+                    var promptAction = new SelectionPrompt<KeyValuePair<string, IActionableItem.Action>>()
+                    .AddChoices([IActionableItem.Pickup, IActionableItem.Cancel])
+                    .AddCancelResult(IActionableItem.Cancel)
+                    .EnableSearch()
+                    .WrapAround()
+                    .UseConverter(kvp => kvp.Key)
+                    .Title(item.Name);
+                    AnsiConsole.Prompt(promptAction).Value(game, item);
+                    AnsiConsole.Cursor.Hide();
+                }
+                else if (game.CurrentLevel[game.Player.X, game.Player.Y].Template is IActionableTemplate { Actions: { } actions, MenuTitle: var title })
+                {
+                    var cancel = IActionableTemplate.Cancel;
+                    var prompt = new SelectionPrompt<KeyValuePair<string, IActionableTemplate.Action>>()
+                    .AddChoices(actions.Append(cancel))
+                    .EnableSearch()
+                    .WrapAround()
+                    .UseConverter(kvp => kvp.Key)
+                    .Title($"{title}:")
+                    .AddCancelResult(cancel);
+                    AnsiConsole.Prompt(prompt).Value(game, game.Player.X, game.Player.Y);
+                    AnsiConsole.Cursor.Hide();
+                }
                 break;
-            }
-            case { Key: ConsoleKey.Enter } when game.CurrentLevel[game.Player.X, game.Player.Y].Template is IActionableTemplate { Actions: { } actions, MenuTitle: var title }:
-            {
-                var cancel = IActionableTemplate.Cancel;
-                var prompt = new SelectionPrompt<KeyValuePair<string, IActionableTemplate.Action>>()
-                .AddChoices(actions.Append(cancel))
-                .EnableSearch()
-                .WrapAround()
-                .UseConverter(kvp => kvp.Key)
-                .Title($"{title}:")
-                .AddCancelResult(cancel);
-                AnsiConsole.Prompt(prompt).Value(game, game.Player.X, game.Player.Y);
-                AnsiConsole.Cursor.Hide();
-                break;
-            }
-            case { Key: ConsoleKey.Enter or ConsoleKey.Spacebar or ConsoleKey.D5 }:
+            case ConsoleKeyInfo { Key: ConsoleKey.Enter or ConsoleKey.Spacebar or ConsoleKey.D5 }:
                 game.Activate();
                 break;
 #if DEBUG
-            case { Key: ConsoleKey.T, Modifiers: ConsoleModifiers.Control }
+            case ConsoleKeyInfo { Key: ConsoleKey.T, Modifiers: ConsoleModifiers.Control }
             when game.CurrentLevel[game.Player.X, game.Player.Y].Template is IStairTemplate { Direction: var dir }:
                 (game.Player.X, game.Player.Y) = game.CurrentLevel.MainTiles[dir switch
                 {
@@ -150,8 +163,19 @@ finally
     Exit(wait: true);
 }
 
+static string LookingAt(Game game, int x, int y)
+{
+    var (_, _, tile, i, visible, seen) = game.CurrentLevel[x, y];
+    if (visible && i.Count == 1 && i.First() is var item)
+        return $"{item.Key.Symbol}: {item.Key.Name} ({item.Value})";
+    if (seen)
+        return $"{tile.Symbol}: {tile.Name}";
+    return "";
+}
+
 void Exit(bool wait = false)
 {
+    MouseSupport(false);
     if (alternateScreen)
     {
         if (wait)
@@ -203,7 +227,7 @@ static void WriteTile(Game game, int x, int y)
     AnsiConsole.Decoration = Decoration.None;
 }
 
-static void DrawDungeon(Game game)
+static void DrawDungeon(Game game, string lookingAt)
 {
     Console.SetCursorPosition(AnsiConsole.Profile.Width - game.Width - 1, 0);
     Console.Write('│');
@@ -211,8 +235,15 @@ static void DrawDungeon(Game game)
     Console.Write(' ');
     PrintStat(game.Player.Shields, "🛡");
     var header = $"{game.Steps}:{game.Depth}";
+    var length = Console.CursorLeft - header.Length + 1;
+    if (lookingAt.Length > length)
+        lookingAt = $"{lookingAt[..length]}…";
+    lookingAt = new string(' ', game.Width) + lookingAt;
+    if (lookingAt.Length > length)
+        lookingAt = $"{lookingAt[(lookingAt.Length - length)..]}";
+    header = lookingAt + " " + header;
     Console.SetCursorPosition(AnsiConsole.Profile.Width - header.Length, 0);
-    Console.WriteLine(header);
+    Console.Write(header);
     Console.SetCursorPosition(AnsiConsole.Profile.Width - game.Width - 1, 1);
     Console.Write('├');
     for (int x = 0; x < game.Width; x++)
@@ -243,4 +274,12 @@ static void DrawDungeon(Game game)
             for (int i = 0; i < stat; i++)
                 Console.Write(text);
     }
+}
+
+static void MouseSupport(bool enable)
+{
+    if (enable)
+        AnsiConsole.Console.WriteAnsi(w => w.EnableMouse());
+    else
+        AnsiConsole.Console.WriteAnsi(w => w.DisableMouse());
 }

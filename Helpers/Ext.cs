@@ -27,6 +27,53 @@ static class Ext
         }
     }
 
+    extension(AnsiWriter writer)
+    {
+        public AnsiWriter EnableMouse()
+        => writer.WriteCsi(1000, 'h', decPrivateMode: true) // enable mouse
+            .WriteCsi(1003, 'h', decPrivateMode: true) // enable mouse motion
+            .WriteCsi(1006, 'h', decPrivateMode: true); // enable extended
+        public AnsiWriter DisableMouse()
+        => writer.WriteCsi(1000, 'l', decPrivateMode: true);
+
+        [UnsafeAccessor(UnsafeAccessorKind.Method)]
+        public extern AnsiWriter WriteCsi(int value, char terminator, bool decPrivateMode = false);
+        [UnsafeAccessor(UnsafeAccessorKind.Method)]
+        public extern AnsiWriter WriteCsi(string parameter, char terminator, bool decPrivateMode = false);
+    }
+
+    extension(IAnsiConsoleInput input)
+    {
+        /// <returns>Returns either a <see cref="ConsoleKeyInfo"/> or <see cref="ConsoleRead.MouseEvent"/></returns>
+        /// <inheritdoc cref="IAnsiConsoleInput.ReadKey(bool)"/>>
+        public ConsoleRead ReadKeyOrMouse()
+        {
+            var key = Console.ReadKey(intercept: true);
+            if (key.Key is not ConsoleKey.Escape || !Console.KeyAvailable)
+                return key;
+            if (Console.ReadKey(true).KeyChar != '[' || Console.ReadKey(true).KeyChar != '<')
+            {
+                while (Console.KeyAvailable)
+                    Console.ReadKey(true);
+                return new ConsoleKeyInfo();
+            }
+
+            var button = 0;
+            while ((key = Console.ReadKey(true)).KeyChar is not ';')
+                button = button * 10 + (key.KeyChar - '0');
+            button &= ~(0b111 << 2);
+            var x = 0;
+            while ((key = Console.ReadKey(true)).KeyChar is not ';')
+                x = x * 10 + (key.KeyChar - '0');
+            var y = 0;
+            while ((key = Console.ReadKey(true)).KeyChar is not ('M' or 'm'))
+                y = y * 10 + (key.KeyChar - '0');
+            var pressed = key.KeyChar is 'M';
+            Convert.ToString(button, 2);
+            return new ConsoleRead.MouseEvent((ConsoleRead.MouseButton)button, x - 1, y - 1, pressed);
+        }
+    }
+
     extension(Random rng)
     {
         public bool NextBool(double probality = .5)
@@ -68,5 +115,20 @@ static class Ext
         => values.Max()!;
         public static T Min<T>(params ReadOnlySpan<T> values)
         => values.Min()!;
+    }
+}
+
+public readonly union ConsoleRead(ConsoleKeyInfo, ConsoleRead.MouseEvent)
+{
+    public readonly record struct MouseEvent(MouseButton Button, int X, int Y, bool PressedOrMovement);
+
+    public enum MouseButton
+    {
+        Left = 0,
+        Middle = 1,
+        Right = 2,
+        Movement = 35,
+        ScrollUp = 64,
+        ScrollDownn = 65,
     }
 }

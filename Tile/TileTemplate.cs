@@ -42,12 +42,12 @@ public interface IActionableTemplate
     public static KeyValuePair<string, Action> Cancel { get; } = new("Cancel", delegate{});
 }
 
-public record class TileTemplate(char Symbol, bool IsWalkable, bool IsTransparent, bool IsReplaceable, Color Background, Color Foreground)
+public record class TileTemplate(char Symbol, string Name, bool IsWalkable, bool IsTransparent, bool IsReplaceable, Color Background, Color Foreground)
 {
     // unicode symbols: https://en.wikipedia.org/wiki/Geometric%20Shapes%20(Unicode%20block)
-    public static TileTemplate Wall { get; } = new('█', false, false, false, Color.Black, Color.White);
-    public static TileTemplate Window { get; } = new('□', false, true, false, Color.Black, Color.White);
-    public static TileTemplate Ground { get; } = new('･', true, true, true, Color.Black, Color.White);
+    public static TileTemplate Wall { get; } = new('█', nameof(Wall), false, false, false, Color.Black, Color.White);
+    public static TileTemplate Window { get; } = new('□', nameof(Window), false, true, false, Color.Black, Color.White);
+    public static TileTemplate Ground { get; } = new('･', nameof(Ground), true, true, true, Color.Black, Color.White);
     public static TileTemplate SmallTorch(bool enabled = true) => TorchTemplate.Cache[(3, enabled)];
     public static TileTemplate Torch(bool enabled = true) => TorchTemplate.Cache[(10, enabled)];
     public static TileTemplate DownStair(bool enabled) => StairTemplate.Cache[(enabled, IStairTemplate.StairDirection.Down)];
@@ -59,7 +59,7 @@ public record class TileTemplate(char Symbol, bool IsWalkable, bool IsTransparen
         IStairTemplate.StairDirection.Up => '▲',
         IStairTemplate.StairDirection.Down => '▼',
         _ => throw new UnreachableException()
-    }, true, true, false, Color.Black, Enabled ? Color.White : Color.Gray)
+    }, "Stair", true, true, false, Color.Black, Enabled ? Color.White : Color.Gray)
     , IStairTemplate
     {
         public static DefaultableDictionary<(bool, IStairTemplate.StairDirection), StairTemplate> Cache { get; } = new DefaultableDictionary<(bool, IStairTemplate.StairDirection), StairTemplate>(capacity: 4, t => new(t.Item1, t.Item2));
@@ -102,7 +102,7 @@ public record class TileTemplate(char Symbol, bool IsWalkable, bool IsTransparen
         public bool Enabled { get; }
 
         public TorchTemplate(double range, bool enabled)
-        : base('i', true, true, false, Color.Black, enabled ? Color.White : Color.Gray)
+        : base('i', "Torch", true, true, false, Color.Black, enabled ? Color.White : Color.Gray)
         {
             Range = range;
             Enabled = enabled;

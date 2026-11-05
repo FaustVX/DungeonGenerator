@@ -65,62 +65,16 @@ try
                 break;
             case ConsoleKeyInfo { Key: ConsoleKey.E }:
             {
-                if (game.Player.Items.Count <= 0)
+                if (game.Player.Items is not IReadOnlyDictionary<Item, int> { Count: > 0 } items)
                     break;
-                var promptItem = new SelectionPrompt<KeyValuePair<Item, int>>()
-                .AddChoices(game.Player.Items)
-                .AddCancelResult(new KeyValuePair<Item, int>(default!, 0))
-                .EnableSearch()
-                .WrapAround()
-                .UseConverter(kvp => $"{kvp.Key.Name}: {kvp.Value}")
-                .Title("Inventory:");
-                var (item, qty) = AnsiConsole.Prompt(promptItem);
-                DrawDungeon(game, lookingAt);
-                if (qty == 0)
-                {
-                    AnsiConsole.Cursor.Hide();
-                    break;
-                }
-
-                var promptAction = new SelectionPrompt<KeyValuePair<string, IActionableItem.Action>>()
-                .AddChoices([..item is IActionableItem i ? i.Actions : Enumerable.Empty<KeyValuePair<string, IActionableItem.Action>>(), IActionableItem.Drop1, IActionableItem.DropAll, IActionableItem.Delete, IActionableItem.Cancel])
-                .AddCancelResult(IActionableItem.Cancel)
-                .EnableSearch()
-                .WrapAround()
-                .UseConverter(kvp => kvp.Key)
-                .Title(item.Name);
-                AnsiConsole.Prompt(promptAction).Value(game, item);
+                ItemsMenu(game, lookingAt, "Inventory:", items, item => [..item is IActionableItem i ? i.Actions : Enumerable.Empty<KeyValuePair<string, IActionableItem.Action>>(), IActionableItem.Drop1, IActionableItem.DropAll, IActionableItem.Delete]);
                 AnsiConsole.Cursor.Hide();
                 break;
             }
             case ConsoleKeyInfo { Key: ConsoleKey.Enter }:
+            {
                 if (game.CurrentLevel[game.Player.X, game.Player.Y] is { Items: { Count: > 0 } items })
-                {
-                    var promptItem = new SelectionPrompt<KeyValuePair<Item, int>>()
-                    .AddChoices(items)
-                    .AddCancelResult(new KeyValuePair<Item, int>(default!, 0))
-                    .EnableSearch()
-                    .WrapAround()
-                    .UseConverter(kvp => $"{kvp.Key.Name}: {kvp.Value}")
-                    .Title("Ground:");
-                    var (item, qty) = AnsiConsole.Prompt(promptItem);
-                    DrawDungeon(game, lookingAt);
-                    if (qty == 0)
-                    {
-                        AnsiConsole.Cursor.Hide();
-                        break;
-                    }
-
-                    var promptAction = new SelectionPrompt<KeyValuePair<string, IActionableItem.Action>>()
-                    .AddChoices([IActionableItem.Pickup, IActionableItem.Cancel])
-                    .AddCancelResult(IActionableItem.Cancel)
-                    .EnableSearch()
-                    .WrapAround()
-                    .UseConverter(kvp => kvp.Key)
-                    .Title(item.Name);
-                    AnsiConsole.Prompt(promptAction).Value(game, item);
-                    AnsiConsole.Cursor.Hide();
-                }
+                    ItemsMenu(game, lookingAt, "Ground:", items, _ => [IActionableItem.Pickup]);
                 else if (game.CurrentLevel[game.Player.X, game.Player.Y].Template is IActionableTemplate { Actions: { } actions, MenuTitle: var title })
                 {
                     var cancel = IActionableTemplate.Cancel;
@@ -132,9 +86,10 @@ try
                     .Title($"{title}:")
                     .AddCancelResult(cancel);
                     AnsiConsole.Prompt(prompt).Value(game, game.Player.X, game.Player.Y);
-                    AnsiConsole.Cursor.Hide();
                 }
+                AnsiConsole.Cursor.Hide();
                 break;
+            }
             case ConsoleKeyInfo { Key: ConsoleKey.Enter or ConsoleKey.Spacebar or ConsoleKey.D5 }:
                 game.Activate();
                 break;
@@ -150,6 +105,32 @@ try
                 game.CurrentLevel.Update();
                 break;
 #endif
+        }
+        static void ItemsMenu(Game game, string lookingAt, string title, IReadOnlyDictionary<Item, int> items, Func<Item, IEnumerable<KeyValuePair<string, IActionableItem.Action>>> extraActions)
+        {
+            var promptItem = new SelectionPrompt<KeyValuePair<Item, int>>()
+            .AddChoices(items)
+            .AddCancelResult(new KeyValuePair<Item, int>(default!, 0))
+            .EnableSearch()
+            .WrapAround()
+            .UseConverter(kvp => $"{kvp.Key.Name}: {kvp.Value}")
+            .Title(title);
+            var (item, qty) = AnsiConsole.Prompt(promptItem);
+            DrawDungeon(game, lookingAt);
+            if (qty == 0)
+            {
+                AnsiConsole.Cursor.Hide();
+                return;
+            }
+
+            var promptAction = new SelectionPrompt<KeyValuePair<string, IActionableItem.Action>>()
+            .AddChoices([..extraActions(item), IActionableItem.Cancel])
+            .AddCancelResult(IActionableItem.Cancel)
+            .EnableSearch()
+            .WrapAround()
+            .UseConverter(kvp => kvp.Key)
+            .Title(item.Name);
+            AnsiConsole.Prompt(promptAction).Value(game, item);
         }
     }
 }

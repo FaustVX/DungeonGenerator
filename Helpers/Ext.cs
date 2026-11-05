@@ -116,6 +116,22 @@ static class Ext
         public static T Min<T>(params ReadOnlySpan<T> values)
         => values.Min()!;
     }
+
+    extension<T>(SelectionPrompt<T>)
+    where T : notnull
+    {
+        public static SelectionPrompt<T> Default(string title, Func<T, string> converter, params IEnumerable<T> values)
+        => new SelectionPrompt<T>()
+            .AddChoices([..values])
+            .EnableSearch()
+            .WrapAround()
+            .UseConverter(converter)
+            .Title($"{title}:");
+
+        public static SelectionPrompt<T> Default(string title, Func<T, string> converter, T cancel, params IEnumerable<T> values)
+        => Default(title, converter, values)
+            .AddCancelResult(cancel);
+    }
 }
 
 public readonly union ConsoleRead(ConsoleKeyInfo, ConsoleRead.MouseEvent)

@@ -5,7 +5,18 @@ using Spectre.Console;
 
 namespace DungeonGenerator.Tile;
 
-public interface IActivableTemplate
+public interface ITileTemplate
+{
+    public abstract char Symbol { get; }
+    public abstract string Name { get; }
+    public abstract bool IsWalkable { get; }
+    public abstract bool IsTransparent { get; }
+    public abstract bool IsReplaceable { get; }
+    public abstract Color Background { get; }
+    public abstract Color Foreground { get; }
+}
+
+public interface IActivableTemplate : ITileTemplate
 {
     public abstract bool ActivateOnWalkOn { get; }
     public abstract bool Activate(Game game, int x, int y);
@@ -23,18 +34,18 @@ public interface IStairTemplate : IActivableTemplate
     }
 }
 
-public interface ITorchTemplate : IActivableTemplate
+public interface ITorchTemplate : IActivableTemplate, IUpdateableTemplate, IActionableTemplate
 {
     public abstract double Range { get; }
     public abstract bool Enabled { get; }
 }
 
-public interface IUpdateableTemplate
+public interface IUpdateableTemplate : ITileTemplate
 {
     public abstract void OnUpdate(Game game, int x, int y);
 }
 
-public interface IActionableTemplate
+public interface IActionableTemplate : ITileTemplate
 {
     public delegate void Action(Game game, int x, int y);
     public abstract IReadOnlyDictionary<string, Action> Actions { get; }
@@ -42,7 +53,7 @@ public interface IActionableTemplate
     public static KeyValuePair<string, Action> Cancel { get; } = new("Cancel", delegate{});
 }
 
-public record class TileTemplate(char Symbol, string Name, bool IsWalkable, bool IsTransparent, bool IsReplaceable, Color Background, Color Foreground)
+public record class TileTemplate(char Symbol, string Name, bool IsWalkable, bool IsTransparent, bool IsReplaceable, Color Background, Color Foreground) : ITileTemplate
 {
     // unicode symbols: https://en.wikipedia.org/wiki/Geometric%20Shapes%20(Unicode%20block)
     public static TileTemplate Wall { get; } = new('█', nameof(Wall), false, false, false, Color.Black, Color.White);
@@ -92,7 +103,7 @@ public record class TileTemplate(char Symbol, string Name, bool IsWalkable, bool
         }
     }
 
-    private record class TorchTemplate : TileTemplate, ITorchTemplate, IUpdateableTemplate, IActionableTemplate
+    private record class TorchTemplate : TileTemplate, ITorchTemplate
     {
         public static DefaultableDictionary<(double, bool), TorchTemplate> Cache { get; } = new DefaultableDictionary<(double, bool), TorchTemplate>(t => new(t.Item1, t.Item2));
         public bool ActivateOnWalkOn => false;

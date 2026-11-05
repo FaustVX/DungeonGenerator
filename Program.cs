@@ -73,12 +73,42 @@ try
             }
             case ConsoleKeyInfo { Key: ConsoleKey.Enter }:
             {
-                if (game.CurrentLevel[game.Player.X, game.Player.Y] is { Items: { Count: > 0 } items })
-                    ItemsMenu(game, lookingAt, "Ground", items, _ => [IActionableItem.Pickup]);
-                else if (game.CurrentLevel[game.Player.X, game.Player.Y].Template is IActionableTemplate { Actions: { } actions, MenuTitle: var title })
+                var items = game.CurrentLevel[game.Player.X, game.Player.Y].Items;
+                var template = game.CurrentLevel[game.Player.X, game.Player.Y].Template;
+                switch (items, template)
                 {
-                    var prompt = SelectionPrompt<KeyValuePair<string, IActionableTemplate.Action>>.Default(title, kvp => kvp.Key, IActionableTemplate.Cancel, actions.Append(IActionableTemplate.Cancel));
-                    AnsiConsole.Prompt(prompt).Value(game, game.Player.X, game.Player.Y);
+                    case ({ Count: > 0 }, IActionableTemplate { Actions: { } actions, MenuTitle: var title } tile):
+                    {
+                        var selection = AnsiConsole.Prompt(SelectionPrompt<bool>.Default("Where", b => b ? $"Items ({items.Count})" : $"Tile: {tile.Name}", [true, false]));
+                        DrawDungeon(game, lookingAt);
+                        if (selection)
+                            ItemsMenu(game, lookingAt, "Ground", items, _ => [IActionableItem.Pickup]);
+                        else
+                        {
+                            var prompt = SelectionPrompt<KeyValuePair<string, IActionableTemplate.Action>>.Default(title, kvp => kvp.Key, IActionableTemplate.Cancel, actions.Append(IActionableTemplate.Cancel));
+                            AnsiConsole.Prompt(prompt).Value(game, game.Player.X, game.Player.Y);
+                        }
+                        break;
+                    }
+                    case ({ Count: > 0 }, IActivableTemplate tile):
+                    {
+                        var selection = AnsiConsole.Prompt(SelectionPrompt<bool>.Default("Where", b => b ? $"Items ({items.Count})" : $"Use {tile.Symbol} {tile.Name}", [true, false]));
+                        DrawDungeon(game, lookingAt);
+                        if (selection)
+                            ItemsMenu(game, lookingAt, "Ground", items, _ => [IActionableItem.Pickup]);
+                        else
+                            tile.Activate(game, game.Player.X, game.Player.Y);
+                        break;
+                    }
+                    case ({ Count: > 0 }, _):
+                        ItemsMenu(game, lookingAt, "Ground", items, _ => [IActionableItem.Pickup]);
+                        break;
+                    case (_, IActionableTemplate { Actions: { } actions, MenuTitle: var title }):
+                    {
+                        var prompt = SelectionPrompt<KeyValuePair<string, IActionableTemplate.Action>>.Default(title, kvp => kvp.Key, IActionableTemplate.Cancel, actions.Append(IActionableTemplate.Cancel));
+                        AnsiConsole.Prompt(prompt).Value(game, game.Player.X, game.Player.Y);
+                        break;
+                    }
                 }
                 AnsiConsole.Cursor.Hide();
                 break;

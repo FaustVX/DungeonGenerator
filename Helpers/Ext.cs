@@ -25,6 +25,20 @@ static class Ext
             AnsiConsole.Background = template.Background;
             AnsiConsole.Write(template.Symbol);
         }
+
+        public static void MouseSupport(bool enable)
+        => AnsiConsole.Console.MouseSupport(enable);
+    }
+
+    extension(IAnsiConsole console)
+    {
+        public void MouseSupport(bool enable)
+        {
+            if (enable)
+                console.WriteAnsi(w => w.EnableMouse());
+            else
+                console.WriteAnsi(w => w.DisableMouse());
+        }
     }
 
     extension(AnsiWriter writer)
@@ -81,14 +95,14 @@ static class Ext
 
         public T Prompt(IAnsiConsole console)
         {
-            console.WriteAnsi(w => w.DisableMouse());
+            console.MouseSupport(false);
             try
             {
                 return console.Prompt(prompt);
             }
             finally
             {
-                console.WriteAnsi(w => w.EnableMouse());
+                console.MouseSupport(true);
             }
         }
     }

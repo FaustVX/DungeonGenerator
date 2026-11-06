@@ -5,7 +5,7 @@ using DungeonGenerator.Item;
 using DungeonGenerator.Tile;
 using Spectre.Console;
 
-MouseSupport(true);
+AnsiConsole.MouseSupport(true);
 
 var alternateScreen = false;
 Console.CursorVisible = false;
@@ -26,13 +26,11 @@ try
         switch (AnsiConsole.Console.Input.ReadKeyOrMouse())
         {
             case ConsoleKeyInfo { Key: ConsoleKey.Escape }:
-                MouseSupport(false);
                 var exit = SelectionPrompt<bool>.Default("Confirm quit", b => b ? "Yes, quit" : "No, stay", false, [false, true])
                     .Prompt();
-                Console.Clear();
                 if (exit)
                     break Run;
-                MouseSupport(true);
+                AnsiConsole.Cursor.Hide();
                 break;
             case ConsoleRead.MouseEvent { PressedOrMovement: true, Button: ConsoleRead.MouseButton.Movement } mouse:
             {
@@ -170,7 +168,7 @@ static string LookingAt(Game game, int x, int y)
 
 void Exit(bool wait = false)
 {
-    MouseSupport(false);
+    AnsiConsole.MouseSupport(false);
     if (alternateScreen)
     {
         if (wait)
@@ -269,12 +267,4 @@ static void DrawDungeon(Game game, string lookingAt)
             for (int i = 0; i < stat; i++)
                 Console.Write(text);
     }
-}
-
-static void MouseSupport(bool enable)
-{
-    if (enable)
-        AnsiConsole.Console.WriteAnsi(w => w.EnableMouse());
-    else
-        AnsiConsole.Console.WriteAnsi(w => w.DisableMouse());
 }

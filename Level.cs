@@ -1,4 +1,5 @@
 using System.Collections.Frozen;
+using DungeonGenerator.Creature;
 using DungeonGenerator.Generator;
 using DungeonGenerator.Helpers;
 using DungeonGenerator.Lib;
@@ -15,12 +16,16 @@ public sealed class Level
     public Dictionary<MainTile, (int x, int y)> MainTiles { get; } = [];
     public Game Game { get; }
     public int Depth { get; }
+    private readonly Random _rng;
+
+    public List<Mob> Creatures { get; }
 
     public Level(Game game, int depth)
     {
         Game = game;
         Depth = depth;
-        var generator = Random.Shared.NextItem(IGenerator.Generators)(game.Width, game.Height, game.Seed + depth, this);
+        _rng = new Random(game.Seed + depth);
+        var generator = Random.Shared.NextItem(IGenerator.Generators)(game.Width, game.Height, _rng, this);
         _tiles = new TileTemplate[game.Width, game.Height];
         _visibleTiles = [];
         _alreadySeenTiles = [];
@@ -42,6 +47,21 @@ public sealed class Level
             }
         if (!MainTiles.ContainsKey(MainTile.Entrance) || !MainTiles.ContainsKey(MainTile.Exit))
             throw new Exception();
+        if (generator is Generator.BSP.Generator gen)
+        {
+            var room = _rng.NextItem(gen.Rooms);
+            var (x, y) = (0, 0);
+            do
+            {
+                (x, y) = room.GetGlobalOrigin();
+                x = _rng.Next(x + 1, x + room.Width - 1);
+                y = _rng.Next(y + 1, y + room.Height - 1);
+            }
+            while (!_tiles[x, y].IsWalkable);
+            Creatures = [new Creature.Rat(x, y)];
+        }
+        else
+            Creatures = [with(capacity: 0)];
     }
 
     public Tile.Tile this[int x, int y]
@@ -82,6 +102,9 @@ public sealed class Level
             for (int y = 0; y < Game.Height; y++)
                 if (_tiles[x, y] is IUpdateableTemplate exec)
                     exec.OnUpdate(Game, x, y);
+
+        foreach (var creature in Creatures)
+            creature.Update(this);
     }
 
     public enum MainTile

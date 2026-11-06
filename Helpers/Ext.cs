@@ -112,8 +112,11 @@ static class Ext
         public bool NextBool(double probality = .5)
         => rng.NextDouble() < probality;
 
-        public T NextItem<T>(IReadOnlyList<T> values)
+        public T NextItem<T>(params IReadOnlyList<T> values)
         => values[rng.Next(values.Count)];
+
+        public T NextItem<T>(params ReadOnlySpan<T> values)
+        => values[rng.Next(values.Length)];
     }
 
     extension<T>((T, T))

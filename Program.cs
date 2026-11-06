@@ -195,6 +195,11 @@ static void WriteTile(Game game, int x, int y)
         c = game.Player.Symbol;
         fore = game.Player.Color;
     }
+    else if (tile.IsVisible && game.CurrentLevel.Creatures.FirstOrDefault(c => (c.X, c.Y) == (x, y)) is {} creature)
+    {
+        c = creature.Symbol;
+        fore = creature.Color;
+    }
     else if (tile.Items.Count >= 1)
     {
         deco = Decoration.Bold | Decoration.Italic;

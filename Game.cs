@@ -47,9 +47,18 @@ public sealed class Game
             Player.Direction = Direction.Right;
         else
             Player.Direction = Direction.None;
-        (Player.X, Player.Y) = (x, y);
-        if (CurrentLevel[x, y] is { Items.Count: 0, Template: IActivableTemplate { ActivateOnWalkOn: true } tile })
-            return tile.Activate(this, x, y);
+        if (CurrentLevel.Creatures.FirstOrDefault(c => (c.X, c.Y) == (x, y)) is {} c)
+        {
+            Player.Attack(c);
+            if (c.HP <= 0)
+                CurrentLevel.Creatures.Remove(c);
+        }
+        else
+        {
+            (Player.X, Player.Y) = (x, y);
+            if (CurrentLevel[x, y] is { Items.Count: 0, Template: IActivableTemplate { ActivateOnWalkOn: true } tile })
+                return tile.Activate(this, x, y);
+        }
         CurrentLevel.Update();
         return true;
     }

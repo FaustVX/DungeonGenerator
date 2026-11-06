@@ -74,6 +74,25 @@ static class Ext
         }
     }
 
+    extension<T>(IPrompt<T> prompt)
+    {
+        public T Prompt()
+        => prompt.Prompt(AnsiConsole.Console);
+
+        public T Prompt(IAnsiConsole console)
+        {
+            console.WriteAnsi(w => w.DisableMouse());
+            try
+            {
+                return console.Prompt(prompt);
+            }
+            finally
+            {
+                console.WriteAnsi(w => w.EnableMouse());
+            }
+        }
+    }
+
     extension(Random rng)
     {
         public bool NextBool(double probality = .5)

@@ -27,7 +27,8 @@ try
         {
             case ConsoleKeyInfo { Key: ConsoleKey.Escape }:
                 MouseSupport(false);
-                var exit = AnsiConsole.Confirm("Quit", defaultValue: false);
+                var exit = SelectionPrompt<bool>.Default("Confirm quit", b => b ? "Yes, quit" : "No, stay", false, [false, true])
+                    .Prompt();
                 Console.Clear();
                 if (exit)
                     break Run;
@@ -79,20 +80,22 @@ try
                 {
                     case ({ Count: > 0 }, IActionableTemplate { Actions: { } actions, MenuTitle: var title } tile):
                     {
-                        var selection = AnsiConsole.Prompt(SelectionPrompt<bool>.Default("Where", b => b ? $"Items ({items.Count})" : $"Tile: {tile.Name}", [true, false]));
+                        var selection = SelectionPrompt<bool>.Default("Where", b => b ? $"Items ({items.Count})" : $"Tile: {tile.Name}", [true, false])
+                            .Prompt();
                         DrawDungeon(game, lookingAt);
                         if (selection)
                             ItemsMenu(game, lookingAt, "Ground", items, _ => [IActionableItem.Pickup]);
                         else
                         {
-                            var prompt = SelectionPrompt<KeyValuePair<string, IActionableTemplate.Action>>.Default(title, kvp => kvp.Key, IActionableTemplate.Cancel, actions.Append(IActionableTemplate.Cancel));
-                            AnsiConsole.Prompt(prompt).Value(game, game.Player.X, game.Player.Y);
+                            SelectionPrompt<KeyValuePair<string, IActionableTemplate.Action>>.Default(title, kvp => kvp.Key, IActionableTemplate.Cancel, actions.Append(IActionableTemplate.Cancel))
+                                .Prompt().Value(game, game.Player.X, game.Player.Y);
                         }
                         break;
                     }
                     case ({ Count: > 0 }, IActivableTemplate tile):
                     {
-                        var selection = AnsiConsole.Prompt(SelectionPrompt<bool>.Default("Where", b => b ? $"Items ({items.Count})" : $"Use {tile.Symbol} {tile.Name}", [true, false]));
+                        var selection = SelectionPrompt<bool>.Default("Where", b => b ? $"Items ({items.Count})" : $"Use {tile.Symbol} {tile.Name}", [true, false])
+                            .Prompt();
                         DrawDungeon(game, lookingAt);
                         if (selection)
                             ItemsMenu(game, lookingAt, "Ground", items, _ => [IActionableItem.Pickup]);
@@ -105,8 +108,8 @@ try
                         break;
                     case (_, IActionableTemplate { Actions: { } actions, MenuTitle: var title }):
                     {
-                        var prompt = SelectionPrompt<KeyValuePair<string, IActionableTemplate.Action>>.Default(title, kvp => kvp.Key, IActionableTemplate.Cancel, actions.Append(IActionableTemplate.Cancel));
-                        AnsiConsole.Prompt(prompt).Value(game, game.Player.X, game.Player.Y);
+                        SelectionPrompt<KeyValuePair<string, IActionableTemplate.Action>>.Default(title, kvp => kvp.Key, IActionableTemplate.Cancel, actions.Append(IActionableTemplate.Cancel))
+                            .Prompt().Value(game, game.Player.X, game.Player.Y);
                         break;
                     }
                 }
@@ -131,8 +134,8 @@ try
         }
         static void ItemsMenu(Game game, string lookingAt, string title, IReadOnlyDictionary<Item, int> items, Func<Item, IEnumerable<KeyValuePair<string, IActionableItem.Action>>> extraActions)
         {
-            var promptItem = SelectionPrompt<KeyValuePair<Item, int>>.Default(title, kvp => $"{kvp.Key.Name}: {kvp.Value}", new KeyValuePair<Item, int>(default!, 0), items);
-            var (item, qty) = AnsiConsole.Prompt(promptItem);
+            var (item, qty) = SelectionPrompt<KeyValuePair<Item, int>>.Default(title, kvp => $"{kvp.Key.Name}: {kvp.Value}", new KeyValuePair<Item, int>(default!, 0), items)
+                .Prompt();
             DrawDungeon(game, lookingAt);
             if (qty == 0)
             {
@@ -140,8 +143,8 @@ try
                 return;
             }
 
-            var promptAction = SelectionPrompt<KeyValuePair<string, IActionableItem.Action>>.Default(item.Name, kvp => kvp.Key, IActionableItem.Cancel, [..extraActions(item), IActionableItem.Cancel]);
-            AnsiConsole.Prompt(promptAction).Value(game, item);
+            SelectionPrompt<KeyValuePair<string, IActionableItem.Action>>.Default(item.Name, kvp => kvp.Key, IActionableItem.Cancel, [..extraActions(item), IActionableItem.Cancel])
+                .Prompt().Value(game, item);
         }
     }
 }

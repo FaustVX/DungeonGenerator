@@ -70,7 +70,7 @@ static class Ext
                 y = y * 10 + (key.KeyChar - '0');
             var pressed = key.KeyChar is 'M';
             Convert.ToString(button, 2);
-            return new ConsoleRead.MouseEvent((ConsoleRead.MouseButton)button, x - 1, y - 1, pressed);
+            return new ConsoleRead.MouseEvent(x - 1, y - 1, (ConsoleRead.MouseButton)button, pressed);
         }
     }
 

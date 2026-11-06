@@ -8,41 +8,48 @@ namespace DungeonGenerator.Helpers;
 public readonly struct ConsoleRead : IUnion
 {
     [FieldOffset(0)]
-    private readonly byte _tag = 0;
+    private readonly Tag _tag;
     [FieldOffset(1)]
     private readonly ConsoleKeyInfo _consoleKeyInfo;
     [FieldOffset(1)]
     private readonly MouseEvent _mouseEvent;
 
     public ConsoleRead(ConsoleKeyInfo consoleKeyInfo)
-    => (_tag, _consoleKeyInfo) = (1, consoleKeyInfo);
+    => (_tag, _consoleKeyInfo) = (Tag.ConsoleKeyInfo, consoleKeyInfo);
 
     public ConsoleRead(MouseEvent mouseEvent)
-    => (_tag, _mouseEvent) = (2, mouseEvent);
+    => (_tag, _mouseEvent) = (Tag.MouseEvent, mouseEvent);
 
     public object? Value
     => _tag switch
     {
-        1 => _consoleKeyInfo,
-        2 => _mouseEvent,
+        Tag.ConsoleKeyInfo => _consoleKeyInfo,
+        Tag.MouseEvent => _mouseEvent,
         _ => throw new UnreachableException(),
     };
 
     public bool TryGetValue(out ConsoleKeyInfo consoleKeyInfo)
     {
         consoleKeyInfo = _consoleKeyInfo;
-        return _tag == 1;
+        return _tag == Tag.ConsoleKeyInfo;
     }
 
     public bool TryGetValue(out MouseEvent mouseEvent)
     {
         mouseEvent = _mouseEvent;
-        return _tag == 2;
+        return _tag == Tag.MouseEvent;
     }
 
-    public readonly record struct MouseEvent(MouseButton Button, int X, int Y, bool PressedOrMovement);
+    private enum Tag : byte
+    {
+        None,
+        ConsoleKeyInfo,
+        MouseEvent,
+    }
 
-    public enum MouseButton
+    public readonly record struct MouseEvent(int X, int Y, MouseButton Button, bool PressedOrMovement);
+
+    public enum MouseButton : byte
     {
         Left = 0,
         Middle = 1,

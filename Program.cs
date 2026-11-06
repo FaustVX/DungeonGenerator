@@ -73,8 +73,8 @@ try
             }
             case ConsoleKeyInfo { Key: ConsoleKey.Enter }:
             {
-                var items = game.CurrentLevel[game.Player.X, game.Player.Y].Items;
-                var template = game.CurrentLevel[game.Player.X, game.Player.Y].Template;
+                var items = game.CurrentTile.Items;
+                var template = game.CurrentTile.Template;
                 switch (items, template)
                 {
                     case ({ Count: > 0 }, IActionableTemplate { Actions: { } actions, MenuTitle: var title } tile):
@@ -118,7 +118,7 @@ try
                 break;
 #if DEBUG
             case ConsoleKeyInfo { Key: ConsoleKey.T, Modifiers: ConsoleModifiers.Control }
-            when game.CurrentLevel[game.Player.X, game.Player.Y].Template is IStairTemplate { Direction: var dir }:
+            when game.CurrentTile.Template is IStairTemplate { Direction: var dir }:
                 (game.Player.X, game.Player.Y) = game.CurrentLevel.MainTiles[dir switch
                 {
                     IStairTemplate.StairDirection.Up => Level.MainTile.Exit,

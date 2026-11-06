@@ -15,6 +15,12 @@ public sealed class Game
     public Level CurrentLevel => _levels[Depth];
     public int Seed { get; }
     public Player Player { get; }
+    public Tile.Tile CurrentTile
+    {
+        get => CurrentLevel[Player.X, Player.Y];
+        set => CurrentLevel[Player.X, Player.Y] = value;
+    }
+
     public Game(int width, int height, int seed)
     {
         _levels = [with(() => new(this, Depth), capacity: 8)];
@@ -61,5 +67,5 @@ public sealed class Game
     => Move(Player.X + 1, Player.Y);
 
     public bool Activate()
-    => CurrentLevel[Player.X, Player.Y].Template is IActivableTemplate tile && tile.Activate(this, Player.X, Player.Y);
+    => CurrentTile.Template is IActivableTemplate tile && tile.Activate(this, Player.X, Player.Y);
 }

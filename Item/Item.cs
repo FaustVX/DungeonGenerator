@@ -1,3 +1,4 @@
+using DungeonGenerator.Helpers;
 using DungeonGenerator.Tile;
 using Spectre.Console;
 
@@ -27,14 +28,12 @@ public abstract record class Item(string Name, char Symbol, Color Color)
 
     protected static void DeleteAction(Game game, Item item)
     {
-        if ((game.Player.Items[item] -= 1) <= 0)
-            game.Player.Items.Remove(item);
+        game.Player.Items.RemoveQuantity(item, 1);
     }
 
     protected static void Drop1Action(Game game, Item item)
     {
-        if ((game.Player.Items[item] -= 1) <= 0)
-            game.Player.Items.Remove(item);
+        game.Player.Items.RemoveQuantity(item, 1);
         game.CurrentLevel.DropItem(game.Player.X, game.Player.Y, item, 1, game.Player);
     }
 
@@ -62,8 +61,7 @@ public interface IPlaceItem
         if (!game.CurrentTile.Template.IsReplaceable)
             return;
         game.CurrentTile = game.CurrentTile with { Template = ((Torch)item).Template };
-        if ((game.Player.Items[item] -= 1) <= 0)
-            game.Player.Items.Remove(item);
+        game.Player.Items.RemoveQuantity(item, 1);
         game.Messages.Add(new PlaceMessage(game, item));
         game.CurrentLevel.Update();
     }
@@ -85,8 +83,7 @@ public interface IEatItem
             return;
         var hp = game.Player.HP;
         game.Player.HP += eat.RestoreHP;
-        if ((game.Player.Items[item] -= 1) <= 0)
-            game.Player.Items.Remove(item);
+        game.Player.Items.RemoveQuantity(item, 1);
         game.Messages.Add(new EatMessage(game, item, game.Player.HP - hp));
     }
 
@@ -110,7 +107,7 @@ public abstract record class Torch(string Name, double Range, TileTemplate Templ
         if (item is Torch torch && game.Player.Torch is null)
         {
             game.Player.Torch = torch;
-            DeleteAction(game, torch);
+            game.Player.Items.RemoveQuantity(item, 1);
             game.CurrentLevel.Update();
         }
     }

@@ -197,4 +197,15 @@ static class Ext
             return $"{s[..(totalWidth - 1)]}{ellipsis}";
         }
     }
+
+    extension<TKey, TNumber>(IDictionary<TKey, TNumber> dict)
+    where TKey : notnull
+    where TNumber : INumber<TNumber>
+    {
+        public void RemoveQuantity(TKey key, TNumber qty)
+        {
+            if ((dict[key] -= qty) <= TNumber.Zero)
+                dict.Remove(key);
+        }
+    }
 }

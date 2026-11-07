@@ -269,7 +269,8 @@ static void DrawDungeon(Game game, string lookingAt)
     foreach (var message in game.Messages.AsEnumerable().Reverse())
     {
         var text = message.ToString();
-        AnsiConsole.MarkupLine($"[on black]" + text.PadRight(messageWidth + (text.Length - Markup.Remove(text).Length), ' ') + "[/]");
+        int widthWithoutMarkup = messageWidth + (text.Length - Markup.Remove(text).Length);
+        AnsiConsole.MarkupLine($"[on black]" + text.PadRight(widthWithoutMarkup, ' ').Ellipsis(widthWithoutMarkup) + "[/]");
         AnsiConsole.Cursor.MoveUp(2);
     }
     AnsiConsole.Write($" {game.Messages.Count} message(s) ".PadCenter(messageWidth, '─'));

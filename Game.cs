@@ -1,6 +1,7 @@
 using DungeonGenerator.Creature;
 using DungeonGenerator.Helpers;
 using DungeonGenerator.Lib;
+using DungeonGenerator.Messages;
 using DungeonGenerator.Tile;
 
 namespace DungeonGenerator;
@@ -20,6 +21,7 @@ public sealed class Game
         get => CurrentLevel[Player.X, Player.Y];
         set => CurrentLevel[Player.X, Player.Y] = value;
     }
+    public RollingList<Message> Messages { get; }
 
     public Game(int width, int height, int seed)
     {
@@ -29,6 +31,7 @@ public sealed class Game
         Seed = seed;
         var (x, y) = CurrentLevel.MainTiles[Level.MainTile.Entrance];
         Player = new(x, y);
+        Messages = [with(20)];
         CurrentLevel.Update();
     }
 

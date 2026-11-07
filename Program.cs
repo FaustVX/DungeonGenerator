@@ -227,7 +227,8 @@ static void WriteTile(Game game, int x, int y)
 
 static void DrawDungeon(Game game, string lookingAt)
 {
-    Console.SetCursorPosition(AnsiConsole.Profile.Width - game.Width - 1, 0);
+    var messageWidth = AnsiConsole.Profile.Width - game.Width - 1;
+    Console.SetCursorPosition(messageWidth, 0);
     Console.Write('│');
     PrintStat(game.Player.HP, "❤️");
     Console.Write(' ');
@@ -242,14 +243,14 @@ static void DrawDungeon(Game game, string lookingAt)
     header = lookingAt + " " + header;
     Console.SetCursorPosition(AnsiConsole.Profile.Width - header.Length, 0);
     Console.Write(header);
-    Console.SetCursorPosition(AnsiConsole.Profile.Width - game.Width - 1, 1);
+    Console.SetCursorPosition(messageWidth, 1);
     Console.Write('├');
     for (int x = 0; x < game.Width; x++)
         Console.Write('─');
     Console.WriteLine();
     for (int y = 0; y < game.Height; y++)
     {
-        AnsiConsole.Cursor.MoveRight(AnsiConsole.Profile.Width - game.Width - 1);
+        AnsiConsole.Cursor.MoveRight(messageWidth);
         Console.Write('│');
         for (int x = 0; x < game.Width; x++)
             WriteTile(game, x, y);
@@ -257,10 +258,24 @@ static void DrawDungeon(Game game, string lookingAt)
         AnsiConsole.Reset();
     }
     AnsiConsole.Reset();
-    AnsiConsole.Cursor.MoveRight(AnsiConsole.Profile.Width - game.Width - 1);
-    Console.Write('└');
+    AnsiConsole.Cursor.MoveRight(messageWidth);
+    Console.Write('┴');
     for (int x = 0; x < game.Width; x++)
         Console.Write('─');
+
+    Console.SetCursorPosition(0, game.Height + 2);
+    for (int x = 0; x < messageWidth; x++)
+        Console.Write('─');
+    Console.SetCursorPosition(0, game.Height + 2 - 1);
+    foreach (var message in game.Messages.AsEnumerable().Reverse())
+    {
+        AnsiConsole.WriteLine(message.ToString().PadRight(messageWidth));
+        AnsiConsole.Cursor.MoveUp(2);
+    }
+    AnsiConsole.Write($"{game.Messages.Count} message(s): ");
+    for (int x = Console.CursorLeft; x < messageWidth; x++)
+        Console.Write('─');
+    Console.Write(game.Messages.IsFull ? '┼' : '┤');
 
     Console.SetCursorPosition(0, 1);
 

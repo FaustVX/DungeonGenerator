@@ -168,4 +168,14 @@ static class Ext
         => Default(title, converter, values)
             .AddCancelResult(cancel);
     }
+
+    extension<T>(Span<T> span)
+    {
+        /// <summary>
+        /// Copies the contents of <paramref name="other"/> <see cref="ReadOnlySpan{T}"/> into this <see cref="Span{T}"/>.
+        /// </summary>
+        /// <param name="other">The span to copy items from.</param>
+        public void CopyFrom(ReadOnlySpan<T> other)
+        => other.CopyTo(span);
+    }
 }

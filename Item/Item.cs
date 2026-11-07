@@ -18,7 +18,7 @@ public abstract record class Item(string Name, char Symbol, Color Color)
         => $"{_timestamp} {CreatureColor(creature)} picked up {qty} {ItemColor(item)} from the ground";
     }
 
-    public delegate void Action(Game game, Item item);
+    public delegate void Action(Game game, IDictionary<Item, int> items, Item item);
     public abstract IReadOnlyDictionary<string, Action> Actions { get; }
     public static KeyValuePair<string, Action> Cancel { get; } = new("Cancel", delegate{});
     public static KeyValuePair<string, Action> Delete { get; } = new("Delete", DeleteAction);
@@ -26,25 +26,25 @@ public abstract record class Item(string Name, char Symbol, Color Color)
     public static KeyValuePair<string, Action> DropAll { get; } = new("Drop all", DropAllAction);
     public static KeyValuePair<string, Action> Pickup { get; } = new("Pickup", PickupAction);
 
-    protected static void DeleteAction(Game game, Item item)
+    protected static void DeleteAction(Game game, IDictionary<Item, int> items, Item item)
     {
-        game.Player.Items.RemoveQuantity(item, 1);
+        items.RemoveQuantity(item, 1);
     }
 
-    protected static void Drop1Action(Game game, Item item)
+    protected static void Drop1Action(Game game, IDictionary<Item, int> items, Item item)
     {
-        game.Player.Items.RemoveQuantity(item, 1);
+        items.RemoveQuantity(item, 1);
         game.CurrentLevel.DropItem(game.Player.X, game.Player.Y, item, 1, game.Player);
     }
 
-    protected static void DropAllAction(Game game, Item item)
+    protected static void DropAllAction(Game game, IDictionary<Item, int> items, Item item)
     {
-        var qty = game.Player.Items[item];
-        game.Player.Items.Remove(item);
+        var qty = items[item];
+        items.Remove(item);
         game.CurrentLevel.DropItem(game.Player.X, game.Player.Y, item, qty, game.Player);
     }
 
-    protected static void PickupAction(Game game, Item item)
+    protected static void PickupAction(Game game, IDictionary<Item, int> items, Item item)
     {
         var qty = game.CurrentLevel.PickupItem(game.Player.X, game.Player.Y, item);
         game.Player.Items[item] += qty;
@@ -56,12 +56,12 @@ public interface IPlaceItem
 {
     public abstract TileTemplate Template { get; }
 
-    protected static void Place(Game game, Item item)
+    protected static void Place(Game game, IDictionary<Item, int> items, Item item)
     {
         if (!game.CurrentTile.Template.IsReplaceable)
             return;
         game.CurrentTile = game.CurrentTile with { Template = ((Torch)item).Template };
-        game.Player.Items.RemoveQuantity(item, 1);
+        items.RemoveQuantity(item, 1);
         game.Messages.Add(new PlaceMessage(game, item));
         game.CurrentLevel.Update();
     }
@@ -77,13 +77,13 @@ public interface IEatItem
 {
     public abstract int RestoreHP { get; }
 
-    protected static void EatAction(Game game, Item item)
+    protected static void EatAction(Game game, IDictionary<Item, int> items, Item item)
     {
         if (item is not IEatItem eat)
             return;
         var hp = game.Player.HP;
         game.Player.HP += eat.RestoreHP;
-        game.Player.Items.RemoveQuantity(item, 1);
+        items.RemoveQuantity(item, 1);
         game.Messages.Add(new EatMessage(game, item, game.Player.HP - hp));
     }
 
@@ -102,12 +102,12 @@ public abstract record class Torch(string Name, double Range, TileTemplate Templ
         ["Equip"] = Equip,
     };
 
-    private static void Equip(Game game, Item item)
+    private static void Equip(Game game, IDictionary<Item, int> items, Item item)
     {
         if (item is Torch torch && game.Player.Torch is null)
         {
             game.Player.Torch = torch;
-            game.Player.Items.RemoveQuantity(item, 1);
+            items.RemoveQuantity(item, 1);
             game.CurrentLevel.Update();
         }
     }

@@ -17,11 +17,6 @@ public abstract record class Item(string Name, char Symbol, Color Color)
         => $"{_timestamp} {CreatureColor(creature)} picked up {qty} {ItemColor(item)} from the ground";
     }
 
-    public class EatMessage(Game game, Item item, int hpRestored) : Messages.Message(game)
-    {
-        public override string ToString()
-        => $"{_timestamp} {PlayerColor()} ate {ItemColor(item)} for {hpRestored} ❤️";
-    }
     public delegate void Action(Game game, Item item);
     public abstract IReadOnlyDictionary<string, Action> Actions { get; }
     public static KeyValuePair<string, Action> Cancel { get; } = new("Cancel", delegate{});
@@ -80,6 +75,28 @@ public interface IPlaceItem
     }
 }
 
+public interface IEatItem
+{
+    public abstract int RestoreHP { get; }
+
+    protected static void EatAction(Game game, Item item)
+    {
+        if (item is not IEatItem eat)
+            return;
+        var hp = game.Player.HP;
+        game.Player.HP += eat.RestoreHP;
+        if ((game.Player.Items[item] -= 1) <= 0)
+            game.Player.Items.Remove(item);
+        game.Messages.Add(new EatMessage(game, item, game.Player.HP - hp));
+    }
+
+    public class EatMessage(Game game, Item item, int hpRestored) : Messages.Message(game)
+    {
+        public override string ToString()
+        => $"{_timestamp} {PlayerColor()} ate {ItemColor(item)} for {hpRestored} ❤️";
+    }
+}
+
 public abstract record class Torch(string Name, double Range, TileTemplate Template) : Item(Name, Template.Symbol, Template.Foreground), IPlaceItem
 {
     public override IReadOnlyDictionary<string, Action> Actions { get; } = new Dictionary<string, Action>()
@@ -104,21 +121,14 @@ public record class SmallTorch() : Torch("Small Torch", 3, TileTemplate.SmallTor
     public static SmallTorch Instance => field ??= new();
 }
 
-public record class Meat() : Item("Meat", '%', Color.IndianRed1)
+public record class Meat() : Item("Meat", '%', Color.IndianRed1), IEatItem
 {
     public static Meat Instance => field ??= new();
+    public int RestoreHP => 2;
 
     public override IReadOnlyDictionary<string, Action> Actions { get; } = new Dictionary<string, Action>()
     {
-        ["Eat"] = EatAction,
+        ["Eat"] = IEatItem.EatAction,
     };
 
-    private static void EatAction(Game game, Item item)
-    {
-        var hp = game.Player.HP;
-        game.Player.HP += 2;
-        if ((game.Player.Items[item] -= 1) <= 0)
-            game.Player.Items.Remove(item);
-        game.Messages.Add(new EatMessage(game, item, game.Player.HP - hp));
-    }
 }

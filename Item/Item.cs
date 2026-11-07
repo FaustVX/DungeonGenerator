@@ -58,11 +58,33 @@ public abstract record class Item(string Name, char Symbol, Color Color)
     }
 }
 
-public abstract record class Torch(string Name, double Range, TileTemplate Template) : Item(Name, Template.Symbol, Template.Foreground)
+public interface IPlaceItem
+{
+    public abstract TileTemplate Template { get; }
+
+    protected static void Place(Game game, Item item)
+    {
+        if (!game.CurrentTile.Template.IsReplaceable)
+            return;
+        game.CurrentTile = game.CurrentTile with { Template = ((Torch)item).Template };
+        if ((game.Player.Items[item] -= 1) <= 0)
+            game.Player.Items.Remove(item);
+        game.Messages.Add(new PlaceMessage(game, item));
+        game.CurrentLevel.Update();
+    }
+
+    protected class PlaceMessage(Game game, Item item) : Messages.Message(game)
+    {
+        public override string ToString()
+        => $"{_timestamp} {PlayerColor()} placed {ItemColor(item)}";
+    }
+}
+
+public abstract record class Torch(string Name, double Range, TileTemplate Template) : Item(Name, Template.Symbol, Template.Foreground), IPlaceItem
 {
     public override IReadOnlyDictionary<string, Action> Actions { get; } = new Dictionary<string, Action>()
     {
-        ["Place"] = Place,
+        ["Place"] = IPlaceItem.Place,
         ["Equip"] = Equip,
     };
 
@@ -74,15 +96,6 @@ public abstract record class Torch(string Name, double Range, TileTemplate Templ
             DeleteAction(game, torch);
             game.CurrentLevel.Update();
         }
-    }
-
-    private static void Place(Game game, Item item)
-    {
-        if (!game.CurrentTile.Template.IsReplaceable)
-            return;
-        game.CurrentTile = game.CurrentTile with { Template = ((Torch)item).Template };
-        DeleteAction(game, item);
-        game.CurrentLevel.Update();
     }
 }
 

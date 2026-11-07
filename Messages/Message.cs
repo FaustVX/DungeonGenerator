@@ -53,3 +53,9 @@ public class EatMessage(Game game, Item.Item item, int hpRestored) : Message(gam
     public override string ToString()
     => $"{_timestamp} {PlayerColor()} ate {ItemColor(item)} for {hpRestored} ❤️";
 }
+
+public class NewFloorMessage(Level level) : Message(level.Game)
+{
+    public override string ToString()
+    => $"{_timestamp} {PlayerColor()} went down to level [blue]{level.Depth}[/]";
+}

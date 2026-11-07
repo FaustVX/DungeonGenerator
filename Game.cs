@@ -12,7 +12,18 @@ public sealed class Game
     public int Height { get; }
     private readonly DefaultableList<Level> _levels;
     public long Steps { get; set; }
-    public int Depth { get; set; } = 0;
+    public int Depth
+    {
+        get;
+        set
+        {
+            if (value > _levels.Count || value < 0)
+                return;
+            field = value;
+            if (Depth == _levels.Count)
+                Messages.Add(new NewFloorMessage(CurrentLevel));
+        }
+    } = 0;
     public Level CurrentLevel => _levels[Depth];
     public int Seed { get; }
     public Player Player { get; }
@@ -25,13 +36,13 @@ public sealed class Game
 
     public Game(int width, int height, int seed)
     {
-        _levels = [with(() => new(this, Depth), capacity: 8)];
+        Messages = [with(20), "Welcome to the dungeon, have fun", "[blue]<space>[/] to activate main action", "[blue]<enter>[/] to see actions", "[blue]<e>[/] for inventory"];
         Width = width;
         Height = height;
         Seed = seed;
+        _levels = [with(() => new(this, Depth), capacity: 8)];
         var (x, y) = CurrentLevel.MainTiles[Level.MainTile.Entrance];
         Player = new(x, y);
-        Messages = [with(20), "Welcome to the dungeon, have fun", "[blue]<space>[/] to activate main action", "[blue]<enter>[/] to see actions", "[blue]<e>[/] for inventory"];
         CurrentLevel.Update();
     }
 

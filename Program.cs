@@ -66,7 +66,7 @@ try
             {
                 if (game.Player.Items is not IReadOnlyDictionary<Item, int> { Count: > 0 } items)
                     break;
-                ItemsMenu(game, lookingAt, "Inventory", items, item => [..item is IActionableItem i ? i.Actions : Enumerable.Empty<KeyValuePair<string, IActionableItem.Action>>(), IActionableItem.Drop1, IActionableItem.DropAll, IActionableItem.Delete]);
+                ItemsMenu(game, lookingAt, "Inventory", items, item => [..item.Actions, Item.Drop1, Item.DropAll, Item.Delete]);
                 AnsiConsole.Cursor.Hide();
                 break;
             }
@@ -82,7 +82,7 @@ try
                             .Prompt();
                         DrawDungeon(game, lookingAt);
                         if (selection)
-                            ItemsMenu(game, lookingAt, "Ground", items, _ => [IActionableItem.Pickup]);
+                            ItemsMenu(game, lookingAt, "Ground", items, _ => [Item.Pickup]);
                         else
                         {
                             SelectionPrompt<KeyValuePair<string, IActionableTemplate.Action>>.Default(title, kvp => kvp.Key, IActionableTemplate.Cancel, actions.Append(IActionableTemplate.Cancel))
@@ -96,13 +96,13 @@ try
                             .Prompt();
                         DrawDungeon(game, lookingAt);
                         if (selection)
-                            ItemsMenu(game, lookingAt, "Ground", items, _ => [IActionableItem.Pickup]);
+                            ItemsMenu(game, lookingAt, "Ground", items, _ => [Item.Pickup]);
                         else
                             tile.Activate(game, game.Player.X, game.Player.Y);
                         break;
                     }
                     case ({ Count: > 0 }, _):
-                        ItemsMenu(game, lookingAt, "Ground", items, _ => [IActionableItem.Pickup]);
+                        ItemsMenu(game, lookingAt, "Ground", items, _ => [Item.Pickup]);
                         break;
                     case (_, IActionableTemplate { Actions: { } actions, MenuTitle: var title }):
                     {
@@ -130,7 +130,7 @@ try
                 break;
 #endif
         }
-        static void ItemsMenu(Game game, string lookingAt, string title, IReadOnlyDictionary<Item, int> items, Func<Item, IEnumerable<KeyValuePair<string, IActionableItem.Action>>> extraActions)
+        static void ItemsMenu(Game game, string lookingAt, string title, IReadOnlyDictionary<Item, int> items, Func<Item, IEnumerable<KeyValuePair<string, Item.Action>>> extraActions)
         {
             var (item, qty) = SelectionPrompt<KeyValuePair<Item, int>>.Default(title, kvp => $"{kvp.Key.Name}: {kvp.Value}", new KeyValuePair<Item, int>(default!, 0), items)
                 .Prompt();
@@ -141,7 +141,7 @@ try
                 return;
             }
 
-            SelectionPrompt<KeyValuePair<string, IActionableItem.Action>>.Default(item.Name, kvp => kvp.Key, IActionableItem.Cancel, [..extraActions(item), IActionableItem.Cancel])
+            SelectionPrompt<KeyValuePair<string, Item.Action>>.Default(item.Name, kvp => kvp.Key, Item.Cancel, [..extraActions(item), Item.Cancel])
                 .Prompt().Value(game, item);
         }
     }

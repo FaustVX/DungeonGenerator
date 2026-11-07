@@ -26,12 +26,18 @@ public closed record class Creature(int X, int Y, string Name, char Symbol, int 
     public abstract void Defend(Creature attacker, int attackPoints);
     public void Attack(Creature attacked, Game game)
     {
-        game.Messages.Add(new Messages.FightMessage(game, this, attacked));
+        game.Messages.Add(new FightMessage(game, this, attacked));
         attacked.Defend(this, Force);
         if (this is Mob { HP: <= 0 } a)
             a.Death(game);
         if (attacked is Mob { HP: <= 0 } b)
             b.Death(game);
+    }
+
+    protected class FightMessage(Game game, Creature attacker, Creature attacked) : Messages.Message(game)
+    {
+        public override string ToString()
+        => $"{_timestamp} {CreatureColor(attacker)} fights {CreatureColor(attacked)}";
     }
 }
 
@@ -42,7 +48,7 @@ public closed record class Mob(int X, int Y, string Name, char Symbol, int HP, C
     {
         if (HasBeenSaw)
             return;
-        game.Messages.Add(new Messages.SawMessage(game, this));
+        game.Messages.Add(new SawMessage(game, this));
         HasBeenSaw = true;
     }
     public abstract void Update(Level level);
@@ -50,6 +56,12 @@ public closed record class Mob(int X, int Y, string Name, char Symbol, int HP, C
     public virtual void Death(Game game)
     {
         game.CurrentLevel.Creatures.Remove(this);
+    }
+
+    protected class SawMessage(Game game, Mob mob) : Messages.Message(game)
+    {
+        public override string ToString()
+        => $"{_timestamp} {PlayerColor()} saw {CreatureColor(mob)}";
     }
 }
 

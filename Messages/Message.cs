@@ -23,39 +23,3 @@ public class StringMessage(string message) : Message(null)
     public override string ToString()
     => message;
 }
-
-public class FightMessage(Game game, Creature.Creature attacker, Creature.Creature attacked) : Message(game)
-{
-    public override string ToString()
-    => $"{_timestamp} {CreatureColor(attacker)} fights {CreatureColor(attacked)}";
-}
-
-public class DropMessage(Game game, Creature.Creature creature, int qty, Item.Item item) : Message(game)
-{
-    public override string ToString()
-    => $"{_timestamp} {CreatureColor(creature)} dropped {qty} {ItemColor(item)} on the ground";
-}
-
-public class PickupMessage(Game game, Creature.Creature creature, int qty, Item.Item item) : Message(game)
-{
-    public override string ToString()
-    => $"{_timestamp} {CreatureColor(creature)} picked up {qty} {ItemColor(item)} from the ground";
-}
-
-public class SawMessage(Game game, Creature.Mob mob) : Message(game)
-{
-    public override string ToString()
-    => $"{_timestamp} {PlayerColor()} saw {CreatureColor(mob)}";
-}
-
-public class EatMessage(Game game, Item.Item item, int hpRestored) : Message(game)
-{
-    public override string ToString()
-    => $"{_timestamp} {PlayerColor()} ate {ItemColor(item)} for {hpRestored} ❤️";
-}
-
-public class NewFloorMessage(Level level) : Message(level.Game)
-{
-    public override string ToString()
-    => $"{_timestamp} {PlayerColor()} went down to level [blue]{level.Depth}[/]";
-}

@@ -91,4 +91,10 @@ public sealed class Game
 
     public bool Activate()
     => CurrentTile.Template is IActivableTemplate tile && tile.Activate(this, Player.X, Player.Y);
+
+    private class NewFloorMessage(Level level) : Message(level.Game)
+    {
+        public override string ToString()
+        => $"{_timestamp} {PlayerColor()} went down to level [blue]{level.Depth}[/]";
+    }
 }

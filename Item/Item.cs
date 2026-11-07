@@ -1,10 +1,28 @@
-using System.Collections.Frozen;
 using DungeonGenerator.Tile;
 using Spectre.Console;
 
 namespace DungeonGenerator.Item;
 
-public abstract record class Item(string Name, char Symbol, Color Color);
+public abstract record class Item(string Name, char Symbol, Color Color)
+{
+    public class DropMessage(Game game, Creature.Creature creature, int qty, Item item) : Messages.Message(game)
+    {
+        public override string ToString()
+        => $"{_timestamp} {CreatureColor(creature)} dropped {qty} {ItemColor(item)} on the ground";
+    }
+
+    public class PickupMessage(Game game, Creature.Creature creature, int qty, Item item) : Messages.Message(game)
+    {
+        public override string ToString()
+        => $"{_timestamp} {CreatureColor(creature)} picked up {qty} {ItemColor(item)} from the ground";
+    }
+
+    public class EatMessage(Game game, Item item, int hpRestored) : Messages.Message(game)
+    {
+        public override string ToString()
+        => $"{_timestamp} {PlayerColor()} ate {ItemColor(item)} for {hpRestored} ❤️";
+    }
+}
 
 public interface IActionableItem
 {
@@ -40,7 +58,7 @@ public interface IActionableItem
     {
         var qty = game.CurrentLevel.PickupItem(game.Player.X, game.Player.Y, item);
         game.Player.Items[item] += qty;
-        game.Messages.Add(new Messages.PickupMessage(game, game.Player, qty, item));
+        game.Messages.Add(new Item.PickupMessage(game, game.Player, qty, item));
     }
 }
 
@@ -92,6 +110,6 @@ public record class Meat() : Item("Meat", '%', Color.IndianRed1), IActionableIte
         game.Player.HP += 2;
         if ((game.Player.Items[item] -= 1) <= 0)
             game.Player.Items.Remove(item);
-        game.Messages.Add(new Messages.EatMessage(game, item, game.Player.HP - hp));
+        game.Messages.Add(new EatMessage(game, item, game.Player.HP - hp));
     }
 }

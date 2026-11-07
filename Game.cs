@@ -52,7 +52,7 @@ public sealed class Game
             Player.Direction = Direction.None;
         if (CurrentLevel.Creatures.FirstOrDefault(c => (c.X, c.Y) == (x, y)) is {} c)
         {
-            Player.Attack(c);
+            Player.Attack(c, this);
             if (c.HP <= 0)
                 CurrentLevel.Creatures.Remove(c);
         }

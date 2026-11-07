@@ -24,8 +24,9 @@ public closed record class Creature(int X, int Y, char Symbol, int HP, Color Col
     public abstract int Force { get; }
 
     public abstract void Defend(Creature attacker, int attackPoints);
-    public void Attack(Creature attacked)
+    public void Attack(Creature attacked, Game game)
     {
+        game.Messages.Add(new Messages.FightMessage(this, attacked));
         attacked.Defend(this, Force);
     }
 }
@@ -52,7 +53,7 @@ public record class Rat(int X, int Y) : Mob(X, Y, 'r', 5, Color.RosyBrown)
         if ((level.Game.Player.X, level.Game.Player.Y) != (x, y))
             (X, Y) = (x, y);
         else
-            Attack(level.Game.Player);
+            Attack(level.Game.Player, level.Game);
     }
 
     private (int x, int y) RandomMovement(Level level)

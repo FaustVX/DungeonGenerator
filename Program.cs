@@ -269,7 +269,8 @@ static void DrawDungeon(Game game, string lookingAt)
     Console.SetCursorPosition(0, game.Height + 2 - 1);
     foreach (var message in game.Messages.AsEnumerable().Reverse())
     {
-        AnsiConsole.WriteLine(message.ToString().PadRight(messageWidth));
+        var text = message.ToString();
+        AnsiConsole.MarkupLine(text.PadRight(messageWidth + (text.Length - Markup.Remove(text).Length)));
         AnsiConsole.Cursor.MoveUp(2);
     }
     AnsiConsole.Write($"{game.Messages.Count} message(s): ");

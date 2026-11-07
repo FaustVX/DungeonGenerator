@@ -113,7 +113,7 @@ public record class TileTemplate(char Symbol, string Name, bool IsWalkable, bool
         public bool Enabled { get; }
 
         public TorchTemplate(double range, bool enabled)
-        : base('i', "Torch", true, true, false, Color.Black, enabled ? Color.White : Color.Gray)
+        : base('☼', "Torch", true, true, false, Color.Black, enabled ? Color.White : Color.Gray)
         {
             Range = range;
             Enabled = enabled;

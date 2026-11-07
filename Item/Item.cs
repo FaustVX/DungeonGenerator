@@ -77,7 +77,7 @@ public record class SmallTorch() : Torch("Small Torch", 3, TileTemplate.SmallTor
     public static SmallTorch Instance => field ??= new();
 }
 
-public record class Meat() : Item("Meat", 'm', Color.IndianRed1), IActionableItem
+public record class Meat() : Item("Meat", '%', Color.IndianRed1), IActionableItem
 {
     public static Meat Instance => field ??= new();
 

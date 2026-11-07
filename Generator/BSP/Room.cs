@@ -99,15 +99,15 @@ public sealed class Room : Node
 
     public void GenerateEntrance(Random rng)
     {
-        _features.Add(new(rng.Next(LeftWallWidth, Width - (LeftWallWidth + RightWallWidth) + LeftWallWidth),
-            rng.Next(TopWallWidth, Height - (TopWallWidth + BottomWallWidth) + TopWallWidth),
+        _features.Add(new(rng.Next(LeftWallWidth + 1, Width - (LeftWallWidth + RightWallWidth) + LeftWallWidth - 1),
+            rng.Next(TopWallWidth + 1, Height - (TopWallWidth + BottomWallWidth) + TopWallWidth - 1),
             1, 1, TileTemplate.UpStair(Parent.Level.Depth > 0)));
     }
 
     public void GenerateExit(Random rng)
     {
-        _features.Add(new(rng.Next(LeftWallWidth, Width - (LeftWallWidth + RightWallWidth) + LeftWallWidth),
-            rng.Next(TopWallWidth, Height - (TopWallWidth + BottomWallWidth) + TopWallWidth),
+        _features.Add(new(rng.Next(LeftWallWidth + 1, Width - (LeftWallWidth + RightWallWidth) + LeftWallWidth - 1),
+            rng.Next(TopWallWidth + 1, Height - (TopWallWidth + BottomWallWidth) + TopWallWidth - 1),
             1, 1, TileTemplate.DownStair(true)));
     }
 

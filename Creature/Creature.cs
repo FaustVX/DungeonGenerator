@@ -26,7 +26,7 @@ public closed record class Creature(int X, int Y, string Name, char Symbol, int 
     public abstract void Defend(Creature attacker, int attackPoints);
     public void Attack(Creature attacked, Game game)
     {
-        game.Messages.Add(new Messages.FightMessage(this, attacked));
+        game.Messages.Add(new Messages.FightMessage(game, this, attacked));
         attacked.Defend(this, Force);
         if (this is Mob { HP: <= 0 } a)
             a.Death(game);

@@ -1,7 +1,8 @@
 namespace DungeonGenerator.Messages;
 
-public abstract class Message()
+public abstract class Message(Game? game)
 {
+    protected readonly string _timestamp = TimeStamp(game);
     public override abstract string ToString();
     public static implicit operator Message(string message)
     => new StringMessage(message);
@@ -11,28 +12,30 @@ public abstract class Message()
     => $"[{item.Color}]{item.Name}[/]";
     protected static string TileColor(Tile.TileTemplate tile)
     => $"[{tile.Foreground} on {tile.Background}]{tile.Name}[/]";
+    protected static string TimeStamp(Game? game)
+    => game is null ? "" : $"[[{game.Steps}:{game.Depth}]]"; // double square bracket for Spectre markup
 }
 
-public class StringMessage(string message) : Message()
+public class StringMessage(string message) : Message(null)
 {
     public override string ToString()
     => message;
 }
 
-public class FightMessage(Creature.Creature attacker, Creature.Creature attacked) : Message
+public class FightMessage(Game game, Creature.Creature attacker, Creature.Creature attacked) : Message(game)
 {
     public override string ToString()
-    => $"{CreatureColor(attacker)} fights {CreatureColor(attacked)}";
+    => $"{_timestamp} {CreatureColor(attacker)} fights {CreatureColor(attacked)}";
 }
 
-public class DropMessage(Creature.Creature creature, int qty, Item.Item item) : Message
+public class DropMessage(Game game, Creature.Creature creature, int qty, Item.Item item) : Message(game)
 {
     public override string ToString()
-    => $"{CreatureColor(creature)} dropped {qty} {ItemColor(item)} on the ground";
+    => $"{_timestamp} {CreatureColor(creature)} dropped {qty} {ItemColor(item)} on the ground";
 }
 
-public class PickupMessage(Creature.Creature creature, int qty, Item.Item item) : Message
+public class PickupMessage(Game game, Creature.Creature creature, int qty, Item.Item item) : Message(game)
 {
     public override string ToString()
-    => $"{CreatureColor(creature)} picked up {qty} {ItemColor(item)} from the ground";
+    => $"{_timestamp} {CreatureColor(creature)} picked up {qty} {ItemColor(item)} from the ground";
 }

@@ -39,7 +39,7 @@ public interface IActionableItem
     {
         var qty = game.CurrentLevel.PickupItem(game.Player.X, game.Player.Y, item);
         game.Player.Items[item] += qty;
-        game.Messages.Add(new Messages.PickupMessage(game.Player, qty, item));
+        game.Messages.Add(new Messages.PickupMessage(game, game.Player, qty, item));
     }
 }
 

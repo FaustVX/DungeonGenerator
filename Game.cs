@@ -31,7 +31,7 @@ public sealed class Game
         Seed = seed;
         var (x, y) = CurrentLevel.MainTiles[Level.MainTile.Entrance];
         Player = new(x, y);
-        Messages = [with(20), "Welcome to the dungeon"];
+        Messages = [with(20), "Welcome to the dungeon, have fun", "[blue]<space>[/] to activate main action", "[blue]<enter>[/] to see actions", "[blue]<e>[/] for inventory"];
         CurrentLevel.Update();
     }
 

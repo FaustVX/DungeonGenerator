@@ -37,6 +37,14 @@ public closed record class Creature(int X, int Y, string Name, char Symbol, int 
 
 public closed record class Mob(int X, int Y, string Name, char Symbol, int HP, Color Color) : Creature(X, Y, Name, Symbol, HP, Color)
 {
+    public bool HasBeenSaw { get; private set; }
+    public void Saw(Game game)
+    {
+        if (HasBeenSaw)
+            return;
+        game.Messages.Add(new Messages.SawMessage(game, this));
+        HasBeenSaw = true;
+    }
     public abstract void Update(Level level);
 
     public virtual void Death(Game game)

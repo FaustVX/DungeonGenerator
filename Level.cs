@@ -58,7 +58,7 @@ public sealed class Level
                 y = _rng.Next(y + 1, y + room.Height - 1);
             }
             while (!_tiles[x, y].IsWalkable);
-            Creatures = [new Creature.Rat(x, y)];
+            Creatures = [new Rat(x, y)];
         }
         else
             Creatures = [with(capacity: 0)];
@@ -72,6 +72,9 @@ public sealed class Level
             _tiles[x, y] = value.Template;
             if (value.IsVisible)
             {
+                foreach (var mob in Creatures)
+                    if ((mob.X, mob.Y) == (x, y))
+                        mob.Saw(Game);
                 _visibleTiles.Add((x, y));
                 _alreadySeenTiles.Add((x, y));
             }
@@ -97,6 +100,9 @@ public sealed class Level
         ShadowCaster.ComputeFieldOfViewWithShadowCasting(Game.Player.X, Game.Player.Y, Game.Player.ViewDistance,
             (x, y) => !_tiles[x, y].IsTransparent, (x, y) =>
             {
+                foreach (var mob in Creatures)
+                    if ((mob.X, mob.Y) == (x, y))
+                        mob.Saw(Game);
                 _visibleTiles.Add((x, y));
                 _alreadySeenTiles.Add((x, y));
             });

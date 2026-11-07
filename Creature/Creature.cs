@@ -14,7 +14,7 @@ public interface ICreature
     public abstract int Shields { get; set; }
 }
 
-public closed record class Creature(int X, int Y, char Symbol, int HP, Color Color) : ICreature
+public closed record class Creature(int X, int Y, string Name, char Symbol, int HP, Color Color) : ICreature
 {
     public int X { get; set; } = X;
     public int Y { get; set; } = Y;
@@ -28,15 +28,25 @@ public closed record class Creature(int X, int Y, char Symbol, int HP, Color Col
     {
         game.Messages.Add(new Messages.FightMessage(this, attacked));
         attacked.Defend(this, Force);
+        if (this is Mob { HP: <= 0 } a)
+            a.Death(game);
+        if (attacked is Mob { HP: <= 0 } b)
+            b.Death(game);
     }
 }
 
-public closed record class Mob(int X, int Y, char Symbol, int HP, Color Color) : Creature(X, Y, Symbol, HP, Color)
+public closed record class Mob(int X, int Y, string Name, char Symbol, int HP, Color Color) : Creature(X, Y, Name, Symbol, HP, Color)
 {
     public abstract void Update(Level level);
+
+    public virtual void Death(Game game)
+    {
+        game.CurrentLevel.DropItem(X, Y, Item.SmallTorch.Instance, 1, this);
+        game.CurrentLevel.Creatures.Remove(this);
+    }
 }
 
-public record class Rat(int X, int Y) : Mob(X, Y, 'r', 5, Color.RosyBrown)
+public record class Rat(int X, int Y) : Mob(X, Y, "Rat", 'r', 5, Color.RosyBrown)
 {
     private readonly Random _rng = new();
 

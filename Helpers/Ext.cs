@@ -178,4 +178,23 @@ static class Ext
         public void CopyFrom(ReadOnlySpan<T> other)
         => other.CopyTo(span);
     }
+
+    extension(string s)
+    {
+        public string PadCenter(int totalWidth, char c = ' ')
+        {
+            if (s.Length >= totalWidth)
+                return s;
+            var left = (totalWidth - s.Length) / 2;
+            var right = totalWidth - s.Length - left;
+            return new string(c, left) + s + new string(c, right);
+        }
+
+        public string Ellipsis(int totalWidth, char ellipsis = '…')
+        {
+            if (s.Length <= totalWidth)
+                return s;
+            return $"{s[..(totalWidth - 1)]}{ellipsis}";
+        }
+    }
 }

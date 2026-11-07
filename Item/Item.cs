@@ -25,20 +25,21 @@ public interface IActionableItem
     {
         if ((game.Player.Items[item] -= 1) <= 0)
             game.Player.Items.Remove(item);
-        game.CurrentLevel.DropItem(game.Player.X, game.Player.Y, item, 1);
+        game.CurrentLevel.DropItem(game.Player.X, game.Player.Y, item, 1, game.Player);
     }
 
     protected static void DropAllAction(Game game, Item item)
     {
         var qty = game.Player.Items[item];
         game.Player.Items.Remove(item);
-        game.CurrentLevel.DropItem(game.Player.X, game.Player.Y, item, qty);
+        game.CurrentLevel.DropItem(game.Player.X, game.Player.Y, item, qty, game.Player);
     }
 
     protected static void PickupAction(Game game, Item item)
     {
         var qty = game.CurrentLevel.PickupItem(game.Player.X, game.Player.Y, item);
-        game.Player.Items[item] += qty;;
+        game.Player.Items[item] += qty;
+        game.Messages.Add(new Messages.PickupMessage(game.Player, qty, item));
     }
 }
 

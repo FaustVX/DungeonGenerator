@@ -78,8 +78,11 @@ public sealed class Level
         }
     }
 
-    public void DropItem(int x, int y, Item.Item item, int qty)
-    => _items[(x, y)][item] += qty;
+    public void DropItem(int x, int y, Item.Item item, int qty, Creature.Creature dropper)
+    {
+        _items[(x, y)][item] += qty;
+        Game.Messages.Add(new Messages.DropMessage(dropper, qty, item));
+    }
 
     public int PickupItem(int x, int y, Item.Item item)
     {

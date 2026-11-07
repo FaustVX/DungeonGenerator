@@ -4,7 +4,7 @@ using Spectre.Console;
 
 namespace DungeonGenerator.Creature;
 
-public record class Player(int X, int Y) : Creature(X, Y, '@', 5, Color.Aqua)
+public record class Player(int X, int Y) : Creature(X, Y, "You", '@', 5, Color.Aqua)
 {
     public double ViewDistance => Torch?.Range ?? 1;
     public Direction Direction { get; set; }

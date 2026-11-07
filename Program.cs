@@ -235,8 +235,7 @@ static void DrawDungeon(Game game, string lookingAt)
     PrintStat(game.Player.Shields, "🛡");
     var header = $"{game.Steps}:{game.Depth}";
     var length = Console.CursorLeft - header.Length + 1;
-    if (lookingAt.Length > length)
-        lookingAt = $"{lookingAt[..length]}…";
+    lookingAt = lookingAt.Ellipsis(length);
     lookingAt = new string(' ', game.Width) + lookingAt;
     if (lookingAt.Length > length)
         lookingAt = $"{lookingAt[(lookingAt.Length - length)..]}";
@@ -270,12 +269,10 @@ static void DrawDungeon(Game game, string lookingAt)
     foreach (var message in game.Messages.AsEnumerable().Reverse())
     {
         var text = message.ToString();
-        AnsiConsole.MarkupLine(text.PadRight(messageWidth + (text.Length - Markup.Remove(text).Length)));
+        AnsiConsole.MarkupLine($"[on black]" + text.PadRight(messageWidth + (text.Length - Markup.Remove(text).Length), ' ') + "[/]");
         AnsiConsole.Cursor.MoveUp(2);
     }
-    AnsiConsole.Write($"{game.Messages.Count} message(s): ");
-    for (int x = Console.CursorLeft; x < messageWidth; x++)
-        Console.Write('─');
+    AnsiConsole.Write($" {game.Messages.Count} message(s) ".PadCenter(messageWidth, '─'));
     Console.Write(game.Messages.IsFull ? '┼' : '┤');
 
     Console.SetCursorPosition(0, 1);

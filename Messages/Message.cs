@@ -6,6 +6,8 @@ public abstract class Message(Game? game)
     public override abstract string ToString();
     public static implicit operator Message(string message)
     => new StringMessage(message);
+    protected string PlayerColor()
+    => CreatureColor(game!.Player);
     protected static string CreatureColor(Creature.Creature creature)
     => $"[{creature.Color}]{creature.Name}[/]";
     protected static string ItemColor(Item.Item item)
@@ -40,10 +42,14 @@ public class PickupMessage(Game game, Creature.Creature creature, int qty, Item.
     => $"{_timestamp} {CreatureColor(creature)} picked up {qty} {ItemColor(item)} from the ground";
 }
 
-#pragma warning disable CS9107 // Parameter is captured into the state of the enclosing type and its value is also passed to the base constructor. The value might be captured by the base class as well.
 public class SawMessage(Game game, Creature.Mob mob) : Message(game)
-#pragma warning restore CS9107 // Parameter is captured into the state of the enclosing type and its value is also passed to the base constructor. The value might be captured by the base class as well.
 {
     public override string ToString()
-    => $"{_timestamp} {CreatureColor(game.Player)} saw {CreatureColor(mob)}";
+    => $"{_timestamp} {PlayerColor()} saw {CreatureColor(mob)}";
+}
+
+public class EatMessage(Game game, Item.Item item, int hpRestored) : Message(game)
+{
+    public override string ToString()
+    => $"{_timestamp} {PlayerColor()} ate {ItemColor(item)} for {hpRestored} ❤️";
 }

@@ -1,3 +1,4 @@
+using System.Collections.Frozen;
 using DungeonGenerator.Tile;
 using Spectre.Console;
 
@@ -74,4 +75,23 @@ public abstract record class Torch(string Name, double Range, TileTemplate Templ
 public record class SmallTorch() : Torch("Small Torch", 3, TileTemplate.SmallTorch())
 {
     public static SmallTorch Instance => field ??= new();
+}
+
+public record class Meat() : Item("Meat", 'm', Color.IndianRed1), IActionableItem
+{
+    public static Meat Instance => field ??= new();
+
+    public IReadOnlyDictionary<string, IActionableItem.Action> Actions { get; } = new Dictionary<string, IActionableItem.Action>()
+    {
+        ["Eat"] = EatAction,
+    };
+
+    private static void EatAction(Game game, Item item)
+    {
+        var hp = game.Player.HP;
+        game.Player.HP += 2;
+        if ((game.Player.Items[item] -= 1) <= 0)
+            game.Player.Items.Remove(item);
+        game.Messages.Add(new Messages.EatMessage(game, item, game.Player.HP - hp));
+    }
 }

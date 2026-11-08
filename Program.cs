@@ -235,14 +235,16 @@ static void DrawDungeon(Game game, string lookingAt)
     Console.Write(' ');
     PrintStat(game.Player.Shields, "🛡");
     var header = $"{game.Steps}:{game.Depth}";
-    var length = Console.CursorLeft - header.Length + 1;
-    lookingAt = lookingAt.Ellipsis(length);
-    lookingAt = new string(' ', game.Width) + lookingAt;
-    if (lookingAt.Length > length)
-        lookingAt = $"{lookingAt[(lookingAt.Length - length)..]}";
-    header = lookingAt + " " + header;
-    Console.SetCursorPosition(AnsiConsole.Profile.Width - header.Length, 0);
-    Console.Write(header);
+    if (Console.CursorLeft < Console.WindowWidth) // Sometime the cursor is outside the console (I don't know how)
+    {
+        var length = Console.WindowWidth - Console.CursorLeft - header.Length - 1;
+        lookingAt = lookingAt.Ellipsis(length);
+        lookingAt = new string(' ', game.Width) + lookingAt;
+        if (lookingAt.Length > length)
+            lookingAt = $"{lookingAt[(lookingAt.Length - length)..]}";
+        header = lookingAt + " " + header;
+        Console.Write(header);
+    }
     Console.SetCursorPosition(messageWidth, 1);
     Console.Write('├');
     for (int x = 0; x < game.Width; x++)

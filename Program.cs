@@ -5,8 +5,6 @@ using DungeonGenerator.Item;
 using DungeonGenerator.Tile;
 using Spectre.Console;
 
-AnsiConsole.MouseSupport(true);
-
 var alternateScreen = false;
 Console.CursorVisible = false;
 AnsiConsole.Console.WriteAnsi(w => w.ExitAltScreen()); // To clear the alternate screen if previously wrongly exited
@@ -15,13 +13,14 @@ Console.CancelKeyPress += (s, e) => Exit();
 
 try
 {
-    var mousePos = (x: 0, y: 0);
+    (int x, int y)? mousePos = (x: 0, y: 0);
     var game = new Game(100, 20, args is [var arg0]
         ? int.TryParse(arg0, out var seed) ? seed: arg0.GetHashCode()
         : Random.Shared.Next());
     Run: while (true)
     {
-        var lookingAt = LookingAt(game, mousePos.x, mousePos.y);
+        AnsiConsole.MouseSupport(true);
+        var lookingAt = mousePos is {} m ? LookingAt(game, m.x, m.y) : "";
         DrawDungeon(game, lookingAt);
         switch (AnsiConsole.Console.Input.ReadKeyOrMouse())
         {
@@ -36,6 +35,8 @@ try
             {
                 if (mouse.X - (Console.WindowWidth - game.Width) is var x and >= 0 && mouse.Y - 2 is var y and >= 0 && y < game.Height )
                     mousePos = (x, y);
+                else
+                    mousePos = null;
                 break;
             }
             case ConsoleKeyInfo { Key: ConsoleKey.D1 }:

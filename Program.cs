@@ -14,6 +14,7 @@ Console.CancelKeyPress += (s, e) => Exit();
 try
 {
     (int x, int y)? mousePos = (x: 0, y: 0);
+    ConsoleRead.MouseEvent lastMouseEvent = default;
     var game = new Game(100, 20, args is [var arg0]
         ? int.TryParse(arg0, out var seed) ? seed: arg0.GetHashCode()
         : Random.Shared.Next());
@@ -21,7 +22,7 @@ try
     {
         AnsiConsole.MouseSupport(true);
         var lookingAt = mousePos is {} m ? LookingAt(game, m.x, m.y) : "";
-        DrawDungeon(game, lookingAt);
+        DrawDungeon(game, lookingAt, lastMouseEvent);
         switch (AnsiConsole.Console.Input.ReadKeyOrMouse())
         {
             case ConsoleKeyInfo { Key: ConsoleKey.Escape }:
@@ -31,8 +32,11 @@ try
                     break Run;
                 AnsiConsole.Cursor.Hide();
                 break;
-            case ConsoleRead.MouseEvent { PressedOrMovement: true, Button: ConsoleRead.MouseButton.Movement } mouse:
+            case ConsoleRead.MouseEvent mouse:
             {
+                lastMouseEvent = mouse;
+                if (mouse is not { PressedOrMovement: true, Button: ConsoleRead.MouseButton.Movement })
+                    break;
                 if (mouse.X - (Console.WindowWidth - game.Width) is var x and >= 0 && mouse.Y - 2 is var y and >= 0 && y < game.Height )
                     mousePos = (x, y);
                 else
@@ -81,7 +85,7 @@ try
                     {
                         var selection = SelectionPrompt<bool>.Default("Where", b => b ? $"Items ({items.Count})" : $"Tile: {tile.Name}", [true, false])
                             .Prompt();
-                        DrawDungeon(game, lookingAt);
+                        DrawDungeon(game, lookingAt, lastMouseEvent);
                         if (selection)
                             ItemsMenu(game, lookingAt, "Ground", items, item => [..item.Actions, Item.Pickup, Item.Delete]);
                         else
@@ -95,7 +99,7 @@ try
                     {
                         var selection = SelectionPrompt<bool>.Default("Where", b => b ? $"Items ({items.Count})" : $"Use {tile.Symbol} {tile.Name}", [true, false])
                             .Prompt();
-                        DrawDungeon(game, lookingAt);
+                        DrawDungeon(game, lookingAt, lastMouseEvent);
                         if (selection)
                             ItemsMenu(game, lookingAt, "Ground", items, item => [..item.Actions, Item.Pickup, Item.Delete]);
                         else
@@ -131,11 +135,12 @@ try
                 break;
 #endif
         }
+
         static void ItemsMenu(Game game, string lookingAt, string title, IDictionary<Item, int> items, Func<Item, IEnumerable<KeyValuePair<string, Item.Action>>> extraActions)
         {
             var (item, qty) = SelectionPrompt<KeyValuePair<Item, int>>.Default(title, kvp => $"{kvp.Key.Name}: {kvp.Value}", new KeyValuePair<Item, int>(default!, 0), items)
                 .Prompt();
-            DrawDungeon(game, lookingAt);
+            DrawDungeon(game, lookingAt, default);
             if (qty == 0)
             {
                 AnsiConsole.Cursor.Hide();
@@ -190,12 +195,21 @@ static void WriteTile(Game game, int x, int y)
     var back = tile.Template.Background;
     var fore = tile.Template.Foreground;
     var deco = Decoration.None;
+    var IsHighlighted = false;
 
     if ((x, y) == (game.Player.X, game.Player.Y))
     {
         c = game.Player.Symbol;
         fore = game.Player.Color;
     }
+    else if (game.CurrentLevel.Creatures.Where(h => h.IsHighlighted && h.Pos == (x, y)) is var mobs && mobs.Any())
+        foreach (var m in mobs)
+        {
+            IsHighlighted = true;
+            c = m.Symbol;
+            fore = m.Color;
+            deco = Decoration.Invert;
+        }
     else if (tile.IsVisible && game.CurrentLevel.Creatures.FirstOrDefault(c => (c.X, c.Y) == (x, y)) is {} creature)
     {
         c = creature.Symbol;
@@ -214,7 +228,7 @@ static void WriteTile(Game game, int x, int y)
             c = '+';
     }
 
-    if (!tile.IsVisible)
+    if (!IsHighlighted && !tile.IsVisible)
         if (tile.HasBeenSeen)
             fore = fore.Blend(Color.Black, .75f);
         else
@@ -226,7 +240,7 @@ static void WriteTile(Game game, int x, int y)
     AnsiConsole.Decoration = Decoration.None;
 }
 
-static void DrawDungeon(Game game, string lookingAt)
+static void DrawDungeon(Game game, string lookingAt, ConsoleRead.MouseEvent mouse)
 {
     var messageWidth = AnsiConsole.Profile.Width - game.Width - 1;
     Console.SetCursorPosition(messageWidth, 0);
@@ -273,7 +287,15 @@ static void DrawDungeon(Game game, string lookingAt)
     {
         var text = message.ToString();
         int widthWithoutMarkup = messageWidth + (text.Length - Markup.Remove(text).Length);
-        AnsiConsole.MarkupLine($"[on black]" + text.PadRight(widthWithoutMarkup, ' ').Ellipsis(widthWithoutMarkup) + "[/]");
+        var style = "on black";
+        if (mouse.Y == Console.CursorTop && mouse.X < messageWidth && message is DungeonGenerator.Messages.IClickableMessage c)
+        {
+            style = "underline " + style;
+            if (mouse is { Button: ConsoleRead.MouseButton.Left, PressedOrMovement: true })
+                c.OnClick(mouse.X);
+        }
+
+        AnsiConsole.MarkupLine($"[{style}]" + text.PadRight(widthWithoutMarkup, ' ').Ellipsis(widthWithoutMarkup) + "[/]");
         AnsiConsole.Cursor.MoveUp(2);
     }
     AnsiConsole.Write($" {game.Messages.Count} message(s) ".PadCenter(messageWidth, '─'));

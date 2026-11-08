@@ -18,6 +18,11 @@ public abstract class Message(Game? game)
     => game is null ? "" : $"[[{game.Steps}:{game.Depth}]]"; // double square bracket for Spectre markup
 }
 
+public interface IClickableMessage
+{
+    public abstract void OnClick(int pos);
+}
+
 public class StringMessage(string message) : Message(null)
 {
     public override string ToString()

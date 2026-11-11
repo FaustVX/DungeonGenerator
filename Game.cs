@@ -3,6 +3,7 @@ using DungeonGenerator.Helpers;
 using DungeonGenerator.Lib;
 using DungeonGenerator.Messages;
 using DungeonGenerator.Tile;
+using Spectre.Console;
 
 namespace DungeonGenerator;
 
@@ -95,6 +96,6 @@ public sealed class Game
     private class NewFloorMessage(Level level) : Message(level.Game)
     {
         public override string ToString()
-        => $"{_timestamp} {PlayerColor()} went down to level [blue]{level.Depth}[/] with at least [blue]{Random.Shared.Next(1, level.Creatures.Count + 1)}[/] mobs";
+        => $"{_timestamp} {PlayerColor()} went down to level {WithColor(level.Depth, Color.Blue)} with at least {WithColor(Random.Shared.Next(1, level.Creatures.Count + 1), Color.Blue)} mobs";
     }
 }

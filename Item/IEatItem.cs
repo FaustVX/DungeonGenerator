@@ -1,4 +1,5 @@
 using DungeonGenerator.Helpers;
+using Spectre.Console;
 
 namespace DungeonGenerator.Item;
 
@@ -19,6 +20,6 @@ public interface IEatItem
     public class EatMessage(Game game, Item item, int hpRestored) : Messages.Message(game)
     {
         public override string ToString()
-        => $"{_timestamp} {PlayerColor()} ate {ItemColor(item)} for {hpRestored} ❤️";
+        => $"{_timestamp} {PlayerColor()} ate {ItemColor(item)} for {WithColor(hpRestored, Color.Red)} ❤️";
     }
 }

@@ -9,13 +9,13 @@ public abstract record class Item(string Name, char Symbol, Color Color)
     public class DropMessage(Game game, Creature.Creature creature, int qty, Item item) : Messages.Message(game)
     {
         public override string ToString()
-        => $"{_timestamp} {CreatureColor(creature)} dropped {qty} {ItemColor(item)} on the ground";
+        => $"{_timestamp} {CreatureColor(creature)} dropped {WithColor(qty, Color.Blue)} {ItemColor(item)} on the ground";
     }
 
     public class PickupMessage(Game game, Creature.Creature creature, int qty, Item item) : Messages.Message(game)
     {
         public override string ToString()
-        => $"{_timestamp} {CreatureColor(creature)} picked up {qty} {ItemColor(item)} from the ground";
+        => $"{_timestamp} {CreatureColor(creature)} picked up {WithColor(qty, Color.Blue)} {ItemColor(item)} from the ground";
     }
 
     public delegate void Action(Game game, IDictionary<Item, int> items, Item item);

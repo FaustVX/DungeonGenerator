@@ -1,3 +1,5 @@
+using Spectre.Console;
+
 namespace DungeonGenerator.Messages;
 
 public abstract class Message(Game? game)
@@ -14,6 +16,8 @@ public abstract class Message(Game? game)
     => $"[{item.Color}]{item.Name}[/]";
     protected static string TileColor(Tile.TileTemplate tile)
     => $"[{tile.Foreground} on {tile.Background}]{tile.Name}[/]";
+    protected static string WithColor<T>(T obj, Color color)
+    => $"[{color}]{obj}[/]";
     protected static string TimeStamp(Game? game)
     => game is null ? "" : $"[[{game.Steps}:{game.Depth}]]"; // double square bracket for Spectre markup
 }

@@ -43,6 +43,6 @@ public closed record class Creature(int X, int Y, string Name, char Symbol, int 
     protected class FightMessage(Game game, Creature attacker, Creature attacked, int damage) : Messages.Message(game)
     {
         public override string ToString()
-        => $"{_timestamp} {CreatureColor(attacker)} fights {CreatureColor(attacked)} for {damage} damages";
+        => $"{_timestamp} {CreatureColor(attacker)} fights {CreatureColor(attacked)} for {WithColor(damage, Color.Blue)} damages";
     }
 }

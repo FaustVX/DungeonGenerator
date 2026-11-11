@@ -95,6 +95,6 @@ public sealed class Game
     private class NewFloorMessage(Level level) : Message(level.Game)
     {
         public override string ToString()
-        => $"{_timestamp} {PlayerColor()} went down to level [blue]{level.Depth}[/]";
+        => $"{_timestamp} {PlayerColor()} went down to level [blue]{level.Depth}[/] with at least [blue]{Random.Shared.Next(1, level.Creatures.Count + 1)}[/] mobs";
     }
 }

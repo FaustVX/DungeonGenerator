@@ -49,16 +49,20 @@ public sealed class Level
             throw new Exception();
         if (generator is Generator.BSP.Generator gen)
         {
-            var room = _rng.NextItem(gen.Rooms);
-            var (x, y) = (0, 0);
-            do
+            Creatures = [with(capacity: Depth >= 1 ? _rng.Next(1, 5) : 1)];
+            for (var i = Creatures.Capacity - 1; i >= 0; i--)
             {
-                (x, y) = room.GetGlobalOrigin();
-                x = _rng.Next(x + 1, x + room.Width - 1);
-                y = _rng.Next(y + 1, y + room.Height - 1);
+                var room = _rng.NextItem(gen.Rooms);
+                var (x, y) = (0, 0);
+                do
+                {
+                    (x, y) = room.GetGlobalOrigin();
+                    x = _rng.Next(x + 1, x + room.Width - 1);
+                    y = _rng.Next(y + 1, y + room.Height - 1);
+                }
+                while (!_tiles[x, y].IsWalkable);
+                Creatures.Add(new Rat(x, y));
             }
-            while (!_tiles[x, y].IsWalkable);
-            Creatures = [new Rat(x, y)];
         }
         else
             Creatures = [with(capacity: 0)];

@@ -333,14 +333,23 @@ static void DrawDungeon(Game game, string lookingAt, ConsoleRead.MouseEvent mous
         var text = message.ToString();
         int widthWithoutMarkup = messageWidth + (text.Length - Markup.Remove(text).Length);
         var style = "on black";
-        if (mouse.Y == Console.CursorTop && mouse.X < messageWidth && message is DungeonGenerator.Messages.IClickableMessage c)
+        var fullMessage = false;
+        if (mouse.Y == Console.CursorTop && mouse.X < messageWidth)
         {
-            style = "underline " + style;
-            if (mouse is { Button: ConsoleRead.MouseButton.Left, PressedOrMovement: true })
-                c.OnClick(mouse.X);
+            if (mouse is { Button: ConsoleRead.MouseButton.Right, PressedOrMovement: true })
+                fullMessage = true;
+            if (message is DungeonGenerator.Messages.IClickableMessage c)
+            {
+                style = "underline " + style;
+                if (mouse is { Button: ConsoleRead.MouseButton.Left, PressedOrMovement: true })
+                    c.OnClick(mouse.X);
+            }
         }
 
-        AnsiConsole.MarkupLine($"[{style}]" + text.PadRight(widthWithoutMarkup, ' ').Ellipsis(widthWithoutMarkup) + "[/]");
+        if (fullMessage)
+            AnsiConsole.MarkupLine($"[{style}]" + text.PadRight(widthWithoutMarkup, ' ') + "[/]");
+        else
+            AnsiConsole.MarkupLine($"[{style}]" + text.PadRight(widthWithoutMarkup, ' ').Ellipsis(widthWithoutMarkup) + "[/]");
         AnsiConsole.Cursor.MoveUp(2);
     }
     AnsiConsole.Write($" {game.Messages.Count} message(s) ".PadCenter(messageWidth, '─'));

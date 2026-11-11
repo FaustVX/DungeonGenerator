@@ -80,7 +80,7 @@ public record class TileTemplate(char Symbol, string Name, bool IsWalkable, bool
         {
             if (!Enabled)
             {
-                game.CurrentLevel.Update();
+                game.CurrentLevel.UpdateLight();
                 return false;
             }
 
@@ -128,7 +128,7 @@ public record class TileTemplate(char Symbol, string Name, bool IsWalkable, bool
         {
             game.CurrentLevel[x, y] = game.CurrentLevel[x, y] with { Template = Ground };
             game.Player.Items[Item.SmallTorch.Instance]++;
-            game.CurrentLevel.Update();
+            game.CurrentLevel.UpdateLight();
         }
 
         public void OnUpdate(Game game, int x, int y)
@@ -143,7 +143,7 @@ public record class TileTemplate(char Symbol, string Name, bool IsWalkable, bool
         public bool Activate(Game game, int x, int y)
         {
             game.CurrentLevel[x, y] = game.CurrentLevel[x, y] with { Template = Cache[(Range, !Enabled)] };
-            game.CurrentLevel.Update();
+            game.CurrentLevel.UpdateLight();
             return true;
         }
     }

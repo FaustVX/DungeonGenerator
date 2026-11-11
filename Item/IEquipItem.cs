@@ -15,7 +15,7 @@ public interface IEquipItem
             game.Player.Equipments[TItem.EquipmentType] = item;
             game.Messages.Add(new Creature.Player.EquipMessage<TItem>(game, (TItem)item));
             items.RemoveQuantity(item, 1);
-            game.CurrentLevel.Update();
+            game.CurrentLevel.UpdateLight();
         }
     }
 
@@ -27,7 +27,7 @@ public interface IEquipItem
             game.Player.Equipments.Remove(TItem.EquipmentType);
             game.Messages.Add(new Creature.Player.UnequipMessage<TItem>(game, (TItem)item));
             game.Player.Items[item]++;
-            game.CurrentLevel.Update();
+            game.CurrentLevel.UpdateLight();
         }
     }
 }

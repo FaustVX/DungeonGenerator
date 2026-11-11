@@ -14,7 +14,7 @@ public interface IPlaceItem
         game.CurrentTile = game.CurrentTile with { Template = ((Torch)item).Template };
         items.RemoveQuantity(item, 1);
         game.Messages.Add(new PlaceMessage(game, item));
-        game.CurrentLevel.Update();
+        game.CurrentLevel.UpdateLight();
     }
 
     protected class PlaceMessage(Game game, Item item) : Messages.Message(game)

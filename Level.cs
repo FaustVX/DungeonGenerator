@@ -94,7 +94,7 @@ public sealed class Level
         return qty;
     }
 
-    public void Update()
+    public void UpdateLight()
     {
         _visibleTiles.Clear();
         ShadowCaster.ComputeFieldOfViewWithShadowCasting(Game.Player.X, Game.Player.Y, Game.Player.ViewDistance,
@@ -111,6 +111,11 @@ public sealed class Level
             for (int y = 0; y < Game.Height; y++)
                 if (_tiles[x, y] is IUpdateableTemplate exec)
                     exec.OnUpdate(Game, x, y);
+    }
+
+    public void Update()
+    {
+        UpdateLight();
 
         foreach (var creature in Creatures)
             creature.Update(this);

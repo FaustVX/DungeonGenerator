@@ -43,7 +43,7 @@ public sealed class Game
         _levels = [with(() => new(this, Depth), capacity: 8)];
         var (x, y) = CurrentLevel.MainTiles[Level.MainTile.Entrance];
         Player = new(x, y);
-        CurrentLevel.Update();
+        CurrentLevel.UpdateLight();
     }
 
     private bool Move(int x, int y)

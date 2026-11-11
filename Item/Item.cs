@@ -94,24 +94,32 @@ public interface IEatItem
     }
 }
 
-public abstract record class Torch(string Name, double Range, TileTemplate Template) : Item(Name, Template.Symbol, Template.Foreground), IPlaceItem
+public interface IEquipItem
 {
-    public override IReadOnlyDictionary<string, Action> Actions { get; } = new Dictionary<string, Action>()
-    {
-        ["Place"] = IPlaceItem.Place,
-        ["Equip"] = Equip,
-    };
+    public static abstract Creature.EquipmentType EquipmentType { get; }
 
-    private static void Equip(Game game, IDictionary<Item, int> items, Item item)
+    protected static void Equip<TItem>(Game game, IDictionary<Item, int> items, Item item)
+    where TItem : Item, IEquipItem
     {
-        if (item is Torch torch && !game.Player.Equipments.ContainsKey(Creature.EquipmentType.Torch))
+        if (!game.Player.Equipments.ContainsKey(TItem.EquipmentType))
         {
-            game.Player.Equipments[Creature.EquipmentType.Torch] = torch;
-            game.Messages.Add(new Creature.Player.EquipMessage(game, torch));
+            game.Player.Equipments[TItem.EquipmentType] = item;
+            game.Messages.Add(new Creature.Player.EquipMessage<TItem>(game, (TItem)item));
             items.RemoveQuantity(item, 1);
             game.CurrentLevel.Update();
         }
     }
+}
+
+public abstract record class Torch(string Name, double Range, TileTemplate Template) : Item(Name, Template.Symbol, Template.Foreground), IPlaceItem, IEquipItem
+{
+    public static Creature.EquipmentType EquipmentType => Creature.EquipmentType.Torch;
+
+    public override IReadOnlyDictionary<string, Action> Actions { get; } = new Dictionary<string, Action>()
+    {
+        ["Place"] = IPlaceItem.Place,
+        ["Equip"] = IEquipItem.Equip<Torch>,
+    };
 }
 
 public record class SmallTorch() : Torch("Small Torch", 3, TileTemplate.SmallTorch())

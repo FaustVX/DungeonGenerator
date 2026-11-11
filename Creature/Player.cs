@@ -18,10 +18,11 @@ public record class Player(int X, int Y) : Creature(X, Y, "You", '@', 5, Color.A
         HP -= attackPoints;
     }
 
-    public class EquipMessage(Game game, Item.Item item) : Messages.Message(game)
+    public class EquipMessage<TItem>(Game game, TItem item) : Messages.Message(game)
+    where TItem: Item.Item, Item.IEquipItem
     {
         public override string ToString()
-        => $"{_timestamp} {PlayerColor()} have equiped {ItemColor(item)}";
+        => $"{_timestamp} {PlayerColor()} have equiped a {TItem.EquipmentType}: {ItemColor(item)}";
     }
 }
 

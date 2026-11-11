@@ -6,6 +6,7 @@ namespace DungeonGenerator.Creature;
 public record class Rat(int X, int Y) : Mob(X, Y, "Rat", 'r', 5, Color.RosyBrown)
 {
     private readonly Random _rng = new();
+    private List<(int x, int y)> _path = [];
 
     public override int Force => 1;
 
@@ -17,21 +18,18 @@ public record class Rat(int X, int Y) : Mob(X, Y, "Rat", 'r', 5, Color.RosyBrown
 
     public override void Update(Level level)
     {
-        var (x, y) = RandomMovement(level);
-        if ((level.Game.Player.X, level.Game.Player.Y) != (x, y))
-            (X, Y) = (x, y);
+        while (_path.Count <= 0 || !level[_path[0].x, _path[0].y].Template.IsWalkable)
+            RandomMovement();
+        if ((level.Game.Player.X, level.Game.Player.Y) != _path[0])
+            ((X, Y), _path) = (_path[0], _path[1..]);
         else
             Attack(level.Game.Player, level.Game);
     }
 
-    private (int x, int y) RandomMovement(Level level)
+    private void RandomMovement()
     {
-        int x, y;
-        do
-        {
-            x = _rng.NextItem([-1, 0, 1]);
-            y = _rng.NextItem([-1, 0, 1]);
-        } while ((x, y) is not ((0, not 0) or (not 0, 0)) || !level[X + x, Y + y].Template.IsWalkable);
-        return (X + x, Y + y);
+        var polar = new Polar(_rng.NextDouble() * (Math.PI * 2), _rng.Next(2, 7));
+        var (x, y) = polar.ToCartesian + (X, Y);
+        _path = [..Ext.Line(X, Y, x, y).Skip(1)];
     }
 }

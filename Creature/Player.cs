@@ -24,9 +24,17 @@ public record class Player(int X, int Y) : Creature(X, Y, "You", '@', 5, Color.A
         public override string ToString()
         => $"{_timestamp} {PlayerColor()} have equiped a {TItem.EquipmentType}: {ItemColor(item)}";
     }
+
+    public class UnequipMessage<TItem>(Game game, TItem item) : Messages.Message(game)
+    where TItem: Item.Item, Item.IEquipItem
+    {
+        public override string ToString()
+        => $"{_timestamp} {PlayerColor()} have unequiped a {TItem.EquipmentType}: {ItemColor(item)}";
+    }
 }
 
 public enum EquipmentType
 {
+    None,
     Torch,
 }

@@ -1,5 +1,7 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Frozen;
+using System.Diagnostics;
 using DungeonGenerator;
+using DungeonGenerator.Creature;
 using DungeonGenerator.Helpers;
 using DungeonGenerator.Item;
 using DungeonGenerator.Tile;
@@ -69,11 +71,39 @@ try
                 break;
             case ConsoleKeyInfo { Key: ConsoleKey.E }:
             {
-                if (game.Player.Items is not { Count: > 0 } items)
+                if (game.Player is { Items.Count: <= 0, Equipments.Count: <= 0 })
                     break;
-                ItemsMenu(game, lookingAt, "Inventory", items, item => [..item.Actions, Item.Drop1, Item.DropAll, Item.Delete]);
+
+                switch (SelectionPrompt<int>.Default("Player", PlayerStorage, -1, [..game.Player.Items.Count > 0 ? [1] : Enumerable.Empty<int>(), ..game.Player.Equipments.Count > 0 ? [2] : Enumerable.Empty<int>(), -1]).Prompt())
+                {
+                    case 1:
+                        DrawDungeon(game, lookingAt, lastMouseEvent);
+                        ItemsMenu(game, lookingAt, "Inventory", game.Player.Items, item => [..item.Actions, Item.Drop1, Item.DropAll, Item.Delete]);
+                        break;
+                    case 2:
+                        DrawDungeon(game, lookingAt, lastMouseEvent);
+                        var equipment = SelectionPrompt<KeyValuePair<EquipmentType, Item>>.Default("Which equipment", kvp => $"{kvp.Key}: {kvp.Value.Name}", default, game.Player.Equipments)
+                            .Prompt();
+                        if (equipment is (not EquipmentType.None, IEquipItem equip))
+                        {
+                            DrawDungeon(game, lookingAt, lastMouseEvent);
+                            var item = (Item)equip;
+                            SelectionPrompt<KeyValuePair<string, Item.Action>>.Default(item.Name, kvp => kvp.Key, Item.Cancel, [..equip.EquipedActions, Item.Cancel])
+                                .Prompt().Value(game, FrozenDictionary<Item, int>.Empty, item);
+                        }
+                        break;
+                }
                 AnsiConsole.Cursor.Hide();
                 break;
+
+                static string PlayerStorage(int i)
+                => i switch
+                {
+                    -1 => "Cancel",
+                    +1 => "Inventory",
+                    +2 => "Equipments",
+                    _ => throw new UnreachableException(),
+                };
             }
             case ConsoleKeyInfo { Key: ConsoleKey.Enter }:
             {

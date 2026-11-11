@@ -15,7 +15,7 @@ Console.CancelKeyPress += (s, e) => Exit();
 
 try
 {
-    (int x, int y)? mousePos = (x: 0, y: 0);
+    var mousePos = (x: 0, y: 0);
     ConsoleRead.MouseEvent lastMouseEvent = default;
     var game = new Game(100, 20, args is [var arg0]
         ? int.TryParse(arg0, out var seed) ? seed: arg0.GetHashCode()
@@ -23,7 +23,7 @@ try
     Run: while (true)
     {
         AnsiConsole.MouseSupport(true);
-        var lookingAt = mousePos is {} m ? LookingAt(game, m.x, m.y) : "";
+        var lookingAt = LookingAt(game, mousePos.x, mousePos.y);
         DrawDungeon(game, lookingAt, lastMouseEvent);
         switch (AnsiConsole.Console.Input.ReadKeyOrMouse())
         {
@@ -42,32 +42,40 @@ try
                 if (mouse.X - (Console.WindowWidth - game.Width) is var x and >= 0 && mouse.Y - 2 is var y and >= 0 && y < game.Height )
                     mousePos = (x, y);
                 else
-                    mousePos = null;
+                    mousePos = (game.Player.X, game.Player.Y);
                 break;
             }
             case ConsoleKeyInfo { Key: ConsoleKey.D1 }:
                 _ = (game.MoveDown() && game.MoveLeft()) || (game.MoveLeft() && game.MoveDown());
+                mousePos = (game.Player.X, game.Player.Y);
                 break;
             case ConsoleKeyInfo { Key: ConsoleKey.DownArrow or ConsoleKey.D2 }:
                 game.MoveDown();
+                mousePos = (game.Player.X, game.Player.Y);
                 break;
             case ConsoleKeyInfo { Key: ConsoleKey.D3 }:
                 _ = (game.MoveDown() && game.MoveRight()) || (game.MoveRight() && game.MoveDown());
+                mousePos = (game.Player.X, game.Player.Y);
                 break;
             case ConsoleKeyInfo { Key: ConsoleKey.LeftArrow or ConsoleKey.D4 }:
                 game.MoveLeft();
+                mousePos = (game.Player.X, game.Player.Y);
                 break;
             case ConsoleKeyInfo { Key: ConsoleKey.RightArrow or ConsoleKey.D6 }:
                 game.MoveRight();
+                mousePos = (game.Player.X, game.Player.Y);
                 break;
             case ConsoleKeyInfo { Key: ConsoleKey.D7 }:
                 _ = (game.MoveUp() && game.MoveLeft()) || (game.MoveLeft() && game.MoveUp());
+                mousePos = (game.Player.X, game.Player.Y);
                 break;
             case ConsoleKeyInfo { Key: ConsoleKey.UpArrow or ConsoleKey.D8 }:
+            mousePos = (game.Player.X, game.Player.Y);
                 game.MoveUp();
                 break;
             case ConsoleKeyInfo { Key: ConsoleKey.D9 }:
                 _ = (game.MoveUp() && game.MoveRight()) || (game.MoveRight() && game.MoveUp());
+                mousePos = (game.Player.X, game.Player.Y);
                 break;
             case ConsoleKeyInfo { Key: ConsoleKey.E }:
             {

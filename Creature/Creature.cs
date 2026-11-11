@@ -1,4 +1,3 @@
-using DungeonGenerator.Helpers;
 using Spectre.Console;
 
 namespace DungeonGenerator.Creature;
@@ -38,80 +37,5 @@ public closed record class Creature(int X, int Y, string Name, char Symbol, int 
     {
         public override string ToString()
         => $"{_timestamp} {CreatureColor(attacker)} fights {CreatureColor(attacked)}";
-    }
-}
-
-public closed record class Mob(int X, int Y, string Name, char Symbol, int HP, Color Color) : Creature(X, Y, Name, Symbol, HP, Color)
-{
-    public bool HasBeenSaw { get; private set; }
-
-    private DateTime _highlight = default;
-    public (int x, int y) Pos
-    {
-        get;
-        set => (field, _highlight) = (value, DateTime.Now.AddSeconds(3));
-    }
-    public bool IsHighlighted => _highlight >= DateTime.Now;
-
-    public void Saw(Game game)
-    {
-        if (HasBeenSaw)
-            return;
-        game.Messages.Add(new SawMessage(game, this));
-        HasBeenSaw = true;
-    }
-    public abstract void Update(Level level);
-
-    public virtual void Death(Game game)
-    {
-        game.CurrentLevel.Creatures.Remove(this);
-    }
-
-    protected class SawMessage(Game game, Mob mob) : Messages.Message(game), Messages.IClickableMessage
-    {
-        private readonly (int, int) _pos = (mob.X, mob.Y);
-        public void OnClick(int pos)
-        => mob.Pos = _pos;
-
-        public override string ToString()
-        => $"{_timestamp} {PlayerColor()} saw {CreatureColor(mob)}";
-    }
-}
-
-public record class Rat(int X, int Y) : Mob(X, Y, "Rat", 'r', 5, Color.RosyBrown)
-{
-    private readonly Random _rng = new();
-
-    public override int Force => 1;
-
-    public override void Defend(Creature attacker, int attackPoints)
-    {
-        HP -= attackPoints;
-    }
-
-    public override void Death(Game game)
-    {
-        game.CurrentLevel.DropItem(X, Y, Item.Meat.Instance, 1, this);
-        base.Death(game);
-    }
-
-    public override void Update(Level level)
-    {
-        var (x, y) = RandomMovement(level);
-        if ((level.Game.Player.X, level.Game.Player.Y) != (x, y))
-            (X, Y) = (x, y);
-        else
-            Attack(level.Game.Player, level.Game);
-    }
-
-    private (int x, int y) RandomMovement(Level level)
-    {
-        int x, y;
-        do
-        {
-            x = _rng.NextItem([-1, 0, 1]);
-            y = _rng.NextItem([-1, 0, 1]);
-        } while ((x, y) is not ((0, not 0) or (not 0, 0)) || !level[X + x, Y + y].Template.IsWalkable);
-        return (X + x, Y + y);
     }
 }

@@ -20,7 +20,7 @@ try
     var game = new Game(100, 20, args is [var arg0]
         ? int.TryParse(arg0, out var seed) ? seed: arg0.GetHashCode()
         : Random.Shared.Next());
-    Run: while (true)
+    Run: while (game.Player.HP > 0)
     {
         AnsiConsole.MouseSupport(true);
         var lookingAt = LookingAt(game, mousePos.x, mousePos.y);
@@ -188,6 +188,13 @@ try
             SelectionPrompt<KeyValuePair<string, Item.Action>>.Default(item.Name, kvp => kvp.Key, Item.Cancel, [..extraActions(item), Item.Cancel])
                 .Prompt().Value(game, items, item);
         }
+    }
+
+    if (game.Player.HP <= 0)
+    {
+        game.Messages.Add($"{DungeonGenerator.Messages.Message.TimeStamp(game)} You have [red]died[/], good luck on your next dungeon");
+        DrawDungeon(game, "", lastMouseEvent);
+        return;
     }
 }
 catch (Exception ex) when (!Debugger.IsAttached)

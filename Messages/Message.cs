@@ -18,7 +18,7 @@ public abstract class Message(Game? game)
     => $"[{tile.Foreground} on {tile.Background}]{tile.Name}[/]";
     protected static string WithColor<T>(T obj, Color color)
     => $"[{color}]{obj}[/]";
-    protected static string TimeStamp(Game? game)
+    public static string TimeStamp(Game? game)
     => game is null ? "" : $"[[{game.Steps}:{game.Depth}]]"; // double square bracket for Spectre markup
 }
 

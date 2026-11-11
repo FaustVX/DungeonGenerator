@@ -9,11 +9,6 @@ public record class Rat(int X, int Y) : Mob(X, Y, "Rat", 'r', 5, Color.RosyBrown
 
     public override int Force => 1;
 
-    public override void Defend(Creature attacker, int attackPoints)
-    {
-        HP -= attackPoints;
-    }
-
     public override void Death(Game game)
     {
         game.CurrentLevel.DropItem(X, Y, Item.Meat.Instance, 1, this);

@@ -22,20 +22,27 @@ public closed record class Creature(int X, int Y, string Name, char Symbol, int 
     public int MaxHP { get; } = HP;
     public abstract int Force { get; }
 
-    public abstract void Defend(Creature attacker, int attackPoints);
+    /// <returns>returns HP lost in fight</returns>
+    public virtual int Defend(Creature attacker, int attackPoints)
+    {
+        var hp = HP;
+        HP -= attackPoints;
+        return hp - HP;
+    }
+
     public void Attack(Creature attacked, Game game)
     {
-        game.Messages.Add(new FightMessage(game, this, attacked));
-        attacked.Defend(this, Force);
+        var damage = attacked.Defend(this, Force);
+        game.Messages.Add(new FightMessage(game, this, attacked, damage));
         if (this is Mob { HP: <= 0 } a)
             a.Death(game);
         if (attacked is Mob { HP: <= 0 } b)
             b.Death(game);
     }
 
-    protected class FightMessage(Game game, Creature attacker, Creature attacked) : Messages.Message(game)
+    protected class FightMessage(Game game, Creature attacker, Creature attacked, int damage) : Messages.Message(game)
     {
         public override string ToString()
-        => $"{_timestamp} {CreatureColor(attacker)} fights {CreatureColor(attacked)}";
+        => $"{_timestamp} {CreatureColor(attacker)} fights {CreatureColor(attacked)} for {damage} damages";
     }
 }

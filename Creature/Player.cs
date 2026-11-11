@@ -13,11 +13,6 @@ public record class Player(int X, int Y) : Creature(X, Y, "You", '@', 5, Color.A
 
     public IDictionary<Item.Item, int> Items { get; } = new DefaultableDictionary<Item.Item, int>(capacity: 10, _ => 0);
 
-    public override void Defend(Creature attacker, int attackPoints)
-    {
-        HP -= attackPoints;
-    }
-
     public class EquipMessage<TItem>(Game game, TItem item) : Messages.Message(game)
     where TItem: Item.Item, Item.IEquipItem
     {

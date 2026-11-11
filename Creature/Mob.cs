@@ -26,6 +26,18 @@ public closed record class Mob(int X, int Y, string Name, char Symbol, int HP, C
     public virtual void Death(Game game)
     {
         game.CurrentLevel.Creatures.Remove(this);
+        if (game.CurrentLevel.Creatures is [])
+        {
+            var (x, y) = game.CurrentLevel.MainTiles[Level.MainTile.Exit];
+            game.CurrentLevel[x, y] = game.CurrentLevel[x, y] with { Template = Tile.TileTemplate.DownStair(true) };
+            game.Messages.Add(new ExitOpenMessage(game));
+        }
+    }
+
+    protected class ExitOpenMessage(Game game) : Messages.Message(game)
+    {
+        public override string ToString()
+        => $"{_timestamp} Exit is now open";
     }
 
     protected class SawMessage(Game game, Mob mob) : Messages.Message(game), Messages.IClickableMessage

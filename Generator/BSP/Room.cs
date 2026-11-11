@@ -108,7 +108,7 @@ public sealed class Room : Node
     {
         _features.Add(new(rng.Next(LeftWallWidth + 1, Width - (LeftWallWidth + RightWallWidth) + LeftWallWidth - 1),
             rng.Next(TopWallWidth + 1, Height - (TopWallWidth + BottomWallWidth) + TopWallWidth - 1),
-            1, 1, TileTemplate.DownStair(true)));
+            1, 1, TileTemplate.DownStair(false)));
     }
 
     public void GenerateTorch(Random rng)

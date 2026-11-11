@@ -104,9 +104,10 @@ public abstract record class Torch(string Name, double Range, TileTemplate Templ
 
     private static void Equip(Game game, IDictionary<Item, int> items, Item item)
     {
-        if (item is Torch torch && game.Player.Torch is null)
+        if (item is Torch torch && !game.Player.Equipments.ContainsKey(Creature.EquipmentType.Torch))
         {
-            game.Player.Torch = torch;
+            game.Player.Equipments[Creature.EquipmentType.Torch] = torch;
+            game.Messages.Add(new Creature.Player.EquipMessage(game, torch));
             items.RemoveQuantity(item, 1);
             game.CurrentLevel.Update();
         }

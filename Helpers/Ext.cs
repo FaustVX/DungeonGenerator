@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using Spectre.Console;
@@ -206,6 +207,35 @@ static class Ext
         {
             if ((dict[key] -= qty) <= TNumber.Zero)
                 dict.Remove(key);
+        }
+    }
+
+    extension<TKey, TValue>(IReadOnlyDictionary<TKey, TValue> dict)
+    where TKey: notnull
+    {
+        /// <inheritdoc cref="Dictionary{TKey, TValue}.TryGetValue(TKey, out TValue)"/>
+        public bool TryGetValue<T>(TKey key, [NotNullWhen(true)] out T? value)
+        where T : class
+        {
+            if (dict.TryGetValue(key, out var v) && v is T t)
+            {
+                value = t;
+                return true;
+            }
+            value = default;
+            return false;
+        }
+        /// <inheritdoc cref="Dictionary{TKey, TValue}.TryGetValue(TKey, out TValue)"/>
+        public bool TryGetValue<T>(TKey key, [NotNullWhen(true)] out T? value)
+        where T : struct
+        {
+            if (dict.TryGetValue(key, out var v) && v is T t)
+            {
+                value = t;
+                return true;
+            }
+            value = default;
+            return false;
         }
     }
 }

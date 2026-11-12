@@ -10,7 +10,7 @@ public interface ICreature
     public abstract Color Color { get; }
     public abstract int HP { get; set; }
     public abstract int MaxHP { get; }
-    public abstract int Shields { get; set; }
+    public abstract int Shields { get; }
 }
 
 public closed record class Creature(int X, int Y, string Name, char Symbol, int HP, Color Color) : ICreature
@@ -18,7 +18,7 @@ public closed record class Creature(int X, int Y, string Name, char Symbol, int 
     public int X { get; set; } = X;
     public int Y { get; set; } = Y;
     public int HP { get; set => field = Math.Clamp(value, 0, MaxHP); } = HP;
-    public int Shields { get; set => field = Math.Max(value, 0); }
+    public abstract int Shields { get; }
     public int MaxHP { get; } = HP;
     public abstract int Force { get; }
 
@@ -26,7 +26,7 @@ public closed record class Creature(int X, int Y, string Name, char Symbol, int 
     public virtual int Defend(Creature attacker, int attackPoints)
     {
         var hp = HP;
-        HP -= attackPoints;
+        HP -= attackPoints - Shields;
         return hp - HP;
     }
 

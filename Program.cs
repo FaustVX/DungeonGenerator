@@ -135,7 +135,7 @@ try
                     }
                     case ({ Count: > 0 }, IActivableTemplate tile):
                     {
-                        var selection = SelectionPrompt<bool>.Default("Where", b => b ? $"Items ({items.Count})" : $"Use {tile.Symbol} {tile.Name}", [true, false])
+                        var selection = SelectionPrompt<bool>.Default("Where", b => b ? $"Items ({items.Count})" : $"Use {(tile.Symbol is ']' ? "]]" : tile.Symbol)} {tile.Name}", [true, false])
                             .Prompt();
                         DrawDungeon(game, lookingAt, lastMouseEvent);
                         if (selection)
@@ -211,11 +211,11 @@ static string LookingAt(Game game, int x, int y)
 {
     var (_, _, tile, i, visible, seen) = game.CurrentLevel[x, y];
     if (visible && i.Count == 1 && game.CurrentLevel.Creatures.FirstOrDefault(c => (c.X, c.Y) == (x, y)) is {} mob)
-        return $"[{mob.Color}]{mob.Symbol}[/]: {mob.Name}";
+        return $"[{mob.Color}]{(mob.Symbol is ']' ? "]]" : mob.Symbol)}[/]: {mob.Name}";
     if (visible && i.Count == 1 && i.First() is var item)
-        return $"[{item.Key.Color}]{item.Key.Symbol}[/]: {item.Key.Name} ({item.Value})";
+        return $"[{item.Key.Color}]{(item.Key.Symbol is ']' ? "]]" : item.Key.Symbol)}[/]: {item.Key.Name} ({item.Value})";
     if (seen)
-        return $"[{tile.Foreground} on {tile.Background}]{tile.Symbol}[/]: {tile.Name}";
+        return $"[{tile.Foreground} on {tile.Background}]{(tile.Symbol is ']' ? "]]" : tile.Symbol)}[/]: {tile.Name}";
     return "";
 }
 

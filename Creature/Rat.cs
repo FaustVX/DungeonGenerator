@@ -7,6 +7,7 @@ public record class Rat(int X, int Y) : Mob(X, Y, "Rat", 'r', 5, Color.RosyBrown
 {
     private readonly Random _rng = new();
     private List<(int x, int y)> _path = [];
+    public override int Shields => 0;
 
     public override int Force => 1;
 

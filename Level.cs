@@ -70,6 +70,7 @@ public sealed class Level
                 Item.SmallTorch.Instance,
                 Item.Meat.Instance,
                 Item.Dagger.Instance,
+                Item.ChestPlate.Instance,
             ]);
             var (x, y) = (0, 0);
             do

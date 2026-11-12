@@ -28,8 +28,13 @@ public record class Rat(int X, int Y) : Mob(X, Y, "Rat", 'r', 5, Color.RosyBrown
 
     private void RandomMovement()
     {
-        var polar = new Polar(_rng.NextDouble() * (Math.PI * 2), _rng.Next(2, 7));
-        var (x, y) = polar.ToCartesian + (X, Y);
-        _path = [..Ext.Line(X, Y, x, y).Skip(1)];
+        if (HP >= MaxHP && _rng.NextBool())
+            _path = [..Enumerable.Repeat((X, Y), _rng.Next(1, 5))];
+        else
+        {
+            var polar = new Polar(_rng.NextDouble() * (Math.PI * 2), _rng.Next(2, 7));
+            var (x, y) = polar.ToCartesian + (X, Y);
+            _path = [..Ext.Line(X, Y, x, y).Skip(1)];
+        }
     }
 }

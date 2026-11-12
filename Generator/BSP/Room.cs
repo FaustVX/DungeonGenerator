@@ -3,7 +3,7 @@ using DungeonGenerator.Tile;
 
 namespace DungeonGenerator.Generator.BSP;
 
-public sealed class Room : Node
+public sealed class Room : Node, IRoom
 {
     public Room(int width, int height, (int w, int h) minRoomSize, (int w, int h) maxRoomSize, double fullSizedRoomPercent, Random rng, Generator parent)
     {
@@ -28,6 +28,7 @@ public sealed class Room : Node
         }
         else
             TopWallWidth = BottomWallWidth = 1;
+        (X, Y) = GetGlobalOrigin();
     }
 
     public override Generator Parent { get; }
@@ -96,6 +97,13 @@ public sealed class Room : Node
 
     public Room OtherRoom
     => (Room) OtherSide!;
+
+    public int X { get; }
+
+    public int Y { get; }
+
+    public List<IRoom> ConnectedTo { get; } = [with(capacity: 4)];
+    IReadOnlyList<IRoom> IRoom.ConnectedTo => ConnectedTo;
 
     public void GenerateEntrance(Random rng)
     {

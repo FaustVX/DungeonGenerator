@@ -4,7 +4,7 @@ using DungeonGenerator.Tile;
 
 namespace DungeonGenerator.Generator.BSP;
 
-public sealed class Corridor : Node
+public sealed class Corridor : Node, IRoom
 {
     private readonly Random _rng;
     public override Generator Parent { get; }
@@ -13,6 +13,13 @@ public sealed class Corridor : Node
     public int Position { get; }
     public int LengthOffset { get; }
 
+    public int X { get; }
+
+    public int Y { get; }
+
+    public List<IRoom> ConnectedTo { get; }
+    IReadOnlyList<IRoom> IRoom.ConnectedTo => ConnectedTo;
+
     public Corridor(Generator parent, Random rng)
     {
         Parent = parent;
@@ -20,6 +27,7 @@ public sealed class Corridor : Node
         Width = 1;
         Height = 1;
         LengthOffset = 1;
+        ConnectedTo = [with(capacity: 2)];
 
         switch (parent.SplitDirection)
         {
@@ -35,6 +43,13 @@ public sealed class Corridor : Node
                     x++;
                     Width++;
                 }
+                foreach (var pos in (ReadOnlySpan<(int x, int y)>)[(x + 1, y), (x, y - 1), (x, y + 1)])
+                    if (Parent.GetTile(pos.x, pos.y).IsWalkable)
+                    {
+                        var room = Parent.GetNodeAt(pos.x, pos.y);
+                        room.ConnectedTo.Add(this);
+                        ConnectedTo.Add(room);
+                    }
                 // 0, 0 after the other end because the origin won't change
                 (x, y) = GetPosRelativeTo(Parent, 0, 0);
                 while (!(Parent.GetTile(x - 1, y).IsWalkable || Parent.GetTile(x, y - 1).IsWalkable || Parent.GetTile(x, y + 1).IsWalkable))
@@ -43,6 +58,13 @@ public sealed class Corridor : Node
                     Width++;
                     LengthOffset++;
                 }
+                foreach (var pos in (ReadOnlySpan<(int x, int y)>)[(x - 1, y), (x, y - 1), (x, y + 1)])
+                    if (Parent.GetTile(pos.x, pos.y).IsWalkable)
+                    {
+                        var room = Parent.GetNodeAt(pos.x, pos.y);
+                        room.ConnectedTo.Add(this);
+                        ConnectedTo.Add(room);
+                    }
                 break;
             }
             case SplitDirection.Vertical:
@@ -57,6 +79,13 @@ public sealed class Corridor : Node
                     y++;
                     Height++;
                 }
+                foreach (var pos in (ReadOnlySpan<(int x, int y)>)[(x, y + 1), (x - 1, y), (x + 1, y)])
+                    if (Parent.GetTile(pos.x, pos.y).IsWalkable)
+                    {
+                        var room = Parent.GetNodeAt(pos.x, pos.y);
+                        room.ConnectedTo.Add(this);
+                        ConnectedTo.Add(room);
+                    }
                 // 0, 0 after the other end because the origin won't change
                 (x, y) = GetPosRelativeTo(Parent, 0, 0);
                 while (!(Parent.GetTile(x, y - 1).IsWalkable || Parent.GetTile(x - 1, y).IsWalkable || Parent.GetTile(x + 1, y).IsWalkable))
@@ -65,11 +94,19 @@ public sealed class Corridor : Node
                     Height++;
                     LengthOffset++;
                 }
+                foreach (var pos in (ReadOnlySpan<(int x, int y)>)[(x, y - 1), (x - 1, y), (x + 1, y)])
+                    if (Parent.GetTile(pos.x, pos.y).IsWalkable)
+                    {
+                        var room = Parent.GetNodeAt(pos.x, pos.y);
+                        room.ConnectedTo.Add(this);
+                        ConnectedTo.Add(room);
+                    }
                 break;
             }
             default:
                 throw new UnreachableException();
         }
+        (X, Y) = GetGlobalOrigin();
     }
 
     public override TileTemplate GetTile(int x, int y)

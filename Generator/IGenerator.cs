@@ -11,6 +11,7 @@ public interface IGenerator
     public Tile.TileTemplate GetTile(int x, int y);
     public int Width { get; }
     public int Height { get; }
+    public IReadOnlyList<IRoom> Rooms { get; }
 }
 
 public readonly union RngOrSeed(Random, int)

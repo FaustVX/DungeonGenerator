@@ -125,6 +125,51 @@ public abstract class Node
         }
     }
 
+    public CorridorOrRoom GetNodeAt(int x, int y)
+    {
+        Node node = this;
+        while (node is Generator bsp)
+        {
+            if (bsp.Corridor is {} corridor)
+            {
+                var (corridorX, corridorY) = bsp.GetPosRelativeTo(corridor, x, y);
+                if (0 <= corridorX && corridorX < corridor.Width && 0 <= corridorY && corridorY < corridor.Height)
+                    return corridor;
+            }
+
+            switch (bsp.SplitDirection)
+            {
+                case SplitDirection.Horizontal:
+                    if (x < bsp.SplitDistance)
+                        node = bsp.First;
+                    else
+                    {
+                        x -= bsp.SplitDistance;
+                        node = bsp.Second;
+                    }
+                    break;
+                case SplitDirection.Vertical:
+                    if (y < bsp.SplitDistance)
+                        node = bsp.First;
+                    else
+                    {
+                        y -= bsp.SplitDistance;
+                        node = bsp.Second;
+                    }
+                    break;
+                default:
+                    throw new UnreachableException();
+            }
+        }
+
+        return node switch
+        {
+            Corridor c => c,
+            Room r => r,
+            _ => throw new UnreachableException(),
+        };
+    }
+
     public int TopMostWalkable()
     => this switch
     {
@@ -159,5 +204,43 @@ public abstract class Node
         Generator g => Math.Max(g.First.GetPosRelativeTo(this, g.First.RightMostWalkable(), 0).x,
                             g.Second.GetPosRelativeTo(this, g.Second.RightMostWalkable(), 0).x),
         _ => throw new UnreachableException(),
+    };
+}
+
+public readonly union CorridorOrRoom(Corridor, Room) : IRoom
+{
+    public int X
+    => this switch
+    {
+        Corridor c => c.X,
+        Room r => r.X,
+    };
+
+    public int Y
+    => this switch
+    {
+        Corridor c => c.Y,
+        Room r => r.Y,
+    };
+    public int Width
+    => this switch
+    {
+        Corridor c => c.Width,
+        Room r => r.Width,
+    };
+
+    public int Height
+    => this switch
+    {
+        Corridor c => c.Height,
+        Room r => r.Height,
+    };
+    IReadOnlyList<IRoom> IRoom.ConnectedTo => ConnectedTo;
+    public IRoom Room => (IRoom)Value;
+    public List<IRoom> ConnectedTo
+    => this switch
+    {
+        Corridor c => c.ConnectedTo,
+        Room r => r.ConnectedTo,
     };
 }

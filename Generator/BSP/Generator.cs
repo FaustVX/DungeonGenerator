@@ -50,12 +50,19 @@ public class Generator : Node, IGenerator
     public Generator? OtherBSP
     => (Generator?)OtherSide;
 
+    IReadOnlyList<IRoom> IGenerator.Rooms => [..Rooms, ..Corridors];
+
     public Generator(int width, int height, (int w, int h) minRoomSize, (int w, int h) maxRoomSize, double fullSizedRoomPercent, RngOrSeed random, Level level)
     : this(width, height, minRoomSize, maxRoomSize, fullSizedRoomPercent, random.Random, null, null, level)
     {
         var rng = random.Random;
-        Rooms[0].GenerateEntrance(rng);
-        Rooms[^1].GenerateExit(rng);
+        var comparer = Comparer<Room>.Create((a, b) => a.ConnectedTo.Count.CompareTo(b.ConnectedTo.Count) switch
+        {
+            0 => rng.NextBool() ? +1 : -1,
+            var c => c,
+        });
+        Rooms.Max(comparer)!.GenerateEntrance(rng);
+        Rooms.Min(comparer)!.GenerateExit(rng);
     }
 
     private Generator(int width, int height, (int w, int h) minRoomSize, (int w, int h) maxRoomSize, double fullSizedRoomPercent, Random rng, Generator? parent, SplitDirection? otherDirection, Level level)

@@ -44,7 +44,7 @@ public sealed class Room : Node, IRoom
     {
         ArgumentOutOfRangeException.ThrowIfNotInBetween(x, 0, Width - 1);
         ArgumentOutOfRangeException.ThrowIfNotInBetween(y, 0, Height - 1);
-        if (_features.Find(f => f.X <= x && x < f.X + f.Width && f.Y <= y && y < f.Y + f.Height) is Feature f)
+        if (_features.Find(f => f.X == x && f.Y == y) is Feature f)
             return f.Template;
         if (x < LeftWallWidth || y < TopWallWidth || x >= Width - RightWallWidth || y >= Height - BottomWallWidth)
             return TileTemplate.Wall;
@@ -109,22 +109,15 @@ public sealed class Room : Node, IRoom
     {
         _features.Add(new(rng.Next(LeftWallWidth + 1, Width - (LeftWallWidth + RightWallWidth) + LeftWallWidth - 1),
             rng.Next(TopWallWidth + 1, Height - (TopWallWidth + BottomWallWidth) + TopWallWidth - 1),
-            1, 1, TileTemplate.UpStair(Parent.Level.Depth > 0)));
+            TileTemplate.UpStair(Parent.Level.Depth > 0)));
     }
 
     public void GenerateExit(Random rng)
     {
         _features.Add(new(rng.Next(LeftWallWidth + 1, Width - (LeftWallWidth + RightWallWidth) + LeftWallWidth - 1),
             rng.Next(TopWallWidth + 1, Height - (TopWallWidth + BottomWallWidth) + TopWallWidth - 1),
-            1, 1, TileTemplate.DownStair(false)));
+            TileTemplate.DownStair(false)));
     }
 
-    public void GenerateTorch(Random rng)
-    {
-        _features.Add(new(rng.Next(LeftWallWidth, Width - (LeftWallWidth + RightWallWidth) + LeftWallWidth),
-            rng.Next(TopWallWidth, Height - (TopWallWidth + BottomWallWidth) + TopWallWidth),
-            1, 1, TileTemplate.Torch()));
-    }
-
-    private sealed record class Feature(int X, int Y, int Width, int Height, TileTemplate Template);
+    private sealed record class Feature(int X, int Y, TileTemplate Template);
 }

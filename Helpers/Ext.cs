@@ -118,6 +118,61 @@ static class Ext
 
         public T NextItem<T>(params ReadOnlySpan<T> values)
         => values[rng.Next(values.Length)];
+
+        public T NextWeightedItem<T>(params ReadOnlySpan<(T value, int weight)> values)
+        {
+            long totalWeight = 0;
+            foreach (var (_, weight) in values)
+            {
+                if (weight < 0)
+                    throw new ArgumentOutOfRangeException(nameof(values), "Weights cannot be negative.");
+
+                totalWeight += weight;
+            }
+
+            if (totalWeight == 0)
+                throw new ArgumentException("At least one weight must be greater than zero.", nameof(values));
+
+            var choice = rng.NextInt64(totalWeight);
+            foreach (var (value, weight) in values)
+            {
+                if (choice < weight)
+                    return value;
+
+                choice -= weight;
+            }
+
+            throw new UnreachableException();
+        }
+
+        // uses weighted reservoir sampling
+        public T NextWeightedItem<T>(params IEnumerable<(T value, int weight)> values)
+        {
+            ArgumentNullException.ThrowIfNull(values);
+
+            long totalWeight = 0;
+            T selected = default!;
+
+            foreach (var (value, weight) in values)
+            {
+                if (weight < 0)
+                    throw new ArgumentOutOfRangeException(nameof(values), "Weights cannot be negative.");
+
+                if (weight == 0)
+                    continue;
+
+                var newTotalWeight = checked(totalWeight + weight);
+                if (totalWeight == 0 || rng.NextInt64(newTotalWeight) < weight)
+                    selected = value;
+
+                totalWeight = newTotalWeight;
+            }
+
+            if (totalWeight == 0)
+                throw new ArgumentException("At least one weight must be greater than zero.", nameof(values));
+
+            return selected;
+        }
     }
 
     extension<T>((T, T))

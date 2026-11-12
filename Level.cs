@@ -66,15 +66,15 @@ public sealed class Level
         for (int i = _rng.Next(2, 7) - 1; i >= 0 ; i--)
         {
             var room = _rng.NextItem([..Rooms.Where(r => r.IsFullRoom)]);
-            var item = _rng.NextItem<Item.Item>([
-                Item.SmallTorch.Instance,
-                Item.Meat.Instance,
-                Item.Dagger.Cache[Materials.Material.Wood],
-                Item.Dagger.Cache[Materials.Material.Stone],
-                Item.Dagger.Cache[Materials.Material.Iron],
-                Item.ChestPlate.Cache[Materials.Material.Wood],
-                Item.ChestPlate.Cache[Materials.Material.Stone],
-                Item.ChestPlate.Cache[Materials.Material.Iron],
+            var item = _rng.NextWeightedItem<Item.Item>([
+                (Item.SmallTorch.Instance, 30),
+                (Item.Meat.Instance, 5),
+                (Item.Dagger.Cache[Materials.Material.Wood], 10),
+                (Item.Dagger.Cache[Materials.Material.Stone], 10),
+                (Item.Dagger.Cache[Materials.Material.Iron], 10),
+                (Item.ChestPlate.Cache[Materials.Material.Wood], 10),
+                (Item.ChestPlate.Cache[Materials.Material.Stone], 10),
+                (Item.ChestPlate.Cache[Materials.Material.Iron], 10),
             ]);
             var (x, y) = (0, 0);
             do

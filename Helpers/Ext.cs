@@ -214,27 +214,14 @@ static class Ext
     where TKey: notnull
     {
         /// <inheritdoc cref="Dictionary{TKey, TValue}.TryGetValue(TKey, out TValue)"/>
-        public bool TryGetValue<T>(TKey key, [NotNullWhen(true)] out T? value)
-        where T : class
+        public bool TryGetValue<T>(TKey key, [NotNullWhen(true)] out T value)
         {
             if (dict.TryGetValue(key, out var v) && v is T t)
             {
                 value = t;
                 return true;
             }
-            value = default;
-            return false;
-        }
-        /// <inheritdoc cref="Dictionary{TKey, TValue}.TryGetValue(TKey, out TValue)"/>
-        public bool TryGetValue<T>(TKey key, [NotNullWhen(true)] out T? value)
-        where T : struct
-        {
-            if (dict.TryGetValue(key, out var v) && v is T t)
-            {
-                value = t;
-                return true;
-            }
-            value = default;
+            value = default!;
             return false;
         }
     }

@@ -243,4 +243,11 @@ public readonly union CorridorOrRoom(Corridor, Room) : IRoom
         Corridor c => c.ConnectedTo,
         Room r => r.ConnectedTo,
     };
+
+    public TileTemplate GetTile(int x, int y)
+    => this switch
+    {
+        Corridor c => c.GetTile(x, y),
+        Room r => r.GetTile(x, y),
+    };
 }

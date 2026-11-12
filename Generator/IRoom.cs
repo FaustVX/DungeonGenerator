@@ -8,4 +8,5 @@ public interface IRoom
     public abstract int Height { get; }
     public bool IsFullRoom => Width > 1 && Height > 1;
     public IReadOnlyList<IRoom> ConnectedTo { get; }
+    public Tile.TileTemplate GetTile(int x, int y);
 }

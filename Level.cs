@@ -63,6 +63,24 @@ public sealed class Level
             while (!_tiles[x, y].IsWalkable);
             Creatures.Add(new Rat(x, y));
         }
+        for (int i = _rng.Next(2, 7) - 1; i >= 0 ; i--)
+        {
+            var room = _rng.NextItem([..Rooms.Where(r => r.IsFullRoom)]);
+            var item = _rng.NextItem<Item.Item>([
+                Item.SmallTorch.Instance,
+                Item.Meat.Instance,
+                Item.Dagger.Instance,
+            ]);
+            var (x, y) = (0, 0);
+            do
+            {
+                (x, y) = (room.X, room.Y);
+                x = _rng.Next(x + 1, x + room.Width - 1);
+                y = _rng.Next(y + 1, y + room.Height - 1);
+            }
+            while (!_tiles[x, y].IsWalkable);
+            _items[(x, y)][item]++;
+        }
     }
 
     public Tile.Tile this[int x, int y]

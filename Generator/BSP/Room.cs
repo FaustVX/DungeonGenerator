@@ -28,6 +28,22 @@ public sealed class Room : Node, IRoom
         }
         else
             TopWallWidth = BottomWallWidth = 1;
+
+        width = Width - LeftWallWidth - RightWallWidth;
+        height = Height - TopWallWidth - BottomWallWidth;
+        if (width >= 7 && height >= 7 && width % 2 == 1 && height % 2 == 1)
+        {
+            (int x, int y) center = (width / 2, height / 2) + (LeftWallWidth, TopWallWidth);
+            _features.Add(new(center.x, center.y, TileTemplate.Wall));
+            (int x, int y) torch = center + (0, 1);
+            _features.Add(new(torch.x, torch.y, TileTemplate.SmallTorch(rng.NextBool(.2))));
+            torch = center + (0, -1);
+            _features.Add(new(torch.x, torch.y, TileTemplate.SmallTorch(rng.NextBool(.2))));
+            torch = center + (1, 0);
+            _features.Add(new(torch.x, torch.y, TileTemplate.SmallTorch(rng.NextBool(.2))));
+            torch = center + (-1, 0);
+            _features.Add(new(torch.x, torch.y, TileTemplate.SmallTorch(rng.NextBool(.2))));
+        }
         (X, Y) = GetGlobalOrigin();
     }
 

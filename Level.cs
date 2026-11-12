@@ -69,8 +69,12 @@ public sealed class Level
             var item = _rng.NextItem<Item.Item>([
                 Item.SmallTorch.Instance,
                 Item.Meat.Instance,
-                Item.Dagger.Instance,
-                Item.ChestPlate.Instance,
+                Item.Dagger.Cache[Materials.Material.Wood],
+                Item.Dagger.Cache[Materials.Material.Stone],
+                Item.Dagger.Cache[Materials.Material.Iron],
+                Item.ChestPlate.Cache[Materials.Material.Wood],
+                Item.ChestPlate.Cache[Materials.Material.Stone],
+                Item.ChestPlate.Cache[Materials.Material.Iron],
             ]);
             var (x, y) = (0, 0);
             do

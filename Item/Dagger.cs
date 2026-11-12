@@ -1,13 +1,13 @@
 using DungeonGenerator.Creature;
-using Spectre.Console;
+using DungeonGenerator.Lib;
 
 namespace DungeonGenerator.Item;
 
-public record class Dagger() : Item("Dagger", '⚔', Color.Grey70), IEquipItem, IWeaponItem
+public record class Dagger(Materials.Material Material) : Item($"{Material.Name} Dagger", '⚔', Material.Color), IEquipItem, IWeaponItem
 {
     public static EquipmentType EquipmentType => EquipmentType.Sword;
     public int Force => 1;
-    public static Dagger Instance => field ??= new();
+    public static IDictionary<Materials.Material, Dagger> Cache { get; } = new DefaultableDictionary<Materials.Material, Dagger>(m => new(m));
     public override IReadOnlyDictionary<string, Action> Actions { get; } = new Dictionary<string, Action>()
     {
         ["Equip"] = IEquipItem.Equip<Dagger>,

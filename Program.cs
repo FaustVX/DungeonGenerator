@@ -218,11 +218,11 @@ static string LookingAt(Game game, int x, int y)
 {
     var (_, _, tile, i, visible, seen) = game.CurrentLevel[x, y];
     if (visible && i.Count == 1 && game.CurrentLevel.Creatures.FirstOrDefault(c => (c.X, c.Y) == (x, y)) is {} mob)
-        return $"[{mob.Color}]{(mob.Symbol is ']' ? "]]" : mob.Symbol)}[/]: {mob.Name}";
+        return $"[{mob.Color.ToMarkup()}]{(mob.Symbol is ']' ? "]]" : mob.Symbol)}[/]: {mob.Name}";
     if (visible && i.Count == 1 && i.First() is var item)
-        return $"[{item.Key.Color}]{(item.Key.Symbol is ']' ? "]]" : item.Key.Symbol)}[/]: {item.Key.Name} ({item.Value})";
+        return $"[{item.Key.Color.ToMarkup()}]{(item.Key.Symbol is ']' ? "]]" : item.Key.Symbol)}[/]: {item.Key.Name} ({item.Value})";
     if (seen)
-        return $"[{tile.Foreground} on {tile.Background}]{(tile.Symbol is ']' ? "]]" : tile.Symbol)}[/]: {tile.Name}";
+        return $"[{tile.Foreground.ToMarkup()} on {tile.Background.ToMarkup()}]{(tile.Symbol is ']' ? "]]" : tile.Symbol)}[/]: {tile.Name}";
     return "";
 }
 

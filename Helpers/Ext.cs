@@ -226,6 +226,13 @@ static class Ext
         }
     }
 
+    extension(Color)
+    {
+        public static Color Wood => new(139, 69, 19);
+        public static Color Stone => new(96, 96, 96);
+        public static Color Iron => new(128, 128, 128);
+    }
+
     public static IEnumerable<(int x, int y)> Line(int x0, int y0, int x1, int y1)
     {
         var dx = Math.Abs(x1 - x0);

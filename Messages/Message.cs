@@ -11,13 +11,13 @@ public abstract class Message(Game? game)
     protected string PlayerColor()
     => CreatureColor(game!.Player);
     protected static string CreatureColor(Creature.Creature creature)
-    => $"[{creature.Color}]{creature.Name}[/]";
+    => $"[{creature.Color.ToMarkup()}]{creature.Name}[/]";
     protected static string ItemColor(Item.Item item)
-    => $"[{item.Color}]{item.Name}[/]";
+    => $"[{item.Color.ToMarkup()}]{item.Name}[/]";
     protected static string TileColor(Tile.TileTemplate tile)
-    => $"[{tile.Foreground} on {tile.Background}]{tile.Name}[/]";
+    => $"[{tile.Foreground.ToMarkup()} on {tile.Background.ToMarkup()}]{tile.Name}[/]";
     protected static string WithColor<T>(T obj, Color color)
-    => $"[{color}]{obj}[/]";
+    => $"[{color.ToMarkup()}]{obj}[/]";
     public static string TimeStamp(Game? game)
     => game is null ? "" : $"[[{game.Steps}:{game.Depth}]]"; // double square bracket for Spectre markup
 }

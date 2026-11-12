@@ -210,10 +210,12 @@ finally
 static string LookingAt(Game game, int x, int y)
 {
     var (_, _, tile, i, visible, seen) = game.CurrentLevel[x, y];
+    if (visible && i.Count == 1 && game.CurrentLevel.Creatures.FirstOrDefault(c => (c.X, c.Y) == (x, y)) is {} mob)
+        return $"[{mob.Color}]{mob.Symbol}[/]: {mob.Name}";
     if (visible && i.Count == 1 && i.First() is var item)
-        return $"{item.Key.Symbol}: {item.Key.Name} ({item.Value})";
+        return $"[{item.Key.Color}]{item.Key.Symbol}[/]: {item.Key.Name} ({item.Value})";
     if (seen)
-        return $"{tile.Symbol}: {tile.Name}";
+        return $"[{tile.Foreground} on {tile.Background}]{tile.Symbol}[/]: {tile.Name}";
     return "";
 }
 
@@ -247,14 +249,13 @@ static void WriteTile(Game game, int x, int y)
         c = game.Player.Symbol;
         fore = game.Player.Color;
     }
-    else if (game.CurrentLevel.Creatures.Where(h => h.IsHighlighted && h.Pos == (x, y)) is var mobs && mobs.Any())
-        foreach (var m in mobs)
-        {
-            IsHighlighted = true;
-            c = m.Symbol;
-            fore = m.Color;
-            deco = Decoration.Invert;
-        }
+    else if (game.CurrentLevel.Creatures.FirstOrDefault(h => h.IsHighlighted && h.Pos == (x, y)) is {} mob)
+    {
+        IsHighlighted = true;
+        c = mob.Symbol;
+        fore = mob.Color;
+        deco = Decoration.Invert;
+    }
     else if (tile.IsVisible && game.CurrentLevel.Creatures.FirstOrDefault(c => (c.X, c.Y) == (x, y)) is {} creature)
     {
         c = creature.Symbol;
@@ -297,12 +298,25 @@ static void DrawDungeon(Game game, string lookingAt, ConsoleRead.MouseEvent mous
     if (Console.CursorLeft < Console.WindowWidth) // Sometime the cursor is outside the console (I don't know how)
     {
         var length = Console.WindowWidth - Console.CursorLeft - header.Length - 1;
-        lookingAt = lookingAt.Ellipsis(length);
+        WithoutMarkup:
+        var lengthWitoutMarkup = length + (lookingAt.Length - Markup.Remove(lookingAt).Length);
+        lookingAt = lookingAt.Ellipsis(lengthWitoutMarkup);
         lookingAt = new string(' ', game.Width) + lookingAt;
-        if (lookingAt.Length > length)
-            lookingAt = $"{lookingAt[(lookingAt.Length - length)..]}";
+        if (lookingAt.Length > lengthWitoutMarkup)
+            lookingAt = $"{lookingAt[(lookingAt.Length - lengthWitoutMarkup)..]}";
         header = lookingAt + " " + header;
-        Console.Write(header);
+        try
+        {
+            Console.Markup(header);
+        }
+        catch (InvalidOperationException) // Markup exception
+        {
+            var cleared = Markup.Escape(Markup.Remove(lookingAt));
+            if (cleared.Length == lookingAt.Length && cleared == lookingAt)
+                throw;
+            lookingAt = cleared;
+            goto WithoutMarkup;
+        }
     }
     Console.SetCursorPosition(messageWidth, 1);
     Console.Write('├');
@@ -331,13 +345,13 @@ static void DrawDungeon(Game game, string lookingAt, ConsoleRead.MouseEvent mous
     foreach (var message in game.Messages.AsEnumerable().Reverse())
     {
         var text = message.ToString();
+        WithoutMarkup:
         int widthWithoutMarkup = messageWidth + (text.Length - Markup.Remove(text).Length);
         var style = "on black";
         var fullMessage = false;
         if (mouse.Y == Console.CursorTop && mouse.X < messageWidth)
         {
-            if (mouse is { Button: ConsoleRead.MouseButton.Right, PressedOrMovement: true })
-                fullMessage = true;
+            fullMessage = true;
             if (message is DungeonGenerator.Messages.IClickableMessage c)
             {
                 style = "underline " + style;
@@ -346,10 +360,21 @@ static void DrawDungeon(Game game, string lookingAt, ConsoleRead.MouseEvent mous
             }
         }
 
-        if (fullMessage)
-            AnsiConsole.MarkupLine($"[{style}]" + text.PadRight(widthWithoutMarkup, ' ') + "[/]");
-        else
-            AnsiConsole.MarkupLine($"[{style}]" + text.PadRight(widthWithoutMarkup, ' ').Ellipsis(widthWithoutMarkup) + "[/]");
+        try
+        {
+            if (fullMessage)
+                AnsiConsole.MarkupLine($"[{style}]" + text.PadRight(widthWithoutMarkup, ' ') + "[/]");
+            else
+                AnsiConsole.MarkupLine($"[{style}]" + text.PadRight(widthWithoutMarkup, ' ').Ellipsis(widthWithoutMarkup) + "[/]");
+        }
+        catch (InvalidOperationException) // Markup exception
+        {
+            var cleared = Markup.Escape(Markup.Remove(text));
+            if (cleared.Length == text.Length && cleared == text)
+                throw;
+            text = cleared;
+            goto WithoutMarkup;
+        }
         AnsiConsole.Cursor.MoveUp(2);
     }
     AnsiConsole.Write($" {game.Messages.Count} message(s) ".PadCenter(messageWidth, '─'));

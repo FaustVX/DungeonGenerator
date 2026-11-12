@@ -79,10 +79,7 @@ try
                 break;
             case ConsoleKeyInfo { Key: ConsoleKey.E }:
             {
-                if (game.Player is { Items.Count: <= 0, Equipments.Count: <= 0 })
-                    break;
-
-                switch (SelectionPrompt<int>.Default("Player", PlayerStorage, -1, [..game.Player.Items.Count > 0 ? [1] : Enumerable.Empty<int>(), ..game.Player.Equipments.Count > 0 ? [2] : Enumerable.Empty<int>(), -1]).Prompt())
+                switch (SelectionPrompt<int>.Default("Player", PlayerStorage, -1, [..game.Player.Items.Count > 0 ? [1] : Enumerable.Empty<int>(), ..game.Player.Equipments.Count > 0 ? [2] : Enumerable.Empty<int>(), 3, -1]).Prompt())
                 {
                     case 1:
                         DrawDungeon(game, lookingAt, lastMouseEvent);
@@ -100,6 +97,15 @@ try
                                 .Prompt().Value(game, FrozenDictionary<Item, int>.Empty, item);
                         }
                         break;
+                    case 3:
+                        DrawDungeon(game, lookingAt, lastMouseEvent);
+                        _ = SelectionPrompt<string>.Default("Stats", s => s, "", [
+                            $"Health: {game.Player.HP}/{game.Player.MaxHP}",
+                            $"Force: {game.Player.Force}",
+                            $"Shields: {game.Player.Shields}",
+                            $"View Distance: {game.Player.ViewDistance}",
+                        ]).Prompt();
+                        break;
                 }
                 AnsiConsole.Cursor.Hide();
                 break;
@@ -110,6 +116,7 @@ try
                     -1 => "Cancel",
                     +1 => "Inventory",
                     +2 => "Equipments",
+                    +3 => "Stats",
                     _ => throw new UnreachableException(),
                 };
             }
@@ -294,6 +301,9 @@ static void DrawDungeon(Game game, string lookingAt, ConsoleRead.MouseEvent mous
     PrintStat(game.Player.HP, "❤️");
     Console.Write(' ');
     PrintStat(game.Player.Shields, "🛡");
+    Console.Write(' ');
+    PrintStat(game.Player.Force, "⚔");
+    Console.Write(' ');
     var header = $"{game.Steps}:{game.Depth}";
     if (Console.CursorLeft < Console.WindowWidth) // Sometime the cursor is outside the console (I don't know how)
     {

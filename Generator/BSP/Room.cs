@@ -121,17 +121,20 @@ public sealed class Room : Node, IRoom
     public List<IRoom> ConnectedTo { get; } = [with(capacity: 4)];
     IReadOnlyList<IRoom> IRoom.ConnectedTo => ConnectedTo;
 
-    public void GenerateEntrance(Random rng)
+    public void GenerateFeature(Random rng, TileTemplate template)
     {
-        _features[(rng.Next(LeftWallWidth + 1, Width - (LeftWallWidth + RightWallWidth) + LeftWallWidth - 1),
-            rng.Next(TopWallWidth + 1, Height - (TopWallWidth + BottomWallWidth) + TopWallWidth - 1))]
-            = TileTemplate.UpStair(Parent.Level.Depth > 0);
+        var (x, y) = (0, 0);
+        do
+        {
+            x = rng.Next(LeftWallWidth + 1, Width - (LeftWallWidth + RightWallWidth) + LeftWallWidth - 1);
+            y = rng.Next(TopWallWidth + 1, Height - (TopWallWidth + BottomWallWidth) + TopWallWidth - 1);
+        } while (_features.ContainsKey((x, y)));
+        _features[(x, y)] = template;
     }
 
+    public void GenerateEntrance(Random rng)
+    => GenerateFeature(rng, TileTemplate.UpStair(Parent.Level.Depth > 0));
+
     public void GenerateExit(Random rng)
-    {
-        _features[(rng.Next(LeftWallWidth + 1, Width - (LeftWallWidth + RightWallWidth) + LeftWallWidth - 1),
-            rng.Next(TopWallWidth + 1, Height - (TopWallWidth + BottomWallWidth) + TopWallWidth - 1))]
-            = TileTemplate.DownStair(false);
-    }
+    => GenerateFeature(rng, TileTemplate.DownStair(false));
 }

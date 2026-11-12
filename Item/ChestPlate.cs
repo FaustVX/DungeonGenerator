@@ -3,11 +3,12 @@ using DungeonGenerator.Lib;
 
 namespace DungeonGenerator.Item;
 
-public record class ChestPlate(Materials.Material Material) : Item($"{Material.Name} Chest plate", ']', Material.Color), IEquipItem, IArmorItem
+public record class ChestPlate(Materials.Material Material) : Item($"{Material.Name} Chest plate", ']', Material.Color), IEquipItem, IArmorItem, IDurabilityItem
 {
-    public static IDictionary<Materials.Material, ChestPlate> Cache { get; } = new DefaultableDictionary<Materials.Material, ChestPlate>(m => new(m));
+    public override string Name => $"{base.Name} ({Durability})";
     public static EquipmentType EquipmentType => EquipmentType.Armor;
     public int Protection => 1;
+    public int Durability { get; set; } = (int)(50 * Material.Hardness);
     public override IReadOnlyDictionary<string, Action> Actions { get; } = new Dictionary<string, Action>()
     {
         ["Equip"] = IEquipItem.Equip<ChestPlate>,

@@ -18,6 +18,8 @@ public abstract record class Item(string Name, char Symbol, Color Color)
         => $"{_timestamp} {CreatureColor(creature)} picked up {WithColor(qty, Color.Blue)} {ItemColor(item)} from the ground";
     }
 
+    public virtual string Name { get; } = Name;
+
     public delegate void Action(Game game, IDictionary<Item, int> items, Item item);
     public abstract IReadOnlyDictionary<string, Action> Actions { get; }
     public static KeyValuePair<string, Action> Cancel { get; } = new("Cancel", delegate{});

@@ -1,4 +1,5 @@
 using Spectre.Console;
+using DungeonGenerator.Helpers;
 
 namespace DungeonGenerator.Creature;
 
@@ -23,16 +24,22 @@ public closed record class Creature(int X, int Y, string Name, char Symbol, int 
     public abstract int Force { get; }
 
     /// <returns>returns HP lost in fight</returns>
-    public virtual int Defend(Creature attacker, int attackPoints)
+    public virtual int Defend(Creature attacker, int attackPoints, Game game)
     {
         var hp = HP;
         HP -= attackPoints - Shields;
+        if (this is Player p)
+            Item.IDurabilityItem.Damage(p, game, EquipmentType.Armor, attackPoints);
+
         return hp - HP;
     }
 
     public void Attack(Creature attacked, Game game)
     {
-        var damage = attacked.Defend(this, Force);
+        var damage = attacked.Defend(this, Force, game);
+        if (this is Player p)
+            Item.IDurabilityItem.Damage(p, game, EquipmentType.Sword, 1);
+
         game.Messages.Add(new FightMessage(game, this, attacked, damage));
         if (this is Mob { HP: <= 0 } a)
             a.Death(game);

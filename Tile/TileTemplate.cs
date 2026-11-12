@@ -127,7 +127,7 @@ public record class TileTemplate(char Symbol, string Name, bool IsWalkable, bool
         private void Pickup(Game game, int x, int y)
         {
             game.CurrentLevel[x, y] = game.CurrentLevel[x, y] with { Template = Ground };
-            game.Player.Items[Item.SmallTorch.Instance]++;
+            game.Player.Items[new Item.SmallTorch()]++;
             game.CurrentLevel.UpdateLight();
         }
 

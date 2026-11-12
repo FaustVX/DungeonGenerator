@@ -67,14 +67,14 @@ public sealed class Level
         {
             var room = _rng.NextItem([..Rooms.Where(r => r.IsFullRoom)]);
             var item = _rng.NextWeightedItem<Item.Item>([
-                (Item.SmallTorch.Instance, 30),
+                (new Item.SmallTorch(), 30),
                 (Item.Meat.Instance, 5),
-                (Item.Dagger.Cache[Materials.Material.Wood], 10),
-                (Item.Dagger.Cache[Materials.Material.Stone], 10),
-                (Item.Dagger.Cache[Materials.Material.Iron], 10),
-                (Item.ChestPlate.Cache[Materials.Material.Wood], 10),
-                (Item.ChestPlate.Cache[Materials.Material.Stone], 10),
-                (Item.ChestPlate.Cache[Materials.Material.Iron], 10),
+                (new Item.Dagger(Materials.Material.Wood), 10),
+                (new Item.Dagger(Materials.Material.Stone), 10),
+                (new Item.Dagger(Materials.Material.Iron), 10),
+                (new Item.ChestPlate(Materials.Material.Wood), 10),
+                (new Item.ChestPlate(Materials.Material.Stone), 10),
+                (new Item.ChestPlate(Materials.Material.Iron), 10),
             ]);
             var (x, y) = (0, 0);
             do
@@ -139,6 +139,8 @@ public sealed class Level
 
     public void Update()
     {
+        Item.IDurabilityItem.Damage(Game.Player, Game, EquipmentType.Torch, 1);
+
         UpdateLight();
 
         foreach (var creature in Creatures)

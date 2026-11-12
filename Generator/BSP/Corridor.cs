@@ -19,7 +19,7 @@ public sealed class Corridor : Node, IRoom
 
     public List<IRoom> ConnectedTo { get; }
     IReadOnlyList<IRoom> IRoom.ConnectedTo => ConnectedTo;
-    private readonly List<Feature> _features = [];
+    private readonly Dictionary<(int x, int y), TileTemplate> _features = [];
 
     public Corridor(Generator parent, Random rng)
     {
@@ -71,10 +71,10 @@ public sealed class Corridor : Node, IRoom
                     if (Width >= 7)
                     {
                         if (i == Width - 1 || i is 0)
-                            _features.Add(new(i, 0,TileTemplate.SmallTorch(_rng.NextBool(.25))));
+                            _features[(i, 0)] = TileTemplate.SmallTorch(_rng.NextBool(.25));
                     }
                     else if (i == Width / 2)
-                        _features.Add(new(i, 0,TileTemplate.SmallTorch(_rng.NextBool(.25))));
+                        _features[(i, 0)] = TileTemplate.SmallTorch(_rng.NextBool(.25));
                 }
                 break;
             }
@@ -117,10 +117,10 @@ public sealed class Corridor : Node, IRoom
                     if (Height >= 7)
                     {
                         if (i == Height - 1 || i is 0)
-                            _features.Add(new(0, i,TileTemplate.SmallTorch(_rng.NextBool(.25))));
+                            _features[(0, i)] = TileTemplate.SmallTorch(_rng.NextBool(.25));
                     }
                     else if (i == Height / 2)
-                        _features.Add(new(0, i,TileTemplate.SmallTorch(_rng.NextBool(.25))));
+                        _features[(0, i)] = TileTemplate.SmallTorch(_rng.NextBool(.25));
                 }
                 break;
             }
@@ -132,10 +132,8 @@ public sealed class Corridor : Node, IRoom
 
     public override TileTemplate GetTile(int x, int y)
     {
-        if (_features.Find(f => f.X == x && f.Y == y) is Feature f)
-            return f.Template;
+        if (_features.TryGetValue((x, y), out var template))
+            return template;
         return TileTemplate.Ground;
     }
-
-    private sealed record class Feature(int X, int Y, TileTemplate Template);
 }

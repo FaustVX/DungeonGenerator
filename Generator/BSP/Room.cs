@@ -34,15 +34,15 @@ public sealed class Room : Node, IRoom
         if (width >= 7 && height >= 7 && width % 2 == 1 && height % 2 == 1)
         {
             (int x, int y) center = (width / 2, height / 2) + (LeftWallWidth, TopWallWidth);
-            _features.Add(new(center.x, center.y, TileTemplate.Wall));
+            _features[(center.x, center.y)] = TileTemplate.Wall;
             (int x, int y) torch = center + (0, 1);
-            _features.Add(new(torch.x, torch.y, TileTemplate.SmallTorch(rng.NextBool(.2))));
+            _features[(torch.x, torch.y)] = TileTemplate.SmallTorch(rng.NextBool(.2));
             torch = center + (0, -1);
-            _features.Add(new(torch.x, torch.y, TileTemplate.SmallTorch(rng.NextBool(.2))));
+            _features[(torch.x, torch.y)] = TileTemplate.SmallTorch(rng.NextBool(.2));
             torch = center + (1, 0);
-            _features.Add(new(torch.x, torch.y, TileTemplate.SmallTorch(rng.NextBool(.2))));
+            _features[(torch.x, torch.y)] = TileTemplate.SmallTorch(rng.NextBool(.2));
             torch = center + (-1, 0);
-            _features.Add(new(torch.x, torch.y, TileTemplate.SmallTorch(rng.NextBool(.2))));
+            _features[(torch.x, torch.y)] = TileTemplate.SmallTorch(rng.NextBool(.2));
         }
         (X, Y) = GetGlobalOrigin();
     }
@@ -54,14 +54,14 @@ public sealed class Room : Node, IRoom
     public int BottomWallWidth { get; } = 1;
     public int LeftWallWidth { get; } = 1;
     public int RightWallWidth { get; } = 1;
-    private readonly List<Feature> _features = [];
+    private readonly Dictionary<(int x, int y), TileTemplate> _features = [];
 
     public override TileTemplate GetTile(int x, int y)
     {
         ArgumentOutOfRangeException.ThrowIfNotInBetween(x, 0, Width - 1);
         ArgumentOutOfRangeException.ThrowIfNotInBetween(y, 0, Height - 1);
-        if (_features.Find(f => f.X == x && f.Y == y) is Feature f)
-            return f.Template;
+        if (_features.TryGetValue((x, y), out var template))
+            return template;
         if (x < LeftWallWidth || y < TopWallWidth || x >= Width - RightWallWidth || y >= Height - BottomWallWidth)
             return TileTemplate.Wall;
         return TileTemplate.Ground;
@@ -123,17 +123,15 @@ public sealed class Room : Node, IRoom
 
     public void GenerateEntrance(Random rng)
     {
-        _features.Add(new(rng.Next(LeftWallWidth + 1, Width - (LeftWallWidth + RightWallWidth) + LeftWallWidth - 1),
-            rng.Next(TopWallWidth + 1, Height - (TopWallWidth + BottomWallWidth) + TopWallWidth - 1),
-            TileTemplate.UpStair(Parent.Level.Depth > 0)));
+        _features[(rng.Next(LeftWallWidth + 1, Width - (LeftWallWidth + RightWallWidth) + LeftWallWidth - 1),
+            rng.Next(TopWallWidth + 1, Height - (TopWallWidth + BottomWallWidth) + TopWallWidth - 1))]
+            = TileTemplate.UpStair(Parent.Level.Depth > 0);
     }
 
     public void GenerateExit(Random rng)
     {
-        _features.Add(new(rng.Next(LeftWallWidth + 1, Width - (LeftWallWidth + RightWallWidth) + LeftWallWidth - 1),
-            rng.Next(TopWallWidth + 1, Height - (TopWallWidth + BottomWallWidth) + TopWallWidth - 1),
-            TileTemplate.DownStair(false)));
+        _features[(rng.Next(LeftWallWidth + 1, Width - (LeftWallWidth + RightWallWidth) + LeftWallWidth - 1),
+            rng.Next(TopWallWidth + 1, Height - (TopWallWidth + BottomWallWidth) + TopWallWidth - 1))]
+            = TileTemplate.DownStair(false);
     }
-
-    private sealed record class Feature(int X, int Y, TileTemplate Template);
 }

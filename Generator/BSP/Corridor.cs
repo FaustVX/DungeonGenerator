@@ -19,6 +19,7 @@ public sealed class Corridor : Node, IRoom
 
     public List<IRoom> ConnectedTo { get; }
     IReadOnlyList<IRoom> IRoom.ConnectedTo => ConnectedTo;
+    private readonly List<Feature> _features = [];
 
     public Corridor(Generator parent, Random rng)
     {
@@ -65,6 +66,16 @@ public sealed class Corridor : Node, IRoom
                         room.ConnectedTo.Add(this);
                         ConnectedTo.Add(room);
                     }
+                for (int i = 0; i < Width; i++)
+                {
+                    if (Width >= 7)
+                    {
+                        if (i == Width - 1 || i is 0)
+                            _features.Add(new(i, 0,TileTemplate.SmallTorch(_rng.NextBool(.25))));
+                    }
+                    else if (i == Width / 2)
+                        _features.Add(new(i, 0,TileTemplate.SmallTorch(_rng.NextBool(.25))));
+                }
                 break;
             }
             case SplitDirection.Vertical:
@@ -101,6 +112,16 @@ public sealed class Corridor : Node, IRoom
                         room.ConnectedTo.Add(this);
                         ConnectedTo.Add(room);
                     }
+                for (int i = 0; i < Height; i++)
+                {
+                    if (Height >= 7)
+                    {
+                        if (i == Height - 1 || i is 0)
+                            _features.Add(new(0, i,TileTemplate.SmallTorch(_rng.NextBool(.25))));
+                    }
+                    else if (i == Height / 2)
+                        _features.Add(new(0, i,TileTemplate.SmallTorch(_rng.NextBool(.25))));
+                }
                 break;
             }
             default:
@@ -111,29 +132,10 @@ public sealed class Corridor : Node, IRoom
 
     public override TileTemplate GetTile(int x, int y)
     {
-        switch (Parent.SplitDirection)
-        {
-            case SplitDirection.Horizontal:
-                if (Width >= 7)
-                {
-                    if ((x, y) == (Width - 1, 0) || (x, y) is (0, 0))
-                        return TileTemplate.SmallTorch(_rng.NextBool(.25));
-                }
-                else if ((x, y) == (Width / 2, 0))
-                    return TileTemplate.SmallTorch(_rng.NextBool(.25));
-                break;
-            case SplitDirection.Vertical:
-                if (Height >= 7)
-                {
-                    if ((x, y) == (0, Height - 1) || (x, y) is (0, 0))
-                        return TileTemplate.SmallTorch(_rng.NextBool(.25));
-                }
-                else if ((x, y) == (0, Height / 2))
-                    return TileTemplate.SmallTorch(_rng.NextBool(.25));
-                break;
-            default:
-                throw new UnreachableException();
-        }
+        if (_features.Find(f => f.X == x && f.Y == y) is Feature f)
+            return f.Template;
         return TileTemplate.Ground;
     }
+
+    private sealed record class Feature(int X, int Y, TileTemplate Template);
 }

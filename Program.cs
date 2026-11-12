@@ -121,12 +121,12 @@ try
                 {
                     case ({ Count: > 0 }, IActionableTemplate { Actions: { } actions, MenuTitle: var title } tile):
                     {
-                        var selection = SelectionPrompt<bool>.Default("Where", b => b ? $"Items ({items.Count})" : $"Tile: {tile.Name}", [true, false])
+                        var selection = SelectionPrompt<int>.Default("Where", b => b == 1 ? $"Items ({items.Count})" : $"Tile: {tile.Name}", 0, [1, 2])
                             .Prompt();
                         DrawDungeon(game, lookingAt, lastMouseEvent);
-                        if (selection)
+                        if (selection == 1)
                             ItemsMenu(game, lookingAt, "Ground", items, item => [..item.Actions, Item.Pickup, Item.Delete]);
-                        else
+                        else if (selection == 2)
                         {
                             SelectionPrompt<KeyValuePair<string, IActionableTemplate.Action>>.Default(title, kvp => kvp.Key, IActionableTemplate.Cancel, actions.Append(IActionableTemplate.Cancel))
                                 .Prompt().Value(game, game.Player.X, game.Player.Y);

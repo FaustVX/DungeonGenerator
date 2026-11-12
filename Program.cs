@@ -70,8 +70,8 @@ try
                 mousePos = (game.Player.X, game.Player.Y);
                 break;
             case ConsoleKeyInfo { Key: ConsoleKey.UpArrow or ConsoleKey.D8 }:
-            mousePos = (game.Player.X, game.Player.Y);
                 game.MoveUp();
+                mousePos = (game.Player.X, game.Player.Y);
                 break;
             case ConsoleKeyInfo { Key: ConsoleKey.D9 }:
                 _ = (game.MoveUp() && game.MoveRight()) || (game.MoveRight() && game.MoveUp());

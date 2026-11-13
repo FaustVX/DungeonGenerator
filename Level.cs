@@ -26,7 +26,7 @@ public sealed class Level
         Game = game;
         Depth = depth;
         _rng = new Random(game.Seed + depth);
-        var generator = Random.Shared.NextItem(IGenerator.Generators)(game.Width, game.Height, _rng, this);
+        var generator = _rng.NextItem(IGenerator.Generators)(game.Width, game.Height, _rng, this);
         Rooms = generator.Rooms;
         _tiles = new TileTemplate[game.Width, game.Height];
         _visibleTiles = [];

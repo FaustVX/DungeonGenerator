@@ -70,7 +70,7 @@ public record class TileTemplate(char Symbol, string Name, bool IsWalkable, bool
         IStairTemplate.StairDirection.Up => '▲',
         IStairTemplate.StairDirection.Down => '▼',
         _ => throw new UnreachableException()
-    }, "Stair", true, true, false, Color.Black, Enabled ? Color.White : Color.Gray)
+    }, CreateName(Enabled, Direction), true, true, false, Color.Black, Enabled ? Color.White : Color.Gray)
     , IStairTemplate
     {
         public static DefaultableDictionary<(bool, IStairTemplate.StairDirection), StairTemplate> Cache { get; } = new DefaultableDictionary<(bool, IStairTemplate.StairDirection), StairTemplate>(capacity: 4, t => new(t.Item1, t.Item2));
@@ -101,6 +101,16 @@ public record class TileTemplate(char Symbol, string Name, bool IsWalkable, bool
             game.CurrentLevel.Update();
             return true;
         }
+
+        static string CreateName(bool enabled, IStairTemplate.StairDirection direction)
+        => (enabled, direction) switch
+        {
+            (true, IStairTemplate.StairDirection.Down) => "Downward stair",
+            (false, IStairTemplate.StairDirection.Down) => "Disabled Downward stair",
+            (true, IStairTemplate.StairDirection.Up) => "Upward stair",
+            (false, IStairTemplate.StairDirection.Up) => "Disabled Upward stair",
+            _ => throw new UnreachableException(),
+        };
     }
 
     private record class TorchTemplate : TileTemplate, ITorchTemplate
@@ -113,7 +123,7 @@ public record class TileTemplate(char Symbol, string Name, bool IsWalkable, bool
         public bool Enabled { get; }
 
         public TorchTemplate(double range, bool enabled)
-        : base('☼', "Torch", true, true, false, Color.Black, enabled ? Color.White : Color.Gray)
+        : base('☼', enabled ? "Lit Torch" : "Unlit Torch", true, true, false, Color.Black, enabled ? Color.White : Color.Gray)
         {
             Range = range;
             Enabled = enabled;

@@ -13,6 +13,9 @@
     <ProjectReference Include="../SourceGenerator/DungeonGenerator.SourceGenerator.csproj"
                       OutputItemType="Analyzer"
                       ReferenceOutputAssembly="false" />
+    <ProjectReference Include="../SourceGenerator.CodeFix/DungeonGenerator.SourceGenerator.CodeFix.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
     <PackageReference Include="Spectre.Console" Version="0.57.2" />
 
     <Compile Remove="Generated/**" />

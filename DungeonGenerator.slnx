@@ -5,4 +5,7 @@
   <Folder Name="/SourceGenerator/">
     <Project Path="SourceGenerator/DungeonGenerator.SourceGenerator.csproj" />
   </Folder>
+  <Folder Name="/SourceGenerator.CodeFix/">
+    <Project Path="SourceGenerator.CodeFix/DungeonGenerator.SourceGenerator.CodeFix.csproj" />
+  </Folder>
 </Solution>

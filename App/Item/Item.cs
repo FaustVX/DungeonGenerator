@@ -25,7 +25,7 @@ public abstract record class Item(string Name, char Symbol, Color Color)
     public delegate void Action(Game game, IDictionary<Item, int> items, Item item);
     public IReadOnlyDictionary<string, Action> Actions(ItemLocation location)
     => _actionsCache.TryGetValue((GetType(), location), out var actions) ? actions : [];
-    public static KeyValuePair<string, Action> Cancel { get; } = new("Cancel", delegate{});
+    public static KeyValuePair<string, Action> Cancel { get; } = new("cancel", delegate{});
 
     protected static void DeleteAction(Game game, IDictionary<Item, int> items, Item item)
     {
@@ -55,15 +55,15 @@ public abstract record class Item(string Name, char Symbol, Color Color)
     protected static void Init<T>()
     where T : Item
     {
-        _actionsCache[(typeof(T), ItemLocation.Ground)].Add("Pickup", PickupAction);
-        _actionsCache[(typeof(T), ItemLocation.Ground)].Add("Delete", DeleteAction);
-        _actionsCache[(typeof(T), ItemLocation.Inventory)].Add("Delete", DeleteAction);
-        _actionsCache[(typeof(T), ItemLocation.Equipment)].Add("Delete", DeleteAction);
-        _actionsCache[(typeof(T), ItemLocation.Inventory)].Add("Drop 1", Drop1Action);
-        _actionsCache[(typeof(T), ItemLocation.Inventory)].Add("Drop all", DropAllAction);
-        _actionsCache[(typeof(T), ItemLocation.Ground)].Add("Cancel", delegate{});
-        _actionsCache[(typeof(T), ItemLocation.Inventory)].Add("Cancel", delegate{});
-        _actionsCache[(typeof(T), ItemLocation.Equipment)].Add("Cancel", delegate{});
+        _actionsCache[(typeof(T), ItemLocation.Ground)].Add("pickup", PickupAction);
+        _actionsCache[(typeof(T), ItemLocation.Ground)].Add("delete", DeleteAction);
+        _actionsCache[(typeof(T), ItemLocation.Inventory)].Add("delete", DeleteAction);
+        _actionsCache[(typeof(T), ItemLocation.Equipment)].Add("delete", DeleteAction);
+        _actionsCache[(typeof(T), ItemLocation.Inventory)].Add("drop 1", Drop1Action);
+        _actionsCache[(typeof(T), ItemLocation.Inventory)].Add("drop all", DropAllAction);
+        _actionsCache[(typeof(T), ItemLocation.Ground)].Add("cancel", delegate{});
+        _actionsCache[(typeof(T), ItemLocation.Inventory)].Add("cancel", delegate{});
+        _actionsCache[(typeof(T), ItemLocation.Equipment)].Add("cancel", delegate{});
     }
 
 }

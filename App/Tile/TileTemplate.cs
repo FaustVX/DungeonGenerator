@@ -50,7 +50,7 @@ public interface IActionableTemplate : ITileTemplate
     public delegate void Action(Game game, int x, int y);
     public abstract IReadOnlyDictionary<string, Action> Actions { get; }
     public abstract string MenuTitle { get; }
-    public static KeyValuePair<string, Action> Cancel { get; } = new("Cancel", delegate{});
+    public static KeyValuePair<string, Action> Cancel { get; } = new("cancel", delegate{});
 }
 
 public record class TileTemplate(char Symbol, string Name, bool IsWalkable, bool IsTransparent, bool IsReplaceable, Color Background, Color Foreground) : ITileTemplate
@@ -119,8 +119,8 @@ public record class TileTemplate(char Symbol, string Name, bool IsWalkable, bool
             Enabled = enabled;
             Actions = new Dictionary<string, IActionableTemplate.Action>()
             {
-                ["Turn " + (enabled ? "off" : "on")] = (game, x, y) => Activate(game, x, y),
-                ["Pickup"] = Pickup,
+                ["turn " + (enabled ? "off" : "on")] = (game, x, y) => Activate(game, x, y),
+                ["pickup"] = Pickup,
             };
         }
 

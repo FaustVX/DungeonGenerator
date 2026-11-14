@@ -34,8 +34,8 @@ public interface IEquipItem
     protected static void Init<T>()
     where T : Item, IEquipItem
     {
-        Item._actionsCache[(typeof(T), ItemLocation.Ground)].Add("Equip", typeof(IEquipItem).GetMethod(nameof(Equip), System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)!.MakeGenericMethod(typeof(T)).CreateDelegate<Item.Action>());
-        Item._actionsCache[(typeof(T), ItemLocation.Inventory)].Add("Equip", typeof(IEquipItem).GetMethod(nameof(Equip), System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)!.MakeGenericMethod(typeof(T)).CreateDelegate<Item.Action>());
-        Item._actionsCache[(typeof(T), ItemLocation.Equipment)].Add("Unequip", typeof(IEquipItem).GetMethod(nameof(Unequip), System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)!.MakeGenericMethod(typeof(T)).CreateDelegate<Item.Action>());
+        Item._actionsCache[(typeof(T), ItemLocation.Ground)].Add("equip", typeof(IEquipItem).GetMethod(nameof(Equip), System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)!.MakeGenericMethod(typeof(T)).CreateDelegate<Item.Action>());
+        Item._actionsCache[(typeof(T), ItemLocation.Inventory)].Add("equip", typeof(IEquipItem).GetMethod(nameof(Equip), System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)!.MakeGenericMethod(typeof(T)).CreateDelegate<Item.Action>());
+        Item._actionsCache[(typeof(T), ItemLocation.Equipment)].Add("unequip", typeof(IEquipItem).GetMethod(nameof(Unequip), System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)!.MakeGenericMethod(typeof(T)).CreateDelegate<Item.Action>());
     }
 }

@@ -27,7 +27,7 @@ public interface IEatItem
     protected static void Init<T>()
     where T : Item, IEatItem
     {
-        Item._actionsCache[(typeof(T), ItemLocation.Ground)].Add("Eat", EatAction);
-        Item._actionsCache[(typeof(T), ItemLocation.Inventory)].Add("Eat", EatAction);
+        Item._actionsCache[(typeof(T), ItemLocation.Ground)].Add("eat", EatAction);
+        Item._actionsCache[(typeof(T), ItemLocation.Inventory)].Add("eat", EatAction);
     }
 }

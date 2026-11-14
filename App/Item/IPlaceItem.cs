@@ -27,7 +27,7 @@ public interface IPlaceItem
     protected static void Init<T>()
     where T : Item, IPlaceItem
     {
-        Item._actionsCache[(typeof(T), ItemLocation.Ground)].Add("Place", Place);
-        Item._actionsCache[(typeof(T), ItemLocation.Inventory)].Add("Place", Place);
+        Item._actionsCache[(typeof(T), ItemLocation.Ground)].Add("place", Place);
+        Item._actionsCache[(typeof(T), ItemLocation.Inventory)].Add("place", Place);
     }
 }

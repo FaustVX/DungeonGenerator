@@ -73,7 +73,7 @@ public sealed class Corridor : Node, IRoom
                         if (i == Width - 1 || i is 0)
                             _features[(i, 0)] = TileTemplate.SmallTorch(_rng.NextBool(.25));
                     }
-                    else if (i == Width / 2)
+                    else if (i == (Width / 2) - _rng.Next(0, 2))
                         _features[(i, 0)] = TileTemplate.SmallTorch(_rng.NextBool(.25));
                 }
                 break;
@@ -119,7 +119,7 @@ public sealed class Corridor : Node, IRoom
                         if (i == Height - 1 || i is 0)
                             _features[(0, i)] = TileTemplate.SmallTorch(_rng.NextBool(.25));
                     }
-                    else if (i == Height / 2)
+                    else if (i == (Height / 2) - _rng.Next(0, 2))
                         _features[(0, i)] = TileTemplate.SmallTorch(_rng.NextBool(.25));
                 }
                 break;

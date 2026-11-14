@@ -1,0 +1,67 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    name: Build ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: linux-x64
+            rid: linux-x64
+            zip_name: DungeonGenerator-linux-x64.zip
+          - name: win-x64
+            rid: win-x64
+            zip_name: DungeonGenerator-win-x64.zip
+          - name: osx-x64
+            rid: osx-x64
+            zip_name: DungeonGenerator-osx-x64.zip
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 11.0.x
+
+      - name: Publish self-contained binary
+        shell: bash
+        run: |
+          dotnet publish App/DungeonGenerator.App.csproj \
+            --configuration Release \
+            --runtime ${{ matrix.rid }} \
+            --self-contained true \
+            --output ./artifacts/${{ matrix.rid }} \
+            -p:PublishSingleFile=true \
+            -p:PublishTrimmed=false \
+            -p:UseAppHost=true
+
+      - name: Create release archive
+        shell: bash
+        run: |
+          executable="DungeonGenerator.App"
+          if [[ "${{ matrix.rid }}" == win-* ]]; then
+            executable+=".exe"
+          fi
+          (
+            cd "./artifacts/${{ matrix.rid }}"
+            md5sum "$executable" > DungeonGenerator.App.md5
+            sha256sum "$executable" > DungeonGenerator.App.sha256
+          )
+          zip -r "./artifacts/${{ matrix.zip_name }}" "./artifacts/${{ matrix.rid }}"
+
+      - name: Upload release asset
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ./artifacts/${{ matrix.zip_name }}

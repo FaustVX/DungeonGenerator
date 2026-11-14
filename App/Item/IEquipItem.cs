@@ -2,6 +2,7 @@ using DungeonGenerator.App.Helpers;
 
 namespace DungeonGenerator.App.Item;
 
+[InitItem]
 public interface IEquipItem
 {
     public static abstract Creature.EquipmentType EquipmentType { get; }
@@ -29,10 +30,6 @@ public interface IEquipItem
             game.CurrentLevel.UpdateLight();
         }
     }
-
-    [System.Runtime.CompilerServices.ModuleInitializer]
-    internal static void Init()
-    => Item.Init(typeof(IEquipItem));
 
     protected static void Init<T>()
     where T : Item, IEquipItem

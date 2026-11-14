@@ -3,7 +3,7 @@ using DungeonGenerator.App.Lib;
 
 namespace DungeonGenerator.App.Item;
 
-public record class ChestPlate(Materials.Material Material) : Item($"{Material.Name} Chest plate", ']', Material.Color), IEquipItem, IArmorItem, IDurabilityItem
+public partial record class ChestPlate(Materials.Material Material) : Item($"{Material.Name} Chest plate", ']', Material.Color), IEquipItem, IArmorItem, IDurabilityItem
 {
     public override string Name => $"{base.Name} ({Durability})";
     public static EquipmentType EquipmentType => EquipmentType.Armor;

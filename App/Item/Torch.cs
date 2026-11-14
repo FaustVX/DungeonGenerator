@@ -9,7 +9,7 @@ public abstract record class Torch(string Name, double Range, TileTemplate Templ
     public override string Name => $"{base.Name} ({Durability})";
 }
 
-public record class SmallTorch() : Torch("Small Torch", 3, TileTemplate.SmallTorch())
+public partial record class SmallTorch() : Torch("Small Torch", 3, TileTemplate.SmallTorch())
 {
     public override int Durability { get; set; } = 500;
 }

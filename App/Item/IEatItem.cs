@@ -3,6 +3,7 @@ using Spectre.Console;
 
 namespace DungeonGenerator.App.Item;
 
+[InitItem]
 public interface IEatItem
 {
     public abstract int RestoreHP { get; }
@@ -22,10 +23,6 @@ public interface IEatItem
         public override string ToString()
         => $"{_timestamp} {PlayerColor()} ate {ItemColor(item)} for {WithColor(hpRestored, Color.Red)} ❤️";
     }
-
-    [System.Runtime.CompilerServices.ModuleInitializer]
-    internal static void Init()
-    => Item.Init(typeof(IEatItem));
 
     protected static void Init<T>()
     where T : Item, IEatItem

@@ -52,12 +52,6 @@ public abstract record class Item(string Name, char Symbol, Color Color)
         game.Messages.Add(new PickupMessage(game, game.Player, qty, item));
     }
 
-    [System.Runtime.CompilerServices.ModuleInitializer]
-    internal static void Init()
-#pragma warning disable CA2263 // Prefer generic overload when type is known
-    => Init(typeof(Item));
-#pragma warning restore CA2263 // Prefer generic overload when type is known
-
     protected static void Init<T>()
     where T : Item
     {
@@ -72,20 +66,6 @@ public abstract record class Item(string Name, char Symbol, Color Color)
         _actionsCache[(typeof(T), ItemLocation.Equipment)].Add("Cancel", delegate{});
     }
 
-    public static void Init(Type initType, string initName = "Init")
-    {
-        var init = initType
-            .GetMethods(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)
-            .Single(method => method.Name == initName && method.IsGenericMethodDefinition);
-
-        foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
-            foreach (var type in assembly.GetTypes())
-            {
-                if (type.IsClass && !type.IsAbstract && !type.ContainsGenericParameters &&
-                    typeof(Item).IsAssignableFrom(type) && initType.IsAssignableFrom(type))
-                    init.MakeGenericMethod(type).Invoke(null, null);
-            }
-    }
 }
 
 public enum ItemLocation

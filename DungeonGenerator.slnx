@@ -2,4 +2,7 @@
   <Folder Name="/App/">
     <Project Path="App/DungeonGenerator.App.csproj" />
   </Folder>
+  <Folder Name="/SourceGenerator/">
+    <Project Path="SourceGenerator/DungeonGenerator.SourceGenerator.csproj" />
+  </Folder>
 </Solution>

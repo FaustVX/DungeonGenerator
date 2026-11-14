@@ -3,6 +3,7 @@ using DungeonGenerator.App.Tile;
 
 namespace DungeonGenerator.App.Item;
 
+[InitItem]
 public interface IPlaceItem
 {
     public abstract TileTemplate Template { get; }
@@ -22,10 +23,6 @@ public interface IPlaceItem
         public override string ToString()
         => $"{_timestamp} {PlayerColor()} placed {ItemColor(item)}";
     }
-
-    [System.Runtime.CompilerServices.ModuleInitializer]
-    internal static void Init()
-    => Item.Init(typeof(IPlaceItem));
 
     protected static void Init<T>()
     where T : Item, IPlaceItem

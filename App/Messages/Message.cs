@@ -2,14 +2,13 @@ using Spectre.Console;
 
 namespace DungeonGenerator.App.Messages;
 
-public abstract class Message(Game? game)
+public abstract class Message(Game? game, string message)
 {
-    protected readonly string _timestamp = TimeStamp(game);
-    public override abstract string ToString();
+    protected readonly string _message = $"{TimeStamp(game)} {message}";
+    public override sealed string ToString()
+    => _message;
     public static implicit operator Message(string message)
     => new StringMessage(message);
-    protected string PlayerColor()
-    => CreatureColor(game!.Player);
     protected static string CreatureColor(Creature.Creature creature)
     => $"[{creature.Color.ToMarkup()}]{creature.Name}[/]";
     protected static string ItemColor(Item.Item item)
@@ -27,8 +26,4 @@ public interface IClickableMessage
     public abstract void OnClick(int pos);
 }
 
-public class StringMessage(string message) : Message(null)
-{
-    public override string ToString()
-    => message;
-}
+public class StringMessage(string message) : Message(null, message);

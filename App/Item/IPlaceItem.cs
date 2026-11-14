@@ -18,11 +18,8 @@ public interface IPlaceItem
         game.CurrentLevel.UpdateLight();
     }
 
-    protected class PlaceMessage(Game game, Item item) : Messages.Message(game)
-    {
-        public override string ToString()
-        => $"{_timestamp} {PlayerColor()} placed {ItemColor(item)}";
-    }
+    protected class PlaceMessage(Game game, Item item)
+    : Messages.Message(game, $"{CreatureColor(game.Player)} placed {ItemColor(item)}");
 
     protected static void Init<T>()
     where T : Item, IPlaceItem

@@ -34,19 +34,14 @@ public closed record class Mob(int X, int Y, string Name, char Symbol, int HP, d
         }
     }
 
-    protected class ExitOpenMessage(Game game) : Messages.Message(game)
-    {
-        public override string ToString()
-        => $"{_timestamp} Exit is now open";
-    }
+    protected class ExitOpenMessage(Game game)
+    : Messages.Message(game, $"Exit is now open");
 
-    protected class SawMessage(Game game, Mob mob) : Messages.Message(game), Messages.IClickableMessage
+    protected class SawMessage(Game game, Mob mob)
+    : Messages.Message(game, $"{CreatureColor(game.Player)} saw {CreatureColor(mob)}"), Messages.IClickableMessage
     {
         private readonly (int, int) _pos = (mob.X, mob.Y);
         public void OnClick(int pos)
         => mob.Pos = _pos;
-
-        public override string ToString()
-        => $"{_timestamp} {PlayerColor()} saw {CreatureColor(mob)}";
     }
 }

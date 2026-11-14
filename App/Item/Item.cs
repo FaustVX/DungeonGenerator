@@ -8,17 +8,11 @@ public abstract record class Item(string Name, char Symbol, Color Color)
 {
     public static readonly DefaultableDictionary<(Type itemType, ItemLocation itemLocation), Dictionary<string, Action>> _actionsCache = [with(_ => [])];
 
-    public class DropMessage(Game game, Creature.Creature creature, int qty, Item item) : Messages.Message(game)
-    {
-        public override string ToString()
-        => $"{_timestamp} {CreatureColor(creature)} dropped {WithColor(qty, Color.Blue)} {ItemColor(item)} on the ground";
-    }
+    public class DropMessage(Game game, Creature.Creature creature, int qty, Item item)
+    : Messages.Message(game, $"{CreatureColor(creature)} dropped {WithColor(qty, Color.Blue)} {ItemColor(item)} on the ground");
 
-    public class PickupMessage(Game game, Creature.Creature creature, int qty, Item item) : Messages.Message(game)
-    {
-        public override string ToString()
-        => $"{_timestamp} {CreatureColor(creature)} picked up {WithColor(qty, Color.Blue)} {ItemColor(item)} from the ground";
-    }
+    public class PickupMessage(Game game, Creature.Creature creature, int qty, Item item)
+    : Messages.Message(game, $"{CreatureColor(creature)} picked up {WithColor(qty, Color.Blue)} {ItemColor(item)} from the ground");
 
     public virtual string Name { get; } = Name;
 

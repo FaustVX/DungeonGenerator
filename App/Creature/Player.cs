@@ -13,19 +13,13 @@ public record class Player(int X, int Y) : Creature(X, Y, "You", '@', 5, .8, Col
     public override int Shields => Equipments.TryGetValue(EquipmentType.Armor, out Item.IArmorItem a) ? a.Protection : 0;
     public IDictionary<Item.Item, int> Items { get; } = new DefaultableDictionary<Item.Item, int>(capacity: 10, _ => 0);
 
-    public class EquipMessage<TItem>(Game game, TItem item) : Messages.Message(game)
-    where TItem: Item.Item, Item.IEquipItem
-    {
-        public override string ToString()
-        => $"{_timestamp} {PlayerColor()} have equiped a {TItem.EquipmentType}: {ItemColor(item)}";
-    }
+    public class EquipMessage<TItem>(Game game, TItem item)
+    : Messages.Message(game, $"{CreatureColor(game.Player)} have equiped a {TItem.EquipmentType}: {ItemColor(item)}")
+    where TItem: Item.Item, Item.IEquipItem;
 
-    public class UnequipMessage<TItem>(Game game, TItem item) : Messages.Message(game)
-    where TItem: Item.Item, Item.IEquipItem
-    {
-        public override string ToString()
-        => $"{_timestamp} {PlayerColor()} have unequiped a {TItem.EquipmentType}: {ItemColor(item)}";
-    }
+    public class UnequipMessage<TItem>(Game game, TItem item)
+    : Messages.Message(game, $"{CreatureColor(game.Player)} have unequiped a {TItem.EquipmentType}: {ItemColor(item)}")
+    where TItem: Item.Item, Item.IEquipItem;
 }
 
 public enum EquipmentType

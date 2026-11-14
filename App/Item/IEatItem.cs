@@ -18,11 +18,8 @@ public interface IEatItem
         game.Messages.Add(new EatMessage(game, item, game.Player.HP - hp));
     }
 
-    public class EatMessage(Game game, Item item, int hpRestored) : Messages.Message(game)
-    {
-        public override string ToString()
-        => $"{_timestamp} {PlayerColor()} ate {ItemColor(item)} for {WithColor(hpRestored, Color.Red)} ❤️";
-    }
+    public class EatMessage(Game game, Item item, int hpRestored)
+    : Messages.Message(game, $"{CreatureColor(game.Player)} ate {ItemColor(item)} for {WithColor(hpRestored, Color.Red)} ❤️");
 
     protected static void Init<T>()
     where T : Item, IEatItem

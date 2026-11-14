@@ -48,21 +48,12 @@ public closed record class Creature(int X, int Y, string Name, char Symbol, int 
             b.Death(game);
     }
 
-    protected class FightMessage(Game game, Creature attacker, Creature attacked, int damage) : Messages.Message(game)
-    {
-        public override string ToString()
-        => $"{_timestamp} {CreatureColor(attacker)} fights {CreatureColor(attacked)} for {WithColor(damage, Color.Blue)} damages";
-    }
+    protected class FightMessage(Game game, Creature attacker, Creature attacked, int damage)
+    : Messages.Message(game, $"{CreatureColor(attacker)} fights {CreatureColor(attacked)} for {WithColor(damage, Color.Blue)} damages");
 
-    protected class AttackMissed(Game game, Creature attacker) : Messages.Message(game)
-    {
-        public override string ToString()
-        => $"{_timestamp} {CreatureColor(attacker)} missed attack";
-    }
+    protected class AttackMissed(Game game, Creature attacker)
+    : Messages.Message(game, $"{CreatureColor(attacker)} missed attack");
 
-    protected class ShieldMissed(Game game, Creature attacker) : Messages.Message(game)
-    {
-        public override string ToString()
-        => $"{_timestamp} {CreatureColor(attacker)} missed shields";
-    }
+    protected class ShieldMissed(Game game, Creature attacker)
+    : Messages.Message(game, $"{CreatureColor(attacker)} missed shields");
 }

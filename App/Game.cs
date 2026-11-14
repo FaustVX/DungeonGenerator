@@ -93,9 +93,6 @@ public sealed class Game
     public bool Activate()
     => CurrentTile.Template is IActivableTemplate tile && tile.Activate(this, Player.X, Player.Y);
 
-    private class NewFloorMessage(Level level) : Message(level.Game)
-    {
-        public override string ToString()
-        => $"{_timestamp} {PlayerColor()} went down to level {WithColor(level.Depth, Color.Blue)} with at least {WithColor(Random.Shared.Next(1, level.Creatures.Count + 1), Color.Blue)} mobs";
-    }
+    private class NewFloorMessage(Level level)
+    : Message(level.Game, $"{CreatureColor(level.Game.Player)} went down to level {WithColor(level.Depth, Color.Blue)} with at least {WithColor(Random.Shared.Next(1, level.Creatures.Count + 1), Color.Blue)} mobs");
 }

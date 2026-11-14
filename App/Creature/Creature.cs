@@ -1,5 +1,4 @@
 using Spectre.Console;
-using DungeonGenerator.App.Helpers;
 
 namespace DungeonGenerator.App.Creature;
 

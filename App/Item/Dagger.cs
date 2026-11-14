@@ -1,5 +1,4 @@
 using DungeonGenerator.App.Creature;
-using DungeonGenerator.App.Lib;
 
 namespace DungeonGenerator.App.Item;
 

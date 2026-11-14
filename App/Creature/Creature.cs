@@ -2,18 +2,7 @@ using Spectre.Console;
 
 namespace DungeonGenerator.App.Creature;
 
-public interface ICreature
-{
-    public abstract int X { get; set; }
-    public abstract int Y { get; set; }
-    public abstract char Symbol { get; }
-    public abstract Color Color { get; }
-    public abstract int HP { get; set; }
-    public abstract int MaxHP { get; }
-    public abstract int Shields { get; }
-}
-
-public closed record class Creature(int X, int Y, string Name, char Symbol, int HP, Color Color) : ICreature
+public closed record class Creature(int X, int Y, string Name, char Symbol, int HP, Color Color)
 {
     public int X { get; set; } = X;
     public int Y { get; set; } = Y;

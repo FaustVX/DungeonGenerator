@@ -83,7 +83,7 @@ try
                 {
                     case 1:
                         DrawDungeon(game, lookingAt, lastMouseEvent);
-                        ItemsMenu(game, lookingAt, "Inventory", game.Player.Items, item => [..item.Actions, Item.Drop1, Item.DropAll, Item.Delete]);
+                        ItemsMenu(game, lookingAt, "Inventory", game.Player.Items, item => item.Actions(ItemLocation.Inventory));
                         break;
                     case 2:
                         DrawDungeon(game, lookingAt, lastMouseEvent);
@@ -93,7 +93,7 @@ try
                         {
                             DrawDungeon(game, lookingAt, lastMouseEvent);
                             var item = (Item)equip;
-                            SelectionPrompt<KeyValuePair<string, Item.Action>>.Default(item.Name, kvp => kvp.Key, Item.Cancel, [..equip.EquipedActions, Item.Cancel])
+                            SelectionPrompt<KeyValuePair<string, Item.Action>>.Default(item.Name, kvp => kvp.Key, Item.Cancel, item.Actions(ItemLocation.Equipment))
                                 .Prompt().Value(game, FrozenDictionary<Item, int>.Empty, item);
                         }
                         break;
@@ -132,7 +132,7 @@ try
                             .Prompt();
                         DrawDungeon(game, lookingAt, lastMouseEvent);
                         if (selection == 1)
-                            ItemsMenu(game, lookingAt, "Ground", items, item => [..item.Actions, Item.Pickup, Item.Delete]);
+                            ItemsMenu(game, lookingAt, "Ground", items, item => item.Actions(ItemLocation.Ground));
                         else if (selection == 2)
                         {
                             SelectionPrompt<KeyValuePair<string, IActionableTemplate.Action>>.Default(title, kvp => kvp.Key, IActionableTemplate.Cancel, actions.Append(IActionableTemplate.Cancel))
@@ -146,13 +146,13 @@ try
                             .Prompt();
                         DrawDungeon(game, lookingAt, lastMouseEvent);
                         if (selection)
-                            ItemsMenu(game, lookingAt, "Ground", items, item => [..item.Actions, Item.Pickup, Item.Delete]);
+                            ItemsMenu(game, lookingAt, "Ground", items, item => item.Actions(ItemLocation.Ground));
                         else
                             tile.Activate(game, game.Player.X, game.Player.Y);
                         break;
                     }
                     case ({ Count: > 0 }, _):
-                        ItemsMenu(game, lookingAt, "Ground", items, item => [..item.Actions, Item.Pickup, Item.Delete]);
+                        ItemsMenu(game, lookingAt, "Ground", items, item => item.Actions(ItemLocation.Ground));
                         break;
                     case (_, IActionableTemplate { Actions: { } actions, MenuTitle: var title }):
                     {
@@ -192,7 +192,7 @@ try
                 return;
             }
 
-            SelectionPrompt<KeyValuePair<string, Item.Action>>.Default(item.Name, kvp => kvp.Key, Item.Cancel, [..extraActions(item), Item.Cancel])
+            SelectionPrompt<KeyValuePair<string, Item.Action>>.Default(item.Name, kvp => kvp.Key, Item.Cancel, extraActions(item))
                 .Prompt().Value(game, items, item);
         }
     }

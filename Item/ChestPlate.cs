@@ -9,12 +9,4 @@ public record class ChestPlate(Materials.Material Material) : Item($"{Material.N
     public static EquipmentType EquipmentType => EquipmentType.Armor;
     public int Protection => 1;
     public int Durability { get; set; } = (int)(50 * Material.Hardness);
-    public override IReadOnlyDictionary<string, Action> Actions { get; } = new Dictionary<string, Action>()
-    {
-        ["Equip"] = IEquipItem.Equip<ChestPlate>,
-    };
-    public IReadOnlyDictionary<string, Action> EquipedActions { get; } = new Dictionary<string, Action>()
-    {
-        ["Unequip"] = IEquipItem.Unequip<ChestPlate>,
-    };
 }

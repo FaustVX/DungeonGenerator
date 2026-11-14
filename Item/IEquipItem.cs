@@ -5,9 +5,8 @@ namespace DungeonGenerator.Item;
 public interface IEquipItem
 {
     public static abstract Creature.EquipmentType EquipmentType { get; }
-    public abstract IReadOnlyDictionary<string, Item.Action> EquipedActions { get; }
 
-    public static void Equip<TItem>(Game game, IDictionary<Item, int> items, Item item)
+    protected static void Equip<TItem>(Game game, IDictionary<Item, int> items, Item item)
     where TItem : Item, IEquipItem
     {
         if (!game.Player.Equipments.ContainsKey(TItem.EquipmentType))
@@ -19,7 +18,7 @@ public interface IEquipItem
         }
     }
 
-    public static void Unequip<TItem>(Game game, IDictionary<Item, int> _, Item item)
+    protected static void Unequip<TItem>(Game game, IDictionary<Item, int> _, Item item)
     where TItem : Item, IEquipItem
     {
         if (game.Player.Equipments.ContainsKey(TItem.EquipmentType))
@@ -29,5 +28,17 @@ public interface IEquipItem
             game.Player.Items[item]++;
             game.CurrentLevel.UpdateLight();
         }
+    }
+
+    [System.Runtime.CompilerServices.ModuleInitializer]
+    internal static void Init()
+    => Item.Init(typeof(IEquipItem));
+
+    protected static void Init<T>()
+    where T : Item, IEquipItem
+    {
+        Item._actionsCache[(typeof(T), ItemLocation.Ground)].Add("Equip", typeof(IEquipItem).GetMethod(nameof(Equip), System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)!.MakeGenericMethod(typeof(T)).CreateDelegate<Item.Action>());
+        Item._actionsCache[(typeof(T), ItemLocation.Inventory)].Add("Equip", typeof(IEquipItem).GetMethod(nameof(Equip), System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)!.MakeGenericMethod(typeof(T)).CreateDelegate<Item.Action>());
+        Item._actionsCache[(typeof(T), ItemLocation.Equipment)].Add("Unequip", typeof(IEquipItem).GetMethod(nameof(Unequip), System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)!.MakeGenericMethod(typeof(T)).CreateDelegate<Item.Action>());
     }
 }

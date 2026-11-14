@@ -22,4 +22,15 @@ public interface IPlaceItem
         public override string ToString()
         => $"{_timestamp} {PlayerColor()} placed {ItemColor(item)}";
     }
+
+    [System.Runtime.CompilerServices.ModuleInitializer]
+    internal static void Init()
+    => Item.Init(typeof(IPlaceItem));
+
+    protected static void Init<T>()
+    where T : Item, IPlaceItem
+    {
+        Item._actionsCache[(typeof(T), ItemLocation.Ground)].Add("Place", Place);
+        Item._actionsCache[(typeof(T), ItemLocation.Inventory)].Add("Place", Place);
+    }
 }

@@ -1,5 +1,8 @@
 # DungeonGenerator
 
+[![Latest release](https://img.shields.io/github/v/release/FaustVX/DungeonGenerator?label=latest%20release)](https://github.com/FaustVX/DungeonGenerator/releases/latest)
+[![Release workflow](https://github.com/FaustVX/DungeonGenerator/actions/workflows/release.yml/badge.svg)](https://github.com/FaustVX/DungeonGenerator/actions/workflows/release.yml)
+
 ![DungeonGenerator preview](App/docs/image.png)
 
 DungeonGenerator is a terminal-based dungeon crawler written in C# with .NET. It generates procedural dungeon layouts, places enemies and loot, and lets you explore a growing number of floors using keyboard controls in a classic roguelike style.

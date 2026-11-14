@@ -1,0 +1,327 @@
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Numerics;
+using System.Runtime.CompilerServices;
+using Spectre.Console;
+
+namespace DungeonGenerator.App.Helpers;
+
+static class Ext
+{
+    extension(ArgumentOutOfRangeException)
+    {
+        [DebuggerStepThrough]
+        public static void ThrowIfNotInBetween<T>(T value, T min, T max, [CallerArgumentExpression(nameof(value))] string? paramName = null)
+        where T : IComparable<T>
+        {
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(value, max, paramName);
+            ArgumentOutOfRangeException.ThrowIfLessThan(value, min, paramName);
+        }
+    }
+
+    extension(AnsiConsole)
+    {
+        public static void Write(Tile.TileTemplate template)
+        {
+            AnsiConsole.Background = template.Background;
+            AnsiConsole.Write(template.Symbol);
+        }
+
+        public static void MouseSupport(bool enable)
+        => AnsiConsole.Console.MouseSupport(enable);
+    }
+
+    extension(IAnsiConsole console)
+    {
+        public void MouseSupport(bool enable)
+        {
+            if (enable)
+                console.WriteAnsi(w => w.EnableMouse());
+            else
+                console.WriteAnsi(w => w.DisableMouse());
+        }
+    }
+
+    extension(AnsiWriter writer)
+    {
+        public AnsiWriter EnableMouse()
+        => writer.WriteCsi(1000, 'h', decPrivateMode: true) // enable mouse
+            .WriteCsi(1003, 'h', decPrivateMode: true) // enable mouse motion
+            .WriteCsi(1006, 'h', decPrivateMode: true); // enable extended
+        public AnsiWriter DisableMouse()
+        => writer.WriteCsi(1000, 'l', decPrivateMode: true);
+
+        [UnsafeAccessor(UnsafeAccessorKind.Method)]
+        public extern AnsiWriter WriteCsi(int value, char terminator, bool decPrivateMode = false);
+        [UnsafeAccessor(UnsafeAccessorKind.Method)]
+        public extern AnsiWriter WriteCsi(string parameter, char terminator, bool decPrivateMode = false);
+    }
+
+    extension(IAnsiConsoleInput input)
+    {
+        /// <returns>Returns either a <see cref="ConsoleKeyInfo"/> or <see cref="ConsoleRead.MouseEvent"/></returns>
+        /// <inheritdoc cref="IAnsiConsoleInput.ReadKey(bool)"/>>
+        public ConsoleRead ReadKeyOrMouse()
+        {
+            var key = Console.ReadKey(intercept: true);
+            if (key.Key is not ConsoleKey.Escape || !Console.KeyAvailable)
+                return key;
+            if (Console.ReadKey(true).KeyChar != '[' || Console.ReadKey(true).KeyChar != '<')
+            {
+                while (Console.KeyAvailable)
+                    Console.ReadKey(true);
+                return new ConsoleKeyInfo();
+            }
+
+            var button = 0;
+            while ((key = Console.ReadKey(true)).KeyChar is not ';')
+                button = button * 10 + (key.KeyChar - '0');
+            button &= ~(0b111 << 2);
+            var x = 0;
+            while ((key = Console.ReadKey(true)).KeyChar is not ';')
+                x = x * 10 + (key.KeyChar - '0');
+            var y = 0;
+            while ((key = Console.ReadKey(true)).KeyChar is not ('M' or 'm'))
+                y = y * 10 + (key.KeyChar - '0');
+            var pressed = key.KeyChar is 'M';
+            Convert.ToString(button, 2);
+            return new ConsoleRead.MouseEvent(x - 1, y - 1, (ConsoleRead.MouseButton)button, pressed);
+        }
+    }
+
+    extension<T>(IPrompt<T> prompt)
+    {
+        public T Prompt()
+        => prompt.Prompt(AnsiConsole.Console);
+
+        public T Prompt(IAnsiConsole console)
+        {
+            console.MouseSupport(false);
+            try
+            {
+                return console.Prompt(prompt);
+            }
+            finally
+            {
+                console.MouseSupport(true);
+            }
+        }
+    }
+
+    extension(Random rng)
+    {
+        public bool NextBool(double probality = .5)
+        => rng.NextDouble() < probality;
+
+        public T NextItem<T>(params IReadOnlyList<T> values)
+        => values[rng.Next(values.Count)];
+
+        public T NextItem<T>(params ReadOnlySpan<T> values)
+        => values[rng.Next(values.Length)];
+
+        public T NextWeightedItem<T>(params ReadOnlySpan<(T value, int weight)> values)
+        {
+            long totalWeight = 0;
+            foreach (var (_, weight) in values)
+            {
+                if (weight < 0)
+                    throw new ArgumentOutOfRangeException(nameof(values), "Weights cannot be negative.");
+
+                totalWeight += weight;
+            }
+
+            if (totalWeight == 0)
+                throw new ArgumentException("At least one weight must be greater than zero.", nameof(values));
+
+            var choice = rng.NextInt64(totalWeight);
+            foreach (var (value, weight) in values)
+            {
+                if (choice < weight)
+                    return value;
+
+                choice -= weight;
+            }
+
+            throw new UnreachableException();
+        }
+
+        // uses weighted reservoir sampling
+        public T NextWeightedItem<T>(params IEnumerable<(T value, int weight)> values)
+        {
+            ArgumentNullException.ThrowIfNull(values);
+
+            long totalWeight = 0;
+            T selected = default!;
+
+            foreach (var (value, weight) in values)
+            {
+                if (weight < 0)
+                    throw new ArgumentOutOfRangeException(nameof(values), "Weights cannot be negative.");
+
+                if (weight == 0)
+                    continue;
+
+                var newTotalWeight = checked(totalWeight + weight);
+                if (totalWeight == 0 || rng.NextInt64(newTotalWeight) < weight)
+                    selected = value;
+
+                totalWeight = newTotalWeight;
+            }
+
+            if (totalWeight == 0)
+                throw new ArgumentException("At least one weight must be greater than zero.", nameof(values));
+
+            return selected;
+        }
+    }
+
+    extension<T>((T, T))
+    where T : IAdditionOperators<T, T, T>
+    {
+        public static (T, T) operator +((T, T) lhs, (T, T) rhs)
+        => (lhs.Item1 + rhs.Item1, lhs.Item2 + rhs.Item2);
+    }
+
+    extension<T>((T, T))
+    where T : ISubtractionOperators<T, T, T>
+    {
+        public static (T, T) operator -((T, T) lhs, (T, T) rhs)
+        => (lhs.Item1 - rhs.Item1, lhs.Item2 - rhs.Item2);
+    }
+
+    extension((int x, int y) pos)
+    {
+        public int DistanceSquared(int x, int y)
+        {
+            var (dx, dy) = (x - pos.x, y - pos.y);
+            return dx * dx + dy * dy;
+        }
+
+        public double Distance(int x, int y)
+        => Math.Sqrt(DistanceSquared(pos, x, y));
+    }
+
+    extension(Math)
+    {
+        public static T Max<T>(params ReadOnlySpan<T> values)
+        => values.Max()!;
+        public static T Min<T>(params ReadOnlySpan<T> values)
+        => values.Min()!;
+    }
+
+    extension<T>(SelectionPrompt<T>)
+    where T : notnull
+    {
+        public static SelectionPrompt<T> Default(string title, Func<T, string> converter, params IEnumerable<T> values)
+        => new SelectionPrompt<T>()
+            .AddChoices([..values])
+            .EnableSearch()
+            .WrapAround()
+            .UseConverter(converter)
+            .Title($"{title}:");
+
+        public static SelectionPrompt<T> Default(string title, Func<T, string> converter, T cancel, params IEnumerable<T> values)
+        => Default(title, converter, values)
+            .AddCancelResult(cancel);
+    }
+
+    extension<T>(Span<T> span)
+    {
+        /// <summary>
+        /// Copies the contents of <paramref name="other"/> <see cref="ReadOnlySpan{T}"/> into this <see cref="Span{T}"/>.
+        /// </summary>
+        /// <param name="other">The span to copy items from.</param>
+        public void CopyFrom(ReadOnlySpan<T> other)
+        => other.CopyTo(span);
+    }
+
+    extension(string s)
+    {
+        public string PadCenter(int totalWidth, char c = ' ')
+        {
+            if (s.Length >= totalWidth)
+                return s;
+            var left = (totalWidth - s.Length) / 2;
+            var right = totalWidth - s.Length - left;
+            return new string(c, left) + s + new string(c, right);
+        }
+
+        public string Ellipsis(int totalWidth, char ellipsis = '…')
+        {
+            if (s.Length <= totalWidth)
+                return s;
+            return $"{s[..(totalWidth - 1)]}{ellipsis}";
+        }
+    }
+
+    extension<TKey, TNumber>(IDictionary<TKey, TNumber> dict)
+    where TKey : notnull
+    where TNumber : INumber<TNumber>
+    {
+        public void RemoveQuantity(TKey key, TNumber qty)
+        {
+            if ((dict[key] -= qty) <= TNumber.Zero)
+                dict.Remove(key);
+        }
+    }
+
+    extension<TKey, TValue>(IReadOnlyDictionary<TKey, TValue> dict)
+    where TKey: notnull
+    {
+        /// <inheritdoc cref="Dictionary{TKey, TValue}.TryGetValue(TKey, out TValue)"/>
+        public bool TryGetValue<T>(TKey key, [NotNullWhen(true)] out T value)
+        {
+            if (dict.TryGetValue(key, out var v) && v is T t)
+            {
+                value = t;
+                return true;
+            }
+            value = default!;
+            return false;
+        }
+    }
+
+    extension(Color)
+    {
+        public static Color Wood => new(139, 69, 19);
+        public static Color Stone => new(96, 96, 96);
+        public static Color Iron => new(128, 128, 128);
+    }
+
+    public static IEnumerable<(int x, int y)> Line(int x0, int y0, int x1, int y1)
+    {
+        var dx = Math.Abs(x1 - x0);
+        var dy = Math.Abs(y1 - y0);
+        var sx = x0 < x1 ? 1 : -1;
+        var sy = y0 < y1 ? 1 : -1;
+        var err = dx - dy;
+
+        while (true)
+        {
+            yield return (x0, y0);
+
+            if (x0 == x1 && y0 == y1)
+                yield break;
+
+            var e2 = 2 * err;
+
+            if (e2 > -dy)
+            {
+                err -= dy;
+                x0 += sx;
+            }
+
+            if (e2 < dx)
+            {
+                err += dx;
+                y0 += sy;
+            }
+        }
+    }
+}
+
+public readonly record struct Polar(double AngleInRad, double Length)
+{
+    public (int x, int y) ToCartesian
+    => ((int)Math.Round(Length * Math.Cos(AngleInRad)), (int)Math.Round(Length * Math.Sin(AngleInRad)));
+}

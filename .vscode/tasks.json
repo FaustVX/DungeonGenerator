@@ -7,7 +7,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/DungeonGenerator.csproj",
+                "${workspaceFolder}/App/DungeonGenerator.App.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary;ForceNoAlign"
             ],
@@ -27,7 +27,7 @@
             "type": "process",
             "args": [
                 "publish",
-                "${workspaceFolder}/DungeonGenerator.csproj",
+                "${workspaceFolder}/App/DungeonGenerator.App.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary;ForceNoAlign"
             ],
@@ -41,7 +41,7 @@
                 "watch",
                 "run",
                 "--project",
-                "${workspaceFolder}/DungeonGenerator.csproj"
+                "${workspaceFolder}/App/DungeonGenerator.App.csproj"
             ],
             "problemMatcher": "$msCompile"
         }

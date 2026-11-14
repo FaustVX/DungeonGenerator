@@ -3,7 +3,7 @@ using Spectre.Console;
 
 namespace DungeonGenerator.App.Creature;
 
-public record class Rat(int X, int Y) : Mob(X, Y, "Rat", 'r', 5, Color.RosyBrown)
+public record class Rat(int X, int Y) : Mob(X, Y, "Rat", 'r', 5, .8, Color.RosyBrown)
 {
     private readonly Random _rng = new();
     private List<(int x, int y)> _path = [];

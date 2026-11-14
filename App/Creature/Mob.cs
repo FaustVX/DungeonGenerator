@@ -2,7 +2,7 @@ using Spectre.Console;
 
 namespace DungeonGenerator.App.Creature;
 
-public closed record class Mob(int X, int Y, string Name, char Symbol, int HP, Color Color) : Creature(X, Y, Name, Symbol, HP, Color)
+public closed record class Mob(int X, int Y, string Name, char Symbol, int HP, double Chance, Color Color) : Creature(X, Y, Name, Symbol, HP, Chance, Color)
 {
     public bool HasBeenSaw { get; private set; }
 

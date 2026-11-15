@@ -1,3 +1,7 @@
 {
-    "dotnet.defaultSolution": "DungeonGenerator.slnx"
+    "dotnet.defaultSolution": "DungeonGenerator.slnx",
+    "workbench.editor.customLabels.patterns": {
+        "**/tasks/**/TASK.md": "tasks/${dirname(0)}",
+        "**/tasks/**/*": "tasks/${dirname(0)}/${filename}.${extname}",
+    },
 }

@@ -66,6 +66,7 @@ public sealed class Corridor : Node, IRoom
                         room.ConnectedTo.Add(this);
                         ConnectedTo.Add(room);
                     }
+                var middle = (Width / 2) - _rng.Next(0, 2); // TASK(20261115-175742-corridor-torches): Wrong torch placemennt in corridors
                 for (int i = 0; i < Width; i++)
                 {
                     if (Width >= 7)
@@ -73,7 +74,7 @@ public sealed class Corridor : Node, IRoom
                         if (i == Width - 1 || i is 0)
                             _features[(i, 0)] = TileTemplate.SmallTorch(_rng.NextBool(.25));
                     }
-                    else if (i == (Width / 2) - _rng.Next(0, 2)) // TASK(20261115-175742-corridor-torches): Wrong torch placemennt in corridors
+                    else if (i == middle)
                         _features[(i, 0)] = TileTemplate.SmallTorch(_rng.NextBool(.25));
                 }
                 break;
@@ -112,6 +113,7 @@ public sealed class Corridor : Node, IRoom
                         room.ConnectedTo.Add(this);
                         ConnectedTo.Add(room);
                     }
+                var middle = (Height / 2) - _rng.Next(0, 2); // TASK(20261115-175742-corridor-torches): Wrong torch placemennt in corridors
                 for (int i = 0; i < Height; i++)
                 {
                     if (Height >= 7)
@@ -119,7 +121,7 @@ public sealed class Corridor : Node, IRoom
                         if (i == Height - 1 || i is 0)
                             _features[(0, i)] = TileTemplate.SmallTorch(_rng.NextBool(.25));
                     }
-                    else if (i == (Height / 2) - _rng.Next(0, 2)) // TASK(20261115-175742-corridor-torches): Wrong torch placemennt in corridors
+                    else if (i == middle)
                         _features[(0, i)] = TileTemplate.SmallTorch(_rng.NextBool(.25));
                 }
                 break;

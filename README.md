@@ -32,6 +32,7 @@ The player starts in a dungeon with a small set of items and must explore the fl
 - E: open the player menu for inventory, equipment, and stats
 - Enter: inspect actions for the current tile or ground items
 - Esc: quit the game
+- Mouse to inspect dungeon / click messages
 
 ## Project structure
 

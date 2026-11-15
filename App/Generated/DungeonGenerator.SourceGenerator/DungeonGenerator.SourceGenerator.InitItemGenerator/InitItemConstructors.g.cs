@@ -40,8 +40,8 @@ namespace DungeonGenerator.App.Item
     {
         static SmallTorch()
         {
-            global::DungeonGenerator.App.Item.IPlaceItem.Init<global::DungeonGenerator.App.Item.SmallTorch>();
             global::DungeonGenerator.App.Item.IEquipItem.Init<global::DungeonGenerator.App.Item.SmallTorch>();
+            global::DungeonGenerator.App.Item.IPlaceItem.Init<global::DungeonGenerator.App.Item.SmallTorch>();
             Init<global::DungeonGenerator.App.Item.SmallTorch>();
         }
     }

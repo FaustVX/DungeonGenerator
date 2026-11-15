@@ -50,16 +50,15 @@ public abstract record class Item(string Name, char Symbol, Color Color)
     where T : Item
     {
         _actionsCache[(typeof(T), ItemLocation.Ground)].Add("pickup", PickupAction);
+        _actionsCache[(typeof(T), ItemLocation.Inventory)].Add("drop 1", Drop1Action);
+        _actionsCache[(typeof(T), ItemLocation.Inventory)].Add("drop all", DropAllAction);
         _actionsCache[(typeof(T), ItemLocation.Ground)].Add("delete", DeleteAction);
         _actionsCache[(typeof(T), ItemLocation.Inventory)].Add("delete", DeleteAction);
         _actionsCache[(typeof(T), ItemLocation.Equipment)].Add("delete", DeleteAction);
-        _actionsCache[(typeof(T), ItemLocation.Inventory)].Add("drop 1", Drop1Action);
-        _actionsCache[(typeof(T), ItemLocation.Inventory)].Add("drop all", DropAllAction);
         _actionsCache[(typeof(T), ItemLocation.Ground)].Add("cancel", delegate{});
         _actionsCache[(typeof(T), ItemLocation.Inventory)].Add("cancel", delegate{});
         _actionsCache[(typeof(T), ItemLocation.Equipment)].Add("cancel", delegate{});
     }
-
 }
 
 public enum ItemLocation

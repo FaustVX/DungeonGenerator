@@ -2,7 +2,7 @@ using DungeonGenerator.App.Tile;
 
 namespace DungeonGenerator.App.Item;
 
-public abstract record class Torch(string Name, double Range, TileTemplate Template) : Item(Name, Template.Symbol, Template.Foreground), IPlaceItem, IEquipItem, IDurabilityItem
+public abstract record class Torch(string Name, double Range, TileTemplate Template) : Item(Name, Template.Symbol, Template.Foreground), IEquipItem, IPlaceItem, IDurabilityItem
 {
     public static Creature.EquipmentType EquipmentType => Creature.EquipmentType.Torch;
     public abstract int Durability { get; set; }

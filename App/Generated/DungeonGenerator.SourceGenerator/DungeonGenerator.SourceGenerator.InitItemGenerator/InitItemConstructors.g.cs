@@ -5,6 +5,7 @@
         static ChestPlate()
         {
             global::DungeonGenerator.App.Item.IEquipItem.Init<global::DungeonGenerator.App.Item.ChestPlate>();
+            global::DungeonGenerator.App.Item.IInfoItem.Init<global::DungeonGenerator.App.Item.ChestPlate>();
             Init<global::DungeonGenerator.App.Item.ChestPlate>();
         }
     }
@@ -17,6 +18,7 @@ namespace DungeonGenerator.App.Item
         static Dagger()
         {
             global::DungeonGenerator.App.Item.IEquipItem.Init<global::DungeonGenerator.App.Item.Dagger>();
+            global::DungeonGenerator.App.Item.IInfoItem.Init<global::DungeonGenerator.App.Item.Dagger>();
             Init<global::DungeonGenerator.App.Item.Dagger>();
         }
     }
@@ -29,6 +31,7 @@ namespace DungeonGenerator.App.Item
         static Meat()
         {
             global::DungeonGenerator.App.Item.IEatItem.Init<global::DungeonGenerator.App.Item.Meat>();
+            global::DungeonGenerator.App.Item.IInfoItem.Init<global::DungeonGenerator.App.Item.Meat>();
             Init<global::DungeonGenerator.App.Item.Meat>();
         }
     }
@@ -42,6 +45,7 @@ namespace DungeonGenerator.App.Item
         {
             global::DungeonGenerator.App.Item.IEquipItem.Init<global::DungeonGenerator.App.Item.SmallTorch>();
             global::DungeonGenerator.App.Item.IPlaceItem.Init<global::DungeonGenerator.App.Item.SmallTorch>();
+            global::DungeonGenerator.App.Item.IInfoItem.Init<global::DungeonGenerator.App.Item.SmallTorch>();
             Init<global::DungeonGenerator.App.Item.SmallTorch>();
         }
     }

@@ -3,11 +3,11 @@ namespace DungeonGenerator.App.Item;
 [InitItem]
 public interface IInfoItem
 {
-    protected static abstract InfoMessage GetInfo(Game game, Item item);
+    protected static abstract IEnumerable<InfoMessage> GetInfo(Game game, Item item);
 
     private static void InfoAction<T>(Game game, IDictionary<Item, int> items, Item item)
     where T : Item, IInfoItem
-    => game.Messages.Add(T.GetInfo(game, item));
+    => game.Messages.AddRange(T.GetInfo(game, item));
 
     protected class InfoMessage(Game game, Item item, string message) : Messages.Message(game, $"{ItemColor(item)}: {message}");
 

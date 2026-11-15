@@ -7,8 +7,11 @@ public partial record class Dagger(Materials.Material Material) : Item($"{Materi
     public static EquipmentType EquipmentType => EquipmentType.Sword;
     public int Force => 1;
     public int Durability { get; set; } = (int)(50 * Material.Hardness);
-    public override string Name => $"{base.Name} ({Durability})";
 
-    static IInfoItem.InfoMessage IInfoItem.GetInfo(Game game, Item item)
-    => new(game, item, $"Force: {((IWeaponItem)item).Force}");
+    static IEnumerable<IInfoItem.InfoMessage> IInfoItem.GetInfo(Game game, Item item)
+    => [
+        new(game, item, $"Equipable in {EquipmentType} slot"),
+        new(game, item, $"Force: {((IWeaponItem)item).Force}"),
+        new(game, item, $"Durability: {((IDurabilityItem)item).Durability}"),
+        ];
 }

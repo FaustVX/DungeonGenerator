@@ -87,7 +87,7 @@ try
                         break;
                     case 2:
                         DrawDungeon(game, lookingAt, lastMouseEvent);
-                        var equipment = SelectionPrompt<KeyValuePair<EquipmentType, Item>>.Default("Which equipment", kvp => $"{kvp.Key}: {kvp.Value.Name}", default, game.Player.Equipments)
+                        var equipment = SelectionPrompt<KeyValuePair<EquipmentType, Item>>.Default("Which equipment", kvp => $"{kvp.Key}: {kvp.Value.Name}{(kvp.Value is IDurabilityItem { Durability: var d } ? $" ({d})" : "")}", default, game.Player.Equipments)
                             .Prompt();
                         if (equipment is (not EquipmentType.None, IEquipItem equip))
                         {

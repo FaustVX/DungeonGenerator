@@ -6,10 +6,13 @@ public abstract record class Torch(string Name, double Range, TileTemplate Templ
 {
     public static Creature.EquipmentType EquipmentType => Creature.EquipmentType.Torch;
     public abstract int Durability { get; set; }
-    public override string Name => $"{base.Name} ({Durability})";
 
-    static IInfoItem.InfoMessage IInfoItem.GetInfo(Game game, Item item)
-    => new(game, item, $"Vision: {((ITorchTemplate)((Torch)item).Template).Range}");
+    static IEnumerable<IInfoItem.InfoMessage> IInfoItem.GetInfo(Game game, Item item)
+    => [
+        new(game, item, $"Equipable in {EquipmentType} slot"),
+        new(game, item, $"Vision: {((ITorchTemplate)((IPlaceItem)item).Template).Range}"),
+        new(game, item, $"Durability: {((IDurabilityItem)item).Durability}"),
+        ];
 }
 
 public partial record class SmallTorch() : Torch("Small Torch", 3, TileTemplate.SmallTorch())

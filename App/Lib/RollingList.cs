@@ -19,6 +19,13 @@ public class RollingList<T>(int capacity) : ICollection<T>
         _items[_index] = item;
     }
 
+    public void AddRange(IEnumerable<T> items)
+    {
+        ArgumentNullException.ThrowIfNull(items);
+        foreach (T item in items)
+            Add(item);
+    }
+
     public void Clear()
     => (_index, Count) = (-1, 0);
 

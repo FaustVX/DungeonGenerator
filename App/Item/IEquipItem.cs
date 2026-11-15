@@ -12,6 +12,7 @@ public interface IEquipItem
     {
         if (!game.Player.Equipments.ContainsKey(TItem.EquipmentType))
         {
+            // TASK(20261115-130532-linked-equip-item-from-inventory): Equipping items from inventories are still linked
             game.Player.Equipments[TItem.EquipmentType] = item;
             game.Messages.Add(new Creature.Player.EquipMessage<TItem>(game, (TItem)item));
             items.RemoveQuantity(item, 1);

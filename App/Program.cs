@@ -26,7 +26,7 @@ try
     {
         AnsiConsole.MouseSupport(true);
         var lookingAt = LookingAt(game, mousePos.x, mousePos.y);
-        (gameView.X, gameView.Y) = (game.Player.X - gameView.Width / 2, game.Player.Y - gameView.Height / 2);
+        (gameView.X, gameView.Y) = (mousePos.x - gameView.Width / 2, mousePos.y - gameView.Height / 2);
         if (gameView.X < 0)
             gameView.X = 0;
         if (gameView.Y < 0)

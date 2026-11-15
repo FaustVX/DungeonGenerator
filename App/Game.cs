@@ -36,8 +36,11 @@ public sealed class Game
     public RollingList<Message> Messages { get; }
 
     public Game(int width, int height, int seed)
+    : this(width, height, seed, height) {}
+
+    public Game(int width, int height, int seed, int messages)
     {
-        Messages = [with(capacity: 20), "Welcome to the dungeon, have fun", new SeedMessage(seed), $"Fight {Message.WithColor("monsters", Color.RosyBrown)} to open downstairs", $"{Message.WithColor("<space>", Color.Blue)} to activate main action", $"{Message.WithColor("<enter>", Color.Blue)} to see actions", $"{Message.WithColor("<e>", Color.Blue)} for inventory"];
+        Messages = [with(capacity: messages), "Welcome to the dungeon, have fun", new SeedMessage(seed), $"Fight {Message.WithColor("monsters", Color.RosyBrown)} to open downstairs", $"{Message.WithColor("<space>", Color.Blue)} to activate main action", $"{Message.WithColor("<enter>", Color.Blue)} to see actions", $"{Message.WithColor("<e>", Color.Blue)} for inventory"];
         Width = width;
         Height = height;
         Seed = seed;

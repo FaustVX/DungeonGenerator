@@ -5,6 +5,8 @@ namespace DungeonGenerator.App.Item;
 public interface IDurabilityItem
 {
     public abstract int Durability { get; set; }
+    protected static string GetInfo(Item item)
+    => $"Durability: {((IDurabilityItem)item).Durability}";
 
     public class BrokeMessage(Game Game, Item Item)
     : Messages.Message(Game, $"{ItemColor(Item)} broke");

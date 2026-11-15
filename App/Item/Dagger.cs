@@ -10,8 +10,8 @@ public partial record class Dagger(Materials.Material Material) : Item($"{Materi
 
     static IEnumerable<IInfoItem.InfoMessage> IInfoItem.GetInfo(Game game, Item item)
     => [
-        new(game, item, $"Equipable in {EquipmentType} slot"),
-        new(game, item, $"Force: {((IWeaponItem)item).Force}"),
-        new(game, item, $"Durability: {((IDurabilityItem)item).Durability}"),
+        new(game, item, IEquipItem.GetInfo<Dagger>()),
+        new(game, item, IWeaponItem.GetInfo(item)),
+        new(game, item, IDurabilityItem.GetInfo(item)),
         ];
 }

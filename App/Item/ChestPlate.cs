@@ -10,8 +10,8 @@ public partial record class ChestPlate(Materials.Material Material) : Item($"{Ma
 
     static IEnumerable<IInfoItem.InfoMessage> IInfoItem.GetInfo(Game game, Item item)
     => [
-        new(game, item, $"Equipable in {EquipmentType} slot"),
-        new(game, item, $"Protection: {((IArmorItem)item).Protection}"),
-        new(game, item, $"Durability: {((IDurabilityItem)item).Durability}"),
+        new(game, item, IEquipItem.GetInfo<ChestPlate>()),
+        new(game, item, IArmorItem.GetInfo(item)),
+        new(game, item, IDurabilityItem.GetInfo(item)),
         ];
 }

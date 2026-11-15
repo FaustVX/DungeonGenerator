@@ -6,6 +6,9 @@ namespace DungeonGenerator.App.Item;
 public interface IEquipItem
 {
     public static abstract Creature.EquipmentType EquipmentType { get; }
+    protected static string GetInfo<T>()
+    where T : IEquipItem
+    => $"Equipable in {T.EquipmentType} slot";
 
     protected static void Equip<TItem>(Game game, IDictionary<Item, int> items, Item item)
     where TItem : Item, IEquipItem

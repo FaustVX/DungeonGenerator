@@ -7,6 +7,8 @@ namespace DungeonGenerator.App.Item;
 public interface IEatItem
 {
     public abstract int RestoreHP { get; }
+    protected static string GetInfo(Item item)
+    => $"Restore HP: {((IEatItem)item).RestoreHP}";
 
     protected static void EatAction(Game game, IDictionary<Item, int> items, Item item)
     {

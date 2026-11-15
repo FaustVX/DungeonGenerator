@@ -8,5 +8,5 @@ public partial record class Meat() : Item("Meat", '%', Color.IndianRed1), IEatIt
     public int RestoreHP => 2;
 
     static IEnumerable<IInfoItem.InfoMessage> IInfoItem.GetInfo(Game game, Item item)
-    => [new(game, item, $"Restore HP: {((IEatItem)item).RestoreHP}")];
+    => [new(game, item, IEatItem.GetInfo(item))];
 }

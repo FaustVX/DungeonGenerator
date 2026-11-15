@@ -7,6 +7,8 @@ namespace DungeonGenerator.App.Item;
 public interface IPlaceItem
 {
     public abstract TileTemplate Template { get; }
+    protected static string GetInfo<T>(Item item, string header, Func<TileTemplate, T> selector)
+    => $"{header}: {selector(((IPlaceItem)item).Template)}";
 
     protected static void Place(Game game, IDictionary<Item, int> items, Item item)
     {

@@ -9,9 +9,9 @@ public abstract record class Torch(string Name, double Range, TileTemplate Templ
 
     static IEnumerable<IInfoItem.InfoMessage> IInfoItem.GetInfo(Game game, Item item)
     => [
-        new(game, item, $"Equipable in {EquipmentType} slot"),
-        new(game, item, $"Vision: {((ITorchTemplate)((IPlaceItem)item).Template).Range}"),
-        new(game, item, $"Durability: {((IDurabilityItem)item).Durability}"),
+        new(game, item, IEquipItem.GetInfo<Torch>()),
+        new(game, item, IPlaceItem.GetInfo(item, "Vision", t => ((ITorchTemplate)t).Range)),
+        new(game, item, IDurabilityItem.GetInfo(item)),
         ];
 }
 

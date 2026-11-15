@@ -39,7 +39,7 @@ public closed record class Creature(int X, int Y, string Name, char Symbol, int 
         }
         var damage = attacked.Defend(this, Force, game);
         if (this is Player p)
-            Item.IDurabilityItem.Damage(p, game, EquipmentType.Sword, 1);
+            Item.IDurabilityItem.Damage(p, game, EquipmentType.Weapon, 1);
 
         game.Messages.Add(new FightMessage(game, this, attacked, damage));
         if (this is Mob { HP: <= 0 } a)

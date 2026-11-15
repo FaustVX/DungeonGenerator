@@ -20,21 +20,13 @@ try
             ? int.TryParse(arg0, out var s) ? s : arg0.GetHashCode()
             : Random.Shared.Next();
     var game = new Game(100, 20, seed);
-    var gameView = new ViewPort(game.Width, game.Height);
+    var gameView = new ViewPort(game.Width, game.Height, game.Width, game.Height);
 
     Run: while (game.Player.HP > 0)
     {
         AnsiConsole.MouseSupport(true);
         var lookingAt = LookingAt(game, mousePos.x, mousePos.y);
         (gameView.X, gameView.Y) = (mousePos.x - gameView.Width / 2, mousePos.y - gameView.Height / 2);
-        if (gameView.X < 0)
-            gameView.X = 0;
-        if (gameView.Y < 0)
-            gameView.Y = 0;
-        if (gameView.X + gameView.Width >= game.Width)
-            gameView.X = game.Width - gameView.Width;
-        if (gameView.Y + gameView.Height >= game.Height)
-            gameView.Y = game.Height - gameView.Height;
         DrawDungeon(game, lookingAt, lastMouseEvent, gameView);
         switch (AnsiConsole.Console.Input.ReadKeyOrMouse())
         {
@@ -413,10 +405,34 @@ static void DrawDungeon(Game game, string lookingAt, ConsoleRead.MouseEvent mous
     }
 }
 
-class ViewPort(int width, int height)
+class ViewPort(int width, int height, int maxWidth, int maxHeight)
 {
-    public int X { get; set; }
-    public int Y { get; set; }
+    public int X
+    {
+        get;
+        set
+        {
+            field = value;
+            if (field < 0)
+                field = 0;
+            if (field + Width >= MaxWidth)
+                field = MaxWidth - Width;
+        }
+    }
+    public int Y
+    {
+        get;
+        set
+        {
+            field = value;
+            if (field < 0)
+                field = 0;
+            if (field + Height >= MaxHeight)
+                field = MaxHeight - Height;
+        }
+    }
     public int Width { get; } = width;
     public int Height { get; } = height;
+    public int MaxWidth { get; } = maxWidth;
+    public int MaxHeight { get; } = maxHeight;
 }

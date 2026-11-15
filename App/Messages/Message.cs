@@ -15,7 +15,7 @@ public abstract class Message(Game? game, string message)
     => $"[{item.Color.ToMarkup()}]{item.Name}[/]";
     protected static string TileColor(Tile.TileTemplate tile)
     => $"[{tile.Foreground.ToMarkup()} on {tile.Background.ToMarkup()}]{tile.Name}[/]";
-    protected static string WithColor<T>(T obj, Color color)
+    public static string WithColor<T>(T obj, Color color)
     => $"[{color.ToMarkup()}]{obj}[/]";
     public static string TimeStamp(Game? game)
     => game is null ? "" : $"[[{game.Steps}:{game.Depth}]]"; // double square bracket for Spectre markup

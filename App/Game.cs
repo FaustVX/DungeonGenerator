@@ -37,7 +37,7 @@ public sealed class Game
 
     public Game(int width, int height, int seed)
     {
-        Messages = [with(20), "Welcome to the dungeon, have fun", "[blue]<space>[/] to activate main action", "[blue]<enter>[/] to see actions", "[blue]<e>[/] for inventory"];
+        Messages = [with(capacity: 20), "Welcome to the dungeon, have fun", new SeedMessage(seed), $"Fight {Message.WithColor("monsters", Color.RosyBrown)} to open downstairs", $"{Message.WithColor("<space>", Color.Blue)} to activate main action", $"{Message.WithColor("<enter>", Color.Blue)} to see actions", $"{Message.WithColor("<e>", Color.Blue)} for inventory"];
         Width = width;
         Height = height;
         Seed = seed;
@@ -45,6 +45,15 @@ public sealed class Game
         var (x, y) = CurrentLevel.MainTiles[Level.MainTile.Entrance];
         Player = new(x, y);
         CurrentLevel.UpdateLight();
+    }
+
+    private sealed class SeedMessage(int seed) : Message(null, $"Game seed: {WithColor(seed, Color.Blue)}"), IClickableMessage
+    {
+        public void OnClick(int pos)
+        {
+            var value = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(seed.ToString()));
+            AnsiConsole.Console.WriteAnsi(w => w.CopyText(value));
+        }
     }
 
     private bool Move(int x, int y)

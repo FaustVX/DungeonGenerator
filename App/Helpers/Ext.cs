@@ -50,11 +50,15 @@ static class Ext
             .WriteCsi(1006, 'h', decPrivateMode: true); // enable extended
         public AnsiWriter DisableMouse()
         => writer.WriteCsi(1000, 'l', decPrivateMode: true);
+        public AnsiWriter CopyText(string text)
+        => writer.WriteOsc($"52;c;{text}\a");
 
         [UnsafeAccessor(UnsafeAccessorKind.Method)]
         public extern AnsiWriter WriteCsi(int value, char terminator, bool decPrivateMode = false);
         [UnsafeAccessor(UnsafeAccessorKind.Method)]
         public extern AnsiWriter WriteCsi(string parameter, char terminator, bool decPrivateMode = false);
+        [UnsafeAccessor(UnsafeAccessorKind.Method)]
+        public extern AnsiWriter WriteOsc(string parameters);
     }
 
     extension(IAnsiConsoleInput input)

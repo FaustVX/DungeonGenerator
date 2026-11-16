@@ -4,7 +4,7 @@ namespace DungeonGenerator.App.Messages;
 
 public abstract class Message(Game? game, string message)
 {
-    protected readonly string _message = $"{TimeStamp(game)} {message}";
+    protected readonly string _message = game is null ? message : $"{TimeStamp(game)} {message}";
     public override sealed string ToString()
     => _message;
     public static implicit operator Message(string message)
@@ -17,8 +17,8 @@ public abstract class Message(Game? game, string message)
     => $"[{tile.Foreground.ToMarkup()} on {tile.Background.ToMarkup()}]{tile.Name}[/]";
     public static string WithColor<T>(T obj, Color color)
     => $"[{color.ToMarkup()}]{obj}[/]";
-    public static string TimeStamp(Game? game)
-    => game is null ? "" : $"[[{game.Steps}:{game.Depth}]]"; // double square bracket for Spectre markup
+    public static string TimeStamp(Game game)
+    => $"[[{game.Steps}:{game.Depth}]]"; // double square bracket for Spectre markup
 }
 
 public interface IClickableMessage

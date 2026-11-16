@@ -7,11 +7,4 @@ public partial record class ChestPlate(Materials.Material Material) : Item($"{Ma
     public static EquipmentType EquipmentType => EquipmentType.Armor;
     public int Protection => 1;
     public int Durability { get; set; } = (int)(50 * Material.Hardness);
-
-    static IEnumerable<IInfoItem.InfoMessage> IInfoItem.GetInfo(Game game, Item item)
-    => [
-        new(game, item, IEquipItem.GetInfo<ChestPlate>()),
-        new(game, item, IArmorItem.GetInfo(item)),
-        new(game, item, IDurabilityItem.GetInfo(item)),
-        ];
 }

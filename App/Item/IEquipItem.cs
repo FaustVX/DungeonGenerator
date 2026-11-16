@@ -2,7 +2,7 @@ using DungeonGenerator.App.Helpers;
 
 namespace DungeonGenerator.App.Item;
 
-[InitItem]
+[InitItem, InfoItem]
 public interface IEquipItem
 {
     public static abstract Creature.EquipmentType EquipmentType { get; }

@@ -3,7 +3,7 @@ using Spectre.Console;
 
 namespace DungeonGenerator.App.Item;
 
-[InitItem]
+[InitItem, InfoItem]
 public interface IEatItem
 {
     public abstract int RestoreHP { get; }

@@ -2,6 +2,7 @@
 using DungeonGenerator.App.Helpers;
 namespace DungeonGenerator.App.Item;
 
+[InfoItem]
 public interface IDurabilityItem
 {
     public abstract int Durability { get; set; }

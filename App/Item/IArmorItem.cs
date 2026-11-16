@@ -1,5 +1,6 @@
 namespace DungeonGenerator.App.Item;
 
+[InfoItem]
 internal interface IArmorItem
 {
     public abstract int Protection { get; }

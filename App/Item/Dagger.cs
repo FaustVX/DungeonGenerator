@@ -7,11 +7,4 @@ public partial record class Dagger(Materials.Material Material) : Item($"{Materi
     public static EquipmentType EquipmentType => EquipmentType.Weapon;
     public int Force => 1;
     public int Durability { get; set; } = (int)(50 * Material.Hardness);
-
-    static IEnumerable<IInfoItem.InfoMessage> IInfoItem.GetInfo(Game game, Item item)
-    => [
-        new(game, item, IEquipItem.GetInfo<Dagger>()),
-        new(game, item, IWeaponItem.GetInfo(item)),
-        new(game, item, IDurabilityItem.GetInfo(item)),
-        ];
 }

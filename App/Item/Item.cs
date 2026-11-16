@@ -44,6 +44,7 @@ public abstract record class Item(string Name, char Symbol, Color Color)
         var qty = game.CurrentLevel.PickupItem(game.Player.X, game.Player.Y, item);
         game.Player.Items[item] += qty;
         game.Messages.Add(new PickupMessage(game, game.Player, qty, item));
+        game.CurrentLevel.Update();
     }
 
     protected static void Init<T>()

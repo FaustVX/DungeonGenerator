@@ -19,6 +19,9 @@ jobs:
           - name: linux-x64
             rid: linux-x64
             zip_name: DungeonGenerator-linux-x64.zip
+          - name: linux-arm64
+            rid: linux-arm64
+            zip_name: DungeonGenerator-linux-arm64.zip
           - name: win-x64
             rid: win-x64
             zip_name: DungeonGenerator-win-x64.zip

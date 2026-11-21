@@ -62,7 +62,8 @@ jobs:
             md5sum "$executable" > DungeonGenerator.App.md5
             sha256sum "$executable" > DungeonGenerator.App.sha256
           )
-          zip -r "./artifacts/${{ matrix.zip_name }}" "./artifacts/${{ matrix.rid }}"
+          cd ./artifacts/
+          zip -r "./${{ matrix.zip_name }}" "./artifacts/${{ matrix.rid }}"
 
       - name: Upload release asset
         uses: softprops/action-gh-release@v2
